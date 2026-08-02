@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="tealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1b6b68"/>
+      <stop offset="100%" stop-color="#134e4c"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#1b6b68" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <!-- Outer Rounded Square Container (Uzum style badge border) -->
+  <rect x="15" y="15" width="470" height="470" rx="90" fill="#ffffff" stroke="#1b6b68" stroke-width="14" filter="url(#shadow)"/>
+  <rect x="30" y="30" width="440" height="440" rx="75" fill="none" stroke="#e2e8f0" stroke-width="4"/>
+
+  <!-- Shield Shape Background -->
+  <path d="M160 110 H340 V240 C340 330 250 380 250 380 C250 380 160 330 160 240 Z" fill="url(#tealGrad)"/>
+
+  <!-- Lion Silhouette Cutout inside Shield -->
+  <!-- Crown / Mane Flares -->
+  <path d="M250 130 C280 130 310 145 320 165 C305 168 290 165 280 160 C300 175 315 195 310 220 C298 200 280 195 265 195 C285 215 285 240 270 260 C260 240 250 235 240 235 C250 255 245 280 220 295 C225 275 220 265 210 260 C205 275 190 285 175 280 C185 265 185 250 180 240 C170 245 165 255 165 265 C162 230 180 200 205 180 C195 182 185 188 178 195 C190 170 215 145 250 130 Z" fill="#ffffff"/>
+
+  <!-- Lion Eye Detail -->
+  <circle cx="280" cy="180" r="8" fill="#1b6b68"/>
+  <path d="M272 176 L290 174" stroke="#1b6b68" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Typography: EUROTEX -->
+  <text x="250" y="425" font-family="'Plus Jakarta Sans', 'Inter', sans-serif" font-weight="800" font-size="52" fill="#1b6b68" text-anchor="middle" letter-spacing="4">EUROTEX</text>
+  <text x="250" y="455" font-family="'Playfair Display', Georgia, serif" font-style="italic" font-weight="600" font-size="24" fill="#64748b" text-anchor="middle" letter-spacing="2">Since 1984</text>
+</svg>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <linearGradient id="tealGradIcon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1b6b68"/>
+      <stop offset="100%" stop-color="#114745"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Uzum Style Rounded Square Container Badge -->
+  <rect x="6" y="6" width="188" height="188" rx="42" fill="#ffffff" stroke="#1b6b68" stroke-width="6"/>
+  <rect x="12" y="12" width="176" height="176" rx="36" fill="none" stroke="#e2e8f0" stroke-width="2"/>
+
+  <!-- Shield Shape Background -->
+  <path d="M55 45 H145 V105 C145 145 100 168 100 168 C100 168 55 145 55 105 Z" fill="url(#tealGradIcon)"/>
+
+  <!-- Lion Silhouette Cutout inside Shield -->
+  <path d="M100 55 C115 55 130 62 135 72 C127 74 120 72 115 70 C125 78 132 88 130 100 C124 90 115 88 108 88 C118 98 118 110 110 120 C105 110 100 108 95 108 C100 118 98 130 85 138 C88 128 85 123 80 120 C78 128 70 133 62 130 C67 123 67 115 65 110 C60 112 58 118 58 123 C56 105 65 90 78 80 C73 81 68 84 65 88 C70 75 82 62 100 55 Z" fill="#ffffff"/>
+
+  <!-- Lion Eye Detail -->
+  <circle cx="115" cy="80" r="4" fill="#1b6b68"/>
+</svg>

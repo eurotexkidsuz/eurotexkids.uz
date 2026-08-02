@@ -1,0 +1,22 @@
+{
+  "name": "Eurotexkids.uz — Premial Erkaklar Kiyim-Kechaklari",
+  "short_name": "Eurotex",
+  "description": "O'zbekistondagi yetakchi premial erkaklar kostyum-shimlari va klassik kiyimlar brendi online do'koni.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/images/eurotex-logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/eurotex-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

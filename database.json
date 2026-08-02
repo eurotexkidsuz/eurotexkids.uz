@@ -1,0 +1,586 @@
+[
+  {
+    "_id": "2rtwfi16t",
+    "email": "0600quetry@gmail.com",
+    "code": null,
+    "telegramChatId": null,
+    "resendCount": 0,
+    "failedAttempts": 0,
+    "blockCount": 0,
+    "blockedUntil": null,
+    "rememberToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IjA2MDBxdWV0cnlAZ21haWwuY29tIiwiaWF0IjoxNzg1NTcyMDc3LCJleHAiOjE3ODYxNzY4Nzd9.6yqIWPpUqzFy42QeDd-_e7bkHCjsB5Y7ZNdUec_2Sr4",
+    "telegramLinkToken": null,
+    "telegramLinkTokenExpiry": null,
+    "isGuest": false,
+    "magicToken": "3843ce88b86707093359c99f7df586e4fefffb5f7f75befece1eafe967cc565c",
+    "magicTokenExpiry": "2026-06-23T06:11:24.585Z",
+    "sessions": [
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "createdAt": "2026-07-28T05:57:22.651Z",
+        "lastActive": "2026-07-28T05:57:22.651Z"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "createdAt": "2026-07-28T07:27:51.990Z",
+        "lastActive": "2026-07-28T07:27:51.990Z"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "createdAt": "2026-08-01T08:14:37.064Z",
+        "lastActive": "2026-08-01T08:14:37.064Z"
+      }
+    ],
+    "loginLogs": [
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 149.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 149.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 149.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 149.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "success"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "success"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "success"
+      }
+    ],
+    "createdAt": "2026-06-23T05:33:16.913Z",
+    "updatedAt": "2026-08-01T08:14:37.083Z",
+    "role": "admin"
+  },
+  {
+    "_id": "ottuizo8k",
+    "email": "mehmon_1bf224d7@venom.uz",
+    "code": null,
+    "telegramChatId": null,
+    "resendCount": 0,
+    "failedAttempts": 0,
+    "blockCount": 0,
+    "blockedUntil": null,
+    "rememberToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1laG1vbl8xYmYyMjRkN0B2ZW5vbS51eiIsImlhdCI6MTc4MjkwOTQ4NSwiZXhwIjoxNzgyOTk1ODg1fQ.77nkiwM6aQYDz20ThMGTssudSG7_H3-f0BHFxKW3wiM",
+    "telegramLinkToken": null,
+    "telegramLinkTokenExpiry": null,
+    "isGuest": true,
+    "magicToken": null,
+    "magicTokenExpiry": null,
+    "sessions": [
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 149.0.0.0",
+        "os": "Windows 10",
+        "createdAt": "2026-07-01T12:38:05.195Z",
+        "lastActive": "2026-07-01T12:38:05.195Z"
+      }
+    ],
+    "loginLogs": [
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 149.0.0.0",
+        "os": "Windows 10",
+        "status": "success"
+      }
+    ],
+    "createdAt": "2026-07-01T12:38:05.211Z",
+    "updatedAt": "2026-07-01T12:38:05.408Z"
+  },
+  {
+    "_id": "k8xlyaeso",
+    "email": "aaaaaaaaaaaaaaaaaaaaaaaaa@gmail.ru",
+    "code": "535418",
+    "telegramChatId": null,
+    "resendCount": 0,
+    "failedAttempts": 0,
+    "blockCount": 0,
+    "blockedUntil": null,
+    "rememberToken": null,
+    "telegramLinkToken": null,
+    "telegramLinkTokenExpiry": null,
+    "isGuest": false,
+    "magicToken": null,
+    "magicTokenExpiry": null,
+    "sessions": [],
+    "loginLogs": [],
+    "createdAt": "2026-07-02T08:34:58.917Z",
+    "updatedAt": "2026-07-02T08:34:58.920Z"
+  },
+  {
+    "_id": "k2982ss7d",
+    "email": "ghuirgreureuer4wi093i092890809rueoirueoirue98rueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee@gmail.com",
+    "code": "119521",
+    "telegramChatId": null,
+    "resendCount": 0,
+    "failedAttempts": 0,
+    "blockCount": 0,
+    "blockedUntil": null,
+    "rememberToken": null,
+    "telegramLinkToken": null,
+    "telegramLinkTokenExpiry": null,
+    "isGuest": false,
+    "magicToken": null,
+    "magicTokenExpiry": null,
+    "sessions": [],
+    "loginLogs": [],
+    "createdAt": "2026-07-02T08:35:11.921Z",
+    "updatedAt": "2026-07-02T08:35:11.926Z"
+  },
+  {
+    "_id": "chon15rqv",
+    "email": "1@gmail.com",
+    "code": "911267",
+    "telegramChatId": null,
+    "resendCount": 0,
+    "failedAttempts": 0,
+    "blockCount": 0,
+    "blockedUntil": null,
+    "rememberToken": null,
+    "telegramLinkToken": null,
+    "telegramLinkTokenExpiry": null,
+    "isGuest": false,
+    "magicToken": null,
+    "magicTokenExpiry": null,
+    "sessions": [],
+    "loginLogs": [],
+    "createdAt": "2026-07-02T08:35:18.890Z",
+    "updatedAt": "2026-07-02T08:35:18.891Z"
+  },
+  {
+    "_id": "4v12nt94q",
+    "email": "!!!@gmail.com",
+    "code": "572596",
+    "telegramChatId": null,
+    "resendCount": 0,
+    "failedAttempts": 0,
+    "blockCount": 0,
+    "blockedUntil": null,
+    "rememberToken": null,
+    "telegramLinkToken": null,
+    "telegramLinkTokenExpiry": null,
+    "isGuest": false,
+    "magicToken": null,
+    "magicTokenExpiry": null,
+    "sessions": [],
+    "loginLogs": [],
+    "createdAt": "2026-07-02T08:35:26.541Z",
+    "updatedAt": "2026-07-02T08:35:26.542Z"
+  },
+  {
+    "_id": "qr0lrq2ml",
+    "email": "abdulaziz10102013abdz@gmail.com",
+    "code": "391887",
+    "telegramChatId": null,
+    "resendCount": 1,
+    "failedAttempts": 2,
+    "blockCount": 1,
+    "blockedUntil": "2026-07-28T09:39:56.239Z",
+    "rememberToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFiZHVsYXppejEwMTAyMDEzYWJkekBnbWFpbC5jb20iLCJpYXQiOjE3ODUyMjM0ODMsImV4cCI6MTc4NTgyODI4M30.iuEuxJSZmvyXOtYzo2f1o78cMrtZ3ZDJLMqqdDOYKO8",
+    "telegramLinkToken": null,
+    "telegramLinkTokenExpiry": null,
+    "isGuest": false,
+    "magicToken": null,
+    "magicTokenExpiry": null,
+    "sessions": [
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "createdAt": "2026-07-28T07:24:43.763Z",
+        "lastActive": "2026-07-28T07:24:43.763Z"
+      }
+    ],
+    "loginLogs": [
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "success"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      }
+    ],
+    "createdAt": "2026-07-28T07:22:21.971Z",
+    "updatedAt": "2026-07-28T09:40:48.467Z",
+    "role": "user"
+  },
+  {
+    "_id": "fvfno39xh",
+    "email": "madridprime2017@gmail.com",
+    "code": "922171",
+    "telegramChatId": null,
+    "resendCount": 0,
+    "failedAttempts": 2,
+    "blockCount": 0,
+    "blockedUntil": null,
+    "rememberToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1hZHJpZHByaW1lMjAxN0BnbWFpbC5jb20iLCJpYXQiOjE3ODU0MDA5MDksImV4cCI6MTc4NjAwNTcwOX0.lf8fTPDYhuNISP8C7jJ-793opWjr0COGAqAjdtHz_No",
+    "telegramLinkToken": null,
+    "telegramLinkTokenExpiry": null,
+    "isGuest": false,
+    "magicToken": null,
+    "magicTokenExpiry": null,
+    "sessions": [
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "createdAt": "2026-07-30T08:33:55.216Z",
+        "lastActive": "2026-07-30T08:33:55.216Z"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "createdAt": "2026-07-30T08:41:49.843Z",
+        "lastActive": "2026-07-30T08:41:49.843Z"
+      }
+    ],
+    "loginLogs": [
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "success"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "success"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      },
+      {
+        "ip": "::1",
+        "device": "Desktop",
+        "browser": "Chrome 150.0.0.0",
+        "os": "Windows 10",
+        "status": "failed"
+      }
+    ],
+    "createdAt": "2026-07-30T08:29:38.471Z",
+    "updatedAt": "2026-07-30T08:44:40.485Z",
+    "role": "user"
+  }
+]

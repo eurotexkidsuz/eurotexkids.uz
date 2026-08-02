@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="uz" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profil — Eurotexkids.uz</title>
+    <script>
+      // Redirect legacy profile page to main Eurotex Single-Page Application
+      const urlParams = new URLSearchParams(window.location.search);
+      const email = urlParams.get("email");
+      const token = urlParams.get("googleToken");
+      let target = "/";
+      if (email) {
+        target += "?email=" + encodeURIComponent(email);
+        if (token) target += "&googleToken=" + encodeURIComponent(token);
+      }
+      window.location.replace(target);
+    </script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="profile.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='25' fill='%237000ff'/%3E%3Ctext x='50%25' y='68%25' font-size='60' font-weight='bold' fill='white' text-anchor='middle' font-family='sans-serif'%3EV%3C/text%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <div class="top-controls">
+      <!-- Color Theme Selector -->
+      <div class="theme-colors" id="themeColors">
+        <button
+          type="button"
+          class="color-dot active"
+          data-color="purple"
+          style="background: #7000ff"
+          title="Binafsha"
+        ></button>
+        <button
+          type="button"
+          class="color-dot"
+          data-color="blue"
+          style="background: #2563eb"
+          title="Ko'k"
+        ></button>
+        <button
+          type="button"
+          class="color-dot"
+          data-color="green"
+          style="background: #10b981"
+          title="Yashil"
+        ></button>
+        <button
+          type="button"
+          class="color-dot"
+          data-color="orange"
+          style="background: #f97316"
+          title="To'q sariq"
+        ></button>
+        <button
+          type="button"
+          class="color-dot"
+          data-color="cyan"
+          style="background: #06b6d4"
+          title="Havorang"
+        ></button>
+      </div>
+      <!-- QR Scanner Icon -->
+      <button
+        type="button"
+        class="theme-toggle"
+        id="qrScanBtn"
+        title="QR kodni skanerlash"
+      >
+        📷
+      </button>
+      <!-- Theme toggle -->
+      <button
+        class="theme-toggle"
+        id="themeToggle"
+        title="Mavzuni o'zgartirish"
+      >
+        🌙
+      </button>
+    </div>
+
+    <div class="profile-container">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="logo">
+          <div class="logo-icon">V</div>
+          <span class="logo-text">venom<b>.uz</b></span>
+        </div>
+        <nav class="nav">
+          <button class="nav-item active" data-tab="overview">🏠 Asosiy</button>
+          <button class="nav-item" data-tab="sessions">
+            💻 Faol qurilmalar
+          </button>
+          <button class="nav-item" data-tab="logs">📋 Kirish tarixi</button>
+          <button class="nav-item" data-tab="security">🔐 Xavfsizlik</button>
+        </nav>
+        <button class="logout-btn" id="btnLogout">↩️ Chiqish</button>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Loading -->
+        <div id="profileLoading" class="loading-state">
+          <div class="loader"></div>
+          <p>Yuklanmoqda...</p>
+        </div>
+
+        <!-- Guest Banner -->
+        <div id="guestBanner" class="guest-banner" style="display: none">
+          <div class="guest-banner-icon">👤</div>
+          <div class="guest-banner-text">
+            <h3>Siz mehmon rejimidasiz</h3>
+            <p>
+              Ma'lumotlaringiz saqlanib qolmaydi. To'liq imkoniyatlardan
+              foydalanish uchun ro'yxatdan o'ting yoki tizimga kiring.
+            </p>
+            <div class="guest-banner-actions">
+              <button class="guest-btn-register" id="guestRegisterBtn">
+                ✉️ Email orqali kirish
+              </button>
+              <button class="guest-btn-google" id="guestGoogleBtn">
+                <img
+                  src="https://img.icons8.com/color/16/000000/google-logo.png"
+                  alt="G"
+                />
+                Google orqali kirish
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="tab-overview" class="tab-content" style="display: none">
+          <h2 class="tab-title">Profil</h2>
+
+          <!-- Feature 12: IP Location Map — tepada -->
+          <div class="ip-location-card" id="ipLocationCard">
+            <div class="ip-location-header">
+              <span style="font-size: 1.3rem">🌍</span>
+              <h3>Oxirgi kirish joyi</h3>
+            </div>
+            <div class="ip-info-row" id="ipInfoRow">
+              <span class="ip-badge" id="ipBadge">⏳ Aniqlanmoqda...</span>
+              <span class="ip-badge" id="ipCountryBadge"></span>
+              <span class="ip-badge" id="ipCityBadge"></span>
+              <span class="ip-badge" id="ipIspBadge"></span>
+            </div>
+            <div id="ipLeafletMap"></div>
+          </div>
+
+          <div class="profile-card">
+            <div class="avatar" id="avatarEl">?</div>
+            <div class="profile-info">
+              <h3 id="profileEmail">—</h3>
+              <p id="profileJoined" class="muted">Ro'yxatdan o'tgan: —</p>
+              <div id="tgStatus" class="badge badge-gray">
+                Telegram ulanmagan
+              </div>
+            </div>
+          </div>
+
+          <div class="stats-row">
+            <div class="stat-card">
+              <div class="stat-num" id="statSessions">—</div>
+              <div class="stat-label">Faol sessiyalar</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num" id="statLogs">—</div>
+              <div class="stat-label">Kirish soni</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sessions Tab -->
+        <div id="tab-sessions" class="tab-content" style="display: none">
+          <h2 class="tab-title">💻 Faol qurilmalar</h2>
+          <p class="tab-desc muted">
+            Sizning akkauntingizga ulangan qurilmalar
+          </p>
+          <div id="sessionsList" class="list"></div>
+        </div>
+
+        <!-- Logs Tab -->
+        <div id="tab-logs" class="tab-content" style="display: none">
+          <h2 class="tab-title">📋 Kirish tarixi</h2>
+          <p class="tab-desc muted">So'nggi 10 ta kirish</p>
+          <div id="logsList" class="list"></div>
+        </div>
+
+        <!-- Security Tab -->
+        <div id="tab-security" class="tab-content" style="display: none">
+          <h2 class="tab-title">🔐 Xavfsizlik</h2>
+
+          <div class="security-card" id="telegramSecurityCard">
+            <div class="security-row">
+              <div>
+                <strong>Telegram</strong>
+                <p class="muted" id="tgSecurityStatus">
+                  Ulanmagan — kod emailga ketadi
+                </p>
+              </div>
+              <button class="btn btn-primary small-btn" id="btnLinkTgProfile">
+                Ulash
+              </button>
+            </div>
+          </div>
+
+          <div class="security-card danger-card">
+            <div class="security-row">
+              <div>
+                <strong>Barcha sessiyalarni tugatish</strong>
+                <p class="muted">Barcha qurilmalardan chiqib ketadi</p>
+              </div>
+              <button class="btn danger-btn small-btn" id="btnLogoutAll">
+                Chiqish
+              </button>
+            </div>
+          </div>
+
+          <div class="security-card danger-card">
+            <div class="security-row">
+              <div>
+                <strong>Hisobni o'chirish</strong>
+                <p class="muted">
+                  Barcha ma'lumotlar o'chiriladi, qayta tiklab bo'lmaydi
+                </p>
+              </div>
+              <button class="btn danger-btn small-btn" id="btnDeleteAccount">
+                O'chirish
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Feature 5: Session Expiry Warning Modal -->
+    <div id="sessionWarningOverlay" class="session-warning-overlay hidden">
+      <div class="session-warning-box">
+        <div class="warn-icon">⏰</div>
+        <h3>Sessiya muddati tugayapti!</h3>
+        <p>
+          Siz <strong id="warnCountdown">60</strong> soniyada tizimdan
+          chiqarilasiz.
+        </p>
+        <div class="session-warning-actions">
+          <button class="btn btn-primary" id="btnStayLoggedIn">
+            ✅ Qolish
+          </button>
+          <button class="btn btn-guest" id="btnLeaveNow">↩️ Chiqish</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Account Deletion Confirmation Modal -->
+    <div id="deleteAccountOverlay" class="session-warning-overlay hidden">
+      <div class="session-warning-box">
+        <div class="warn-icon">⚠️</div>
+        <h3>Hisobni o'chirishni tasdiqlang</h3>
+        <p>
+          Barcha ma'lumotlaringiz o'chiriladi va qayta tiklab bo'lmaydi.
+          Haqiqatan ham o'chirmoqchimisiz?
+        </p>
+        <div class="session-warning-actions">
+          <button class="btn btn-primary" id="btnConfirmDeleteAccount">
+            ✅ Ha, o'chirish
+          </button>
+          <button class="btn btn-guest" id="btnCancelDeleteAccount">
+            ❌ Bekor qilish
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Native Camera QR Capture input -->
+    <input
+      type="file"
+      id="qrFileInput"
+      accept="image/*"
+      capture="environment"
+      style="display: none"
+    />
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="profile.js?v=1.2.0"></script>
+  </body>
+</html>
