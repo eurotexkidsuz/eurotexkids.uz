@@ -4234,10 +4234,13 @@ async function syncProductsWithBackendAndStorage(isIntervalSync = false) {
         }));
 
         const map = new Map();
-        // 1. Add local custom products first
-        EUROTEX_PRODUCTS.forEach((p) => map.set(String(p.id), p));
-        // 2. DB products OVERRIDE local items so fresh covers & products from DB always win!
+        // 1. Add DB products first
         dbProds.forEach((p) => map.set(String(p.id), p));
+        // 2. Overlay local EUROTEX_PRODUCTS on top so user edits in EurotexIDB always win & persist on refresh!
+        EUROTEX_PRODUCTS.forEach((p) => {
+          const dbItem = map.get(String(p.id)) || {};
+          map.set(String(p.id), { ...dbItem, ...p });
+        });
 
         EUROTEX_PRODUCTS = Array.from(map.values());
         EurotexIDB.set("eurotex_custom_products", EUROTEX_PRODUCTS);
