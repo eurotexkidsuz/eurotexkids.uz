@@ -63,6 +63,7 @@ router.get("/", async (req, res) => {
 // Add new product
 router.post("/", async (req, res) => {
   try {
+    await ensureDbConnected();
     const pData = req.body;
     if (!pData.customId) pData.customId = pData.id || "prod_" + Date.now();
     if (!pData.id) pData.id = pData.customId;
@@ -79,14 +80,12 @@ router.post("/", async (req, res) => {
     }
     writeLocalProducts(fileProds);
 
-    // Save to MongoDB if connected using upsert
-    if (mongoose.connection.readyState === 1) {
-      await Product.findOneAndUpdate(
-        { customId: String(pData.customId) },
-        { $set: pData },
-        { upsert: true, new: true },
-      );
-    }
+    // Save to MongoDB
+    await Product.findOneAndUpdate(
+      { customId: String(pData.customId) },
+      { $set: pData },
+      { upsert: true, new: true },
+    );
 
     return res.json({ success: true, product: pData });
   } catch (err) {
@@ -98,6 +97,7 @@ router.post("/", async (req, res) => {
 // Update product
 router.put("/:id", async (req, res) => {
   try {
+    await ensureDbConnected();
     const id = req.params.id;
     const pData = req.body;
 
@@ -111,19 +111,17 @@ router.put("/:id", async (req, res) => {
       writeLocalProducts(fileProds);
     }
 
-    if (mongoose.connection.readyState === 1) {
-      await Product.findOneAndUpdate(
-        {
-          $or: [
-            { customId: id },
-            { id: id },
-            { _id: mongoose.isValidObjectId(id) ? id : null },
-          ],
-        },
-        { $set: pData },
-        { new: true },
-      );
-    }
+    await Product.findOneAndUpdate(
+      {
+        $or: [
+          { customId: id },
+          { id: id },
+          { _id: mongoose.isValidObjectId(id) ? id : null },
+        ],
+      },
+      { $set: pData },
+      { new: true },
+    );
 
     return res.json({ success: true });
   } catch (err) {
@@ -134,6 +132,7 @@ router.put("/:id", async (req, res) => {
 // Delete product
 router.delete("/:id", async (req, res) => {
   try {
+    await ensureDbConnected();
     const id = req.params.id;
     const fileProds = readLocalProducts();
     const filtered = fileProds.filter(
@@ -141,15 +140,13 @@ router.delete("/:id", async (req, res) => {
     );
     writeLocalProducts(filtered);
 
-    if (mongoose.connection.readyState === 1) {
-      await Product.deleteOne({
-        $or: [
-          { customId: id },
-          { id: id },
-          { _id: mongoose.isValidObjectId(id) ? id : null },
-        ],
-      });
-    }
+    await Product.deleteOne({
+      $or: [
+        { customId: id },
+        { id: id },
+        { _id: mongoose.isValidObjectId(id) ? id : null },
+      ],
+    });
 
     return res.json({ success: true, message: "Product deleted" });
   } catch (err) {
