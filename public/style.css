@@ -6234,3 +6234,102 @@ html, body {
         font-size: 14px !important;
     }
 }
+
+/* 🌐 MASTER 100% RESPONSIVE & MOBILE MEDIA ENGINE (100% / 100% Zero Overflow) */
+html, body {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box !important;
+}
+
+@media (max-width: 992px) {
+    .header-inner {
+        padding: 8px 12px !important;
+    }
+    
+    .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+        gap: 12px !important;
+    }
+    
+    .admin-stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+    
+    .admin-stats-grid {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+    
+    .modal-overlay {
+        padding: 8px !important;
+    }
+    
+    .modal-dialog {
+        width: 96% !important;
+        max-width: 100vw !important;
+        margin: auto !important;
+        max-height: 94vh !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        border-radius: 18px !important;
+    }
+
+    .apm-modal-dialog {
+        padding: 16px 12px !important;
+    }
+    
+    .qv-modal-dialog {
+        padding: 16px 12px !important;
+    }
+
+    .apm-preview-grid {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)) !important;
+        gap: 8px !important;
+    }
+    
+    .apm-preview-thumb-slot, .apm-add-more-slot {
+        height: 95px !important;
+    }
+}
+
+@media (max-width: 400px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+    }
+
+    .modal-dialog {
+        width: 98% !important;
+        padding: 12px 8px !important;
+        border-radius: 16px !important;
+    }
+
+    .qv-title {
+        font-size: 16px !important;
+    }
+
+    .current-price {
+        font-size: 18px !important;
+    }
+
+    .old-price {
+        font-size: 12px !important;
+    }
+
+    .apm-size-chip {
+        font-size: 12px !important;
+        padding: 6px 10px !important;
+    }
+}
