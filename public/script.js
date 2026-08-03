@@ -4346,16 +4346,8 @@ function resetAddProductForm() {
   const form = document.getElementById("addProductForm");
   if (form) form.reset();
 
-  // Reset image picker
-  const picker = document.getElementById("newProdImagePicker");
-  if (picker) delete picker.dataset.base64;
-  const preview = document.getElementById("newProdImagePreview");
-  if (preview) {
-    preview.src = "";
-    preview.style.display = "none";
-  }
-  const placeholder = document.getElementById("newProdImagePlaceholder");
-  if (placeholder) placeholder.style.display = "flex";
+  window._prodImagesArr = [];
+  renderProdImagePreviews();
 
   // Uncheck ALL checkboxes in size grid automatically!
   document
@@ -4432,45 +4424,125 @@ function deleteCustomSize() {
 }
 
 // Preview up to 5 images selected for new product
+window._prodImagesArr = [];
+
+function renderProdImagePreviews() {
+  const picker = document.getElementById("newProdImagePicker");
+  const container = document.getElementById("newProdImagePreviewGrid");
+  const placeholder = document.getElementById("newProdImagePlaceholder");
+  const images = window._prodImagesArr || [];
+
+  if (picker) {
+    picker.dataset.images = JSON.stringify(images);
+    picker.dataset.base64 = images[0] || "";
+  }
+
+  if (images.length === 0) {
+    if (placeholder) placeholder.style.display = "flex";
+    if (container) {
+      container.style.display = "none";
+      container.innerHTML = "";
+    }
+    return;
+  }
+
+  if (placeholder) placeholder.style.display = "none";
+  if (container) {
+    container.style.display = "grid";
+    let html = images
+      .map(
+        (src, i) => `
+          <div class="apm-preview-thumb-slot ${i === 0 ? "main-cover" : ""}" onclick="event.stopPropagation(); setPrimaryProdImage(${i})">
+              <img src="${src}" alt="preview-${i}">
+              ${i === 0 ? '<span class="slot-badge">⭐️ Asosiy</span>' : ''}
+              <div class="thumb-controls">
+                  <button type="button" class="btn-thumb-action star ${i === 0 ? "active" : ""}" title="Asosiy rasm qilish" onclick="event.stopPropagation(); setPrimaryProdImage(${i})">⭐️</button>
+                  <button type="button" class="btn-thumb-action replace" title="Rasmni almashtirish" onclick="event.stopPropagation(); replaceSingleProdImage(${i})">🔄</button>
+                  <button type="button" class="btn-thumb-action delete" title="Rasmni o'chirish" onclick="event.stopPropagation(); deleteSingleProdImage(${i})">🗑️</button>
+              </div>
+          </div>
+      `,
+      )
+      .join("");
+
+    if (images.length < 5) {
+      html += `
+        <div class="apm-add-more-slot" onclick="event.stopPropagation(); document.getElementById('newProdImageFile').click()">
+            <span style="font-size:22px;">➕</span>
+            <span>Yana rasm</span>
+        </div>
+      `;
+    }
+
+    container.innerHTML = html;
+  }
+}
+
+function setPrimaryProdImage(idx) {
+  if (!window._prodImagesArr || window._prodImagesArr.length <= idx) return;
+  if (idx === 0) return;
+  const chosen = window._prodImagesArr.splice(idx, 1)[0];
+  window._prodImagesArr.unshift(chosen);
+  renderProdImagePreviews();
+  showToast("⭐️ Asosiy muqova rasmi tanlandi! ✅");
+}
+
+function deleteSingleProdImage(idx) {
+  if (!window._prodImagesArr || window._prodImagesArr.length <= idx) return;
+  window._prodImagesArr.splice(idx, 1);
+  renderProdImagePreviews();
+  showToast("🗑️ Rasm o'chirildi!");
+}
+
+function replaceSingleProdImage(idx) {
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = "image/*";
+  fileInput.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      const compressed = await compressBase64Image(evt.target.result, 800, 0.75);
+      if (window._prodImagesArr) {
+        window._prodImagesArr[idx] = compressed;
+        renderProdImagePreviews();
+        showToast("🔄 Rasm almashtirildi! ✅");
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+  fileInput.click();
+}
+
 function previewNewProductImages(event) {
-  const files = Array.from(event.target.files).slice(0, 5); // Take max 5 files
+  const files = Array.from(event.target.files);
   if (files.length === 0) return;
 
-  const base64List = [];
-  let loadedCount = 0;
+  const currentCount = window._prodImagesArr ? window._prodImagesArr.length : 0;
+  const remainingSlots = 5 - currentCount;
+  if (remainingSlots <= 0) {
+    showToast("⚠️ Maksimal 5 ta rasm joylash mumkin!");
+    return;
+  }
 
-  files.forEach((file, index) => {
+  const filesToProcess = files.slice(0, remainingSlots);
+  let loadedCount = 0;
+  const newBase64List = [];
+
+  filesToProcess.forEach((file, index) => {
     const reader = new FileReader();
     reader.onload = async function (e) {
       const rawBase64 = e.target.result;
       const compressed = await compressBase64Image(rawBase64, 800, 0.75);
-      base64List[index] = compressed;
+      newBase64List[index] = compressed;
       loadedCount++;
-      if (loadedCount === files.length) {
-        const picker = document.getElementById("newProdImagePicker");
-        const container = document.getElementById("newProdImagePreviewGrid");
-        const placeholder = document.getElementById("newProdImagePlaceholder");
-
-        if (picker) {
-          picker.dataset.images = JSON.stringify(base64List);
-          picker.dataset.base64 = base64List[0];
-        }
-
-        if (placeholder) placeholder.style.display = "none";
-        if (container) {
-          container.style.display = "grid";
-          container.innerHTML = base64List
-            .map(
-              (src, i) => `
-                        <div class="apm-preview-thumb-slot ${i === 0 ? "main" : ""}">
-                            <img src="${src}" alt="preview-${i}">
-                            <span class="slot-badge">${i === 0 ? "Asosiy" : i + 1}</span>
-                        </div>
-                    `,
-            )
-            .join("");
-        }
-        showToast(`✅ ${files.length} ta rasm tayyorlandi va siqildi! 📸`);
+      if (loadedCount === filesToProcess.length) {
+        if (!window._prodImagesArr) window._prodImagesArr = [];
+        window._prodImagesArr.push(...newBase64List);
+        window._prodImagesArr = window._prodImagesArr.slice(0, 5);
+        renderProdImagePreviews();
+        showToast(`✅ ${filesToProcess.length} ta rasm tayyorlandi! 📸`);
       }
     };
     reader.readAsDataURL(file);
