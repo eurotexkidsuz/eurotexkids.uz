@@ -1135,21 +1135,25 @@ function renderProducts() {
     return;
   }
 
-  grid.innerHTML = filtered
-    .map((product) => {
-      const isWishlisted = state.wishlist.some((w) => w.id === product.id);
-      const title = product[`title_${lang}`] || product.title_uz;
-      const badgeText = product[`badge_${lang}`] || product.badge_uz;
-      const formattedPrice = formatMoney(product.price);
-      const formattedOldPrice = product.oldPrice
-        ? formatMoney(product.oldPrice)
-        : "";
-      const monthlyInstallment = formatMoney(product.nasiyaMonthly);
+  const displayLimit = state.displayLimit || 24;
+  const visibleItems = filtered.slice(0, displayLimit);
 
-      const unitPriceStr = product.unitPrice
-        ? ` ($${product.unitPrice}/ta)`
-        : "";
-      return `
+  grid.innerHTML =
+    visibleItems
+      .map((product) => {
+        const isWishlisted = state.wishlist.some((w) => w.id === product.id);
+        const title = product[`title_${lang}`] || product.title_uz;
+        const badgeText = product[`badge_${lang}`] || product.badge_uz;
+        const formattedPrice = formatMoney(product.price);
+        const formattedOldPrice = product.oldPrice
+          ? formatMoney(product.oldPrice)
+          : "";
+        const monthlyInstallment = formatMoney(product.nasiyaMonthly);
+
+        const unitPriceStr = product.unitPrice
+          ? ` ($${product.unitPrice}/ta)`
+          : "";
+        return `
             <div class="product-card" data-id="${product.id}">
                 <div class="card-image-wrap" onclick="openQuickView('${product.id}')">
                     <img src="${product.image}" alt="${title}" loading="lazy">
@@ -1184,8 +1188,25 @@ function renderProducts() {
                 </div>
             </div>
         `;
-    })
-    .join("");
+      })
+      .join("") +
+    (filtered.length > visibleItems.length
+      ? `<div style="grid-column: 1/-1; text-align: center; padding: 28px 0;">
+           <button type="button" class="btn btn-primary btn-large" onclick="loadMoreProducts()" style="padding: 14px 36px; border-radius: 12px; font-weight: 800; font-size: 15px; background: linear-gradient(135deg, #7000ff, #4c00b0); color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(112, 0, 255, 0.3);">
+             🚀 Yana ${filtered.length - visibleItems.length} ta mahsulotni ko'rsatish
+           </button>
+         </div>`
+      : "");
+}
+
+function loadMoreProducts() {
+  state.displayLimit = (state.displayLimit || 24) + 24;
+  renderProducts();
+}
+
+function loadMoreAdminProducts() {
+  state.adminDisplayLimit = (state.adminDisplayLimit || 30) + 30;
+  renderAdminProducts();
 }
 
 // Reset Filters
@@ -3891,10 +3912,13 @@ function renderAdminProducts() {
 
   const rate = state.usdRate || 12650;
 
+  const adminLimit = state.adminDisplayLimit || 30;
+  const visibleAdmin = EUROTEX_PRODUCTS.slice(0, adminLimit);
+
   container.innerHTML = `
         <!-- Admin Product Cards Grid (Screenshot 2 Design System) -->
         <div class="admin-products-cards-grid">
-            ${EUROTEX_PRODUCTS.map((p, idx) => {
+            ${visibleAdmin.map((p, idx) => {
               const pachkaUsd = p.pachkaPriceUsd || p.priceUsd || 50;
               const uzs = Math.round(pachkaUsd * rate);
               const totalSomFormatted = uzs
@@ -3957,6 +3981,15 @@ function renderAdminProducts() {
                 `;
             }).join("")}
         </div>
+        ${
+          EUROTEX_PRODUCTS.length > visibleAdmin.length
+            ? `<div style="text-align: center; padding: 24px 0;">
+                 <button type="button" class="btn btn-primary btn-large" onclick="loadMoreAdminProducts()" style="padding: 12px 28px; border-radius: 10px; font-weight: 800; font-size: 14px; background: linear-gradient(135deg, #7000ff, #4c00b0); color: #fff; border: none; cursor: pointer;">
+                   👑 Yana ${EUROTEX_PRODUCTS.length - visibleAdmin.length} ta admin mahsulotini ko'rsatish
+                 </button>
+               </div>`
+            : ""
+        }
     `;
 }
 
