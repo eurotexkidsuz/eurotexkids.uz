@@ -4484,11 +4484,17 @@ function renderProdImagePreviews() {
 
 function setPrimaryProdImage(idx) {
   if (!window._prodImagesArr || window._prodImagesArr.length <= idx) return;
-  if (idx === 0) return;
-  const chosen = window._prodImagesArr.splice(idx, 1)[0];
-  window._prodImagesArr.unshift(chosen);
+  if (idx !== 0) {
+    const chosen = window._prodImagesArr.splice(idx, 1)[0];
+    window._prodImagesArr.unshift(chosen);
+  }
+  const picker = document.getElementById("newProdImagePicker");
+  if (picker) {
+    picker.dataset.images = JSON.stringify(window._prodImagesArr);
+    picker.dataset.base64 = window._prodImagesArr[0] || "";
+  }
   renderProdImagePreviews();
-  showToast("⭐️ Asosiy muqova rasmi tanlandi! ✅");
+  showToast("⭐️ Asosiy muqova rasmi almashtirildi! ✅");
 }
 
 function deleteSingleProdImage(idx) {
@@ -4718,6 +4724,7 @@ function updateTurkumiOptions() {
 
 function handleAddNewProduct(e) {
   e.preventDefault();
+  const picker = document.getElementById("newProdImagePicker");
   const title = document.getElementById("newProdTitleUz").value.trim();
   const category = document.getElementById("newProdCategory").value;
   const pachkaPriceUsd =
@@ -4732,7 +4739,7 @@ function handleAddNewProduct(e) {
   } else if (picker && picker.dataset.images) {
     try {
       imagesArr = JSON.parse(picker.dataset.images);
-    } catch (e) {}
+    } catch (err) {}
   }
   if (imagesArr.length === 0 && picker && picker.dataset.base64) {
     imagesArr = [picker.dataset.base64];

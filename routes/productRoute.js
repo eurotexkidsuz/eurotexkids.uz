@@ -27,9 +27,18 @@ function writeLocalProducts(products) {
   }
 }
 
+async function ensureDbConnected() {
+  if (mongoose.connection.readyState !== 1) {
+    try {
+      await mongoose.connect(process.env.MONGO_URL, { serverSelectionTimeoutMS: 5000 });
+    } catch (e) {}
+  }
+}
+
 // Get all products (merged from MongoDB and local file)
 router.get("/", async (req, res) => {
   try {
+    await ensureDbConnected();
     let dbProds = [];
     if (mongoose.connection.readyState === 1) {
       dbProds = await Product.find().sort({ createdAt: -1 });
