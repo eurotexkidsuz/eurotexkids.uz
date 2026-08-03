@@ -14,9 +14,13 @@ app.use(cors());
 app.use(express.static("public"));
 
 // Database
+const MONGO_URI =
+  process.env.MONGO_URL ||
+  "mongodb+srv://eurotexkids7775_db_user:yro1XElCJariRjzw@eurotexkidsuz.ntrgl4x.mongodb.net/?appName=Eurotexkidsuz";
+
 async function connectToDB() {
   try {
-    await connect(process.env.MONGO_URL, { serverSelectionTimeoutMS: 5000 });
+    await connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 });
     console.log("✅ MongoDB ulandi!");
   } catch (error) {
     console.error("❌ MongoDB xatosi:", error.message);
