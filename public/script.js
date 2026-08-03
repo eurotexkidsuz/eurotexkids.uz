@@ -843,6 +843,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   initTheme();
   initPWA();
   closeAllModals();
+  checkGoogleAuthRedirect();
+  updateUserAuthUI();
+  handleURLRouting();
   await syncProductsWithBackendAndStorage(false);
   // Auto-sync new products from MongoDB every 5 seconds for all users!
   setInterval(() => syncProductsWithBackendAndStorage(true), 5000);
@@ -852,9 +855,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   initCarousel();
   loadCustomHeroSlides();
   initSlideLiveSync();
-  checkGoogleAuthRedirect();
-  updateUserAuthUI();
-  handleURLRouting();
   initAutoGooglePrompt();
 });
 
