@@ -4088,25 +4088,73 @@ function compressBase64Image(dataUrl, maxWidth = 800, quality = 0.75) {
   });
 }
 
+const EurotexIDB = {
+  dbName: "EurotexDB",
+  storeName: "products",
+  db: null,
+  async init() {
+    if (this.db) return this.db;
+    return new Promise((resolve) => {
+      try {
+        const req = indexedDB.open(this.dbName, 1);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(this.storeName)) {
+            db.createObjectStore(this.storeName);
+          }
+        };
+        req.onsuccess = (e) => {
+          this.db = e.target.result;
+          resolve(this.db);
+        };
+        req.onerror = () => resolve(null);
+      } catch (err) {
+        resolve(null);
+      }
+    });
+  },
+  async set(key, val) {
+    const db = await this.init();
+    if (!db) return;
+    return new Promise((resolve) => {
+      try {
+        const tx = db.transaction(this.storeName, "readwrite");
+        const store = tx.objectStore(this.storeName);
+        store.put(val, key);
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => resolve(false);
+      } catch (err) {
+        resolve(false);
+      }
+    });
+  },
+  async get(key) {
+    const db = await this.init();
+    if (!db) return null;
+    return new Promise((resolve) => {
+      try {
+        const tx = db.transaction(this.storeName, "readonly");
+        const store = tx.objectStore(this.storeName);
+        const req = store.get(key);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => resolve(null);
+      } catch (err) {
+        resolve(null);
+      }
+    });
+  },
+};
+
 function notifyProductChange() {
   EUROTEX_PRODUCTS = getCombinedProducts();
+  EurotexIDB.set("eurotex_custom_products", EUROTEX_PRODUCTS);
   try {
     localStorage.setItem(
       "eurotex_custom_products",
       JSON.stringify(EUROTEX_PRODUCTS),
     );
   } catch (e) {
-    console.warn("⚠️ LocalStorage quota exceed safely handled:", e);
-    try {
-      const lightProducts = EUROTEX_PRODUCTS.slice(0, 30).map((p) => ({
-        ...p,
-        images: (p.images || []).slice(0, 2),
-      }));
-      localStorage.setItem(
-        "eurotex_custom_products",
-        JSON.stringify(lightProducts),
-      );
-    } catch (err) {}
+    console.warn("⚠️ LocalStorage to'ldi, IndexedDB (Cheksiz hotira) ishlatilmoqda:", e);
   }
   if (productSyncChannel) {
     productSyncChannel.postMessage({
