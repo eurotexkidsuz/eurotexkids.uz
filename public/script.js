@@ -1031,40 +1031,17 @@ function getRotatingHomeProducts() {
   if (!EUROTEX_PRODUCTS || EUROTEX_PRODUCTS.length === 0) return [];
 
   // Custom/Newly added admin products: detect by isCustom flag OR id starting with 'prod-'
-  const adminOrCustomProds = EUROTEX_PRODUCTS.filter(
+  const customProds = EUROTEX_PRODUCTS.filter(
     (p) =>
       p.isCustom === true ||
       String(p.id).startsWith("prod-") ||
-      (p.dbId && p.dbId.length > 0), // synced from MongoDB
+      (p.dbId && String(p.dbId).length > 0),
   );
   const standardProds = EUROTEX_PRODUCTS.filter(
-    (p) => !adminOrCustomProds.includes(p),
+    (p) => !customProds.includes(p),
   );
 
-  const total = standardProds.length;
-  if (total === 0) return [...EUROTEX_PRODUCTS];
-  if (total + adminOrCustomProds.length <= 20) return [...EUROTEX_PRODUCTS];
-
-  // Current 2-hour seed (rotates every 2 hours = 7,200,000 ms)
-  const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
-  const timeBlock = Math.floor(Date.now() / TWO_HOURS_MS);
-
-  // Simple PRNG from timeBlock
-  let seed = (timeBlock * 9301 + 49297) % 233280;
-  function rnd() {
-    seed = (seed * 9301 + 49297) % 233280;
-    return seed / 233280;
-  }
-
-  const indices = Array.from({ length: total }, (_, i) => i);
-  for (let i = total - 1; i > 0; i--) {
-    const j = Math.floor(rnd() * (i + 1));
-    [indices[i], indices[j]] = [indices[j], indices[i]];
-  }
-
-  const shuffledStandard = indices.map((idx) => standardProds[idx]);
-  const combined = [...adminOrCustomProds, ...shuffledStandard];
-  return combined.slice(0, 20);
+  return [...customProds, ...standardProds];
 }
 
 // Render Products Grid
@@ -1479,25 +1456,6 @@ function renderSearchSuggestions(query) {
   }
 
   const lang = state.currentLang;
-
-  // Re-sync local storage products to guarantee instant search for newly added products
-  const stored = localStorage.getItem("eurotex_custom_products");
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        const enriched = parsed.map((p) => ({
-          ...p,
-          isCustom: p.isCustom === true || String(p.id).startsWith("prod-"),
-        }));
-        const storedIds = new Set(enriched.map((p) => p.id));
-        const missingDefaults = EUROTEX_PRODUCTS.filter(
-          (p) => !storedIds.has(p.id),
-        );
-        EUROTEX_PRODUCTS = [...enriched, ...missingDefaults];
-      }
-    } catch (e) {}
-  }
 
   // Filter matching products (up to 5)
   const matches = EUROTEX_PRODUCTS.filter((item) => {
@@ -4165,10 +4123,12 @@ const EurotexIDB = {
 };
 
 function notifyProductChange() {
-  EUROTEX_PRODUCTS = getCombinedProducts();
   EurotexIDB.set("eurotex_custom_products", EUROTEX_PRODUCTS);
   try {
-    localStorage.removeItem("eurotex_custom_products");
+    localStorage.setItem(
+      "eurotex_custom_products",
+      JSON.stringify(EUROTEX_PRODUCTS),
+    );
   } catch (e) {}
   if (productSyncChannel) {
     productSyncChannel.postMessage({
