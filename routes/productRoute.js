@@ -107,29 +107,28 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     await ensureDbConnected();
-    const id = req.params.id;
+    const id = String(req.params.id);
     const pData = req.body;
 
     // Update local file
     const fileProds = readLocalProducts();
     const existingIdx = fileProds.findIndex(
-      (p) => String(p.id || p.customId) === String(id),
+      (p) => String(p.id || p.customId) === id,
     );
     if (existingIdx >= 0) {
       fileProds[existingIdx] = { ...fileProds[existingIdx], ...pData };
       writeLocalProducts(fileProds);
     }
 
+    const queryConditions = [{ customId: id }, { id: id }];
+    if (mongoose.isValidObjectId(id)) {
+      queryConditions.push({ _id: id });
+    }
+
     await Product.findOneAndUpdate(
-      {
-        $or: [
-          { customId: id },
-          { id: id },
-          { _id: mongoose.isValidObjectId(id) ? id : null },
-        ],
-      },
+      { $or: queryConditions },
       { $set: pData },
-      { new: true },
+      { upsert: true, new: true },
     );
 
     return res.json({ success: true });
@@ -142,20 +141,19 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     await ensureDbConnected();
-    const id = req.params.id;
+    const id = String(req.params.id);
     const fileProds = readLocalProducts();
     const filtered = fileProds.filter(
-      (p) => String(p.id || p.customId) !== String(id),
+      (p) => String(p.id || p.customId) !== id,
     );
     writeLocalProducts(filtered);
 
-    await Product.deleteOne({
-      $or: [
-        { customId: id },
-        { id: id },
-        { _id: mongoose.isValidObjectId(id) ? id : null },
-      ],
-    });
+    const queryConditions = [{ customId: id }, { id: id }];
+    if (mongoose.isValidObjectId(id)) {
+      queryConditions.push({ _id: id });
+    }
+
+    await Product.deleteOne({ $or: queryConditions });
 
     return res.json({ success: true, message: "Product deleted" });
   } catch (err) {

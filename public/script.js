@@ -4294,12 +4294,14 @@ function saveProductPriceByAdmin(index) {
   EUROTEX_PRODUCTS[index].priceUsd = newPachkaUsd;
   EUROTEX_PRODUCTS[index].price = newPachkaUsd * (state.usdRate || 12650);
 
-  notifyProductChange();
+  EurotexIDB.set("eurotex_custom_products", EUROTEX_PRODUCTS);
+  try {
+    localStorage.removeItem("eurotex_custom_products");
+  } catch (err) {}
+
   renderProducts();
   renderAdminProducts();
-  showToast(
-    `Mahsulot #${EUROTEX_PRODUCTS[index].id} ma'lumotlari saqlandi va saytda yangilandi! 💾`,
-  );
+  showToast(`Mahsulot "${newTitle}" ma'lumotlari saqlandi! 💾`);
 
   // Sync PUT with backend
   const targetId = EUROTEX_PRODUCTS[index].id || EUROTEX_PRODUCTS[index].dbId;
@@ -4308,6 +4310,7 @@ function saveProductPriceByAdmin(index) {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        customId: String(targetId),
         title_uz: newTitle,
         title_ru: newTitle,
         title_en: newTitle,
@@ -4374,10 +4377,10 @@ function deleteProductByAdmin(index) {
       const deletedTitle = prod.title_uz;
       const targetId = prod.id || prod.dbId;
       EUROTEX_PRODUCTS.splice(index, 1);
-      localStorage.setItem(
-        "eurotex_custom_products",
-        JSON.stringify(EUROTEX_PRODUCTS),
-      );
+      EurotexIDB.set("eurotex_custom_products", EUROTEX_PRODUCTS);
+      try {
+        localStorage.removeItem("eurotex_custom_products");
+      } catch (err) {}
       renderProducts();
       renderAdminProducts();
       showToast(`"${deletedTitle}" katalogdan o'chirildi 🗑️`);
