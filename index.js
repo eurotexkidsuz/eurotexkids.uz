@@ -1,7 +1,4 @@
 const path = require("path");
-const dns = require("dns");
-dns.setServers(["8.8.8.8", "1.1.1.1"]);
-
 const express = require("express");
 const { connect } = require("mongoose");
 const cors = require("cors");
@@ -39,7 +36,6 @@ const productRouter = require("./routes/productRoute");
 app.use("/products", productRouter);
 
 // Express SPA Fallback for /savat, /saralanganlar, /checkout, etc.
-const path = require("path");
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
@@ -49,3 +45,5 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server: http://localhost:${PORT}`);
 });
+
+module.exports = app;
