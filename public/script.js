@@ -845,8 +845,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   closeAllModals();
   checkGoogleAuthRedirect();
   updateUserAuthUI();
-  handleURLRouting();
   await syncProductsWithBackendAndStorage(false);
+  handleURLRouting();
   // Auto-sync new products from MongoDB every 5 seconds for all users!
   setInterval(() => syncProductsWithBackendAndStorage(true), 5000);
   loadCustomSizesFromStorage();
@@ -1078,9 +1078,6 @@ function renderProducts() {
 
   // activeSearchQuery is ONLY set when user presses Search btn or Enter.
   // While just typing, this stays empty so the 20 home products always show.
-  // Always sync latest products pool from memory + localStorage
-  EUROTEX_PRODUCTS = getCombinedProducts();
-
   const activeSearch = (state.activeSearchQuery || "").trim();
   let pool = EUROTEX_PRODUCTS;
 
