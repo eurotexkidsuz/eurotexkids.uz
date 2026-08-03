@@ -4166,6 +4166,8 @@ function notifyProductChange() {
   }
 }
 
+let _lastProdsHash = "";
+
 async function syncProductsWithBackendAndStorage() {
   // Pre-load from IndexedDB immediately so custom products show instantly on refresh!
   try {
@@ -4177,8 +4179,6 @@ async function syncProductsWithBackendAndStorage() {
         if (!map.has(String(p.id))) map.set(String(p.id), p);
       });
       EUROTEX_PRODUCTS = Array.from(map.values());
-      renderProducts();
-      renderAdminProducts();
     }
   } catch (e) {}
 
@@ -4264,13 +4264,26 @@ async function syncProductsWithBackendAndStorage() {
               });
           }
         });
-
-        renderProducts();
-        renderAdminProducts();
       }
     }
   } catch (err) {
     console.log("Using cached products:", err);
+  }
+
+  // Smart Re-render: ONLY re-render if product data actually changed AND admin is not typing!
+  const newHash = EUROTEX_PRODUCTS.map(
+    (p) => `${p.id}:${p.title_uz}:${p.price}:${p.category}`,
+  ).join("|");
+
+  if (newHash !== _lastProdsHash) {
+    _lastProdsHash = newHash;
+    renderProducts();
+    const isTypingInAdmin =
+      document.activeElement &&
+      document.activeElement.closest("#adminProductsTableContainer");
+    if (!isTypingInAdmin) {
+      renderAdminProducts();
+    }
   }
 }
 
