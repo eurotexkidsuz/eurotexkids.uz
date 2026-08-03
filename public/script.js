@@ -4154,13 +4154,8 @@ function notifyProductChange() {
   EUROTEX_PRODUCTS = getCombinedProducts();
   EurotexIDB.set("eurotex_custom_products", EUROTEX_PRODUCTS);
   try {
-    localStorage.setItem(
-      "eurotex_custom_products",
-      JSON.stringify(EUROTEX_PRODUCTS),
-    );
-  } catch (e) {
-    console.warn("⚠️ LocalStorage to'ldi, IndexedDB (Cheksiz hotira) ishlatilmoqda:", e);
-  }
+    localStorage.removeItem("eurotex_custom_products");
+  } catch (e) {}
   if (productSyncChannel) {
     productSyncChannel.postMessage({
       type: "REFRESH_PRODUCTS",
@@ -4219,13 +4214,8 @@ async function syncProductsWithBackendAndStorage() {
         EUROTEX_PRODUCTS = Array.from(map.values());
         EurotexIDB.set("eurotex_custom_products", EUROTEX_PRODUCTS);
         try {
-          localStorage.setItem(
-            "eurotex_custom_products",
-            JSON.stringify(EUROTEX_PRODUCTS),
-          );
-        } catch (err) {
-          console.warn("⚠️ LocalStorage full, using IndexedDB:", err);
-        }
+          localStorage.removeItem("eurotex_custom_products");
+        } catch (err) {}
         renderProducts();
         renderAdminProducts();
       }
