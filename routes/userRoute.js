@@ -8,17 +8,10 @@ const {
   checkRememberToken,
   googleAuth,
   googleCallback,
-  facebookAuth,
-  facebookCallback,
-  appleAuth,
-  appleCallback,
   githubAuth,
   githubCallback,
   guestAuth,
   validateEmail,
-  qrGenerate,
-  qrStatus,
-  qrAuthorize,
   deleteAccount,
   getSlides,
   getSlidesStream,
@@ -38,22 +31,9 @@ router.get("/slides", getSlides);
 router.get("/slides/stream", getSlidesStream);
 router.post("/slides/upload", saveSlideImage);
 
-// QR Authentication endpoints
-router.post("/qr-generate", qrGenerate);
-router.get("/qr-status", qrStatus);
-router.post("/qr-authorize", qrAuthorize);
-
 // Google OAuth
 router.get("/auth/google", googleAuth);
 router.get("/auth/google/callback", googleCallback);
-
-// Facebook OAuth
-router.get("/auth/facebook", facebookAuth);
-router.get("/auth/facebook/callback", facebookCallback);
-
-// Apple OAuth
-router.get("/auth/apple", appleAuth);
-router.post("/auth/apple/callback", appleCallback);
 
 // GitHub OAuth
 router.get("/auth/github", githubAuth);
