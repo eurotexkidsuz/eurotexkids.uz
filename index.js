@@ -1,3 +1,4 @@
+const path = require("path");
 const dns = require("dns");
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
@@ -11,7 +12,7 @@ const app = express();
 app.use(express.json({ limit: "100mb" }));
 app.use(express.urlencoded({ limit: "100mb", extended: true }));
 app.use(cors());
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public")));
 
 // Database
 const MONGO_URI =
