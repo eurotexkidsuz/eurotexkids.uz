@@ -2381,6 +2381,15 @@ function openDashboardView(tabName = "cart") {
 }
 
 function closeDashboardView() {
+  if (window.location.pathname.startsWith("/admin")) {
+    const homeWrapper = document.getElementById("homePageWrapper");
+    const dashView = document.getElementById("dashboardPageView");
+    if (homeWrapper) homeWrapper.style.display = "none";
+    if (dashView) dashView.style.display = "block";
+    switchDashboardTab("admin");
+    return;
+  }
+
   const homeWrapper = document.getElementById("homePageWrapper");
   const dashView = document.getElementById("dashboardPageView");
   if (dashView) dashView.style.display = "none";
@@ -2608,12 +2617,16 @@ function openTailoringModal() {
 
 function openAuthModal() {
   if (state.user) {
-    // Render Profile Modal details
     const email = state.user.email || "";
     const name = state.user.name || email.split("@")[0] || "Foydalanuvchi";
     const formattedName = name.charAt(0).toUpperCase() + name.slice(1);
     const initial = formattedName.charAt(0).toUpperCase();
     const isAdmin = state.user.role === "admin" || isAdminEmail(email);
+
+    if (isAdmin) {
+      openDashboardView("admin");
+      return;
+    }
 
     const avatarEl = document.getElementById("userProfileAvatar");
     const nameEl = document.getElementById("userProfileName");
@@ -2625,11 +2638,10 @@ function openAuthModal() {
     if (nameEl) nameEl.textContent = formattedName;
     if (emailEl) emailEl.textContent = email;
     if (badgeWrap) {
-      badgeWrap.innerHTML = isAdmin
-        ? '<span class="user-role-badge">👑 Master Admin</span>'
-        : '<span class="user-role-badge user">👤 Mijoz</span>';
+      badgeWrap.innerHTML =
+        '<span class="user-role-badge user">👤 Mijoz</span>';
     }
-    if (adminBtn) adminBtn.style.display = isAdmin ? "flex" : "none";
+    if (adminBtn) adminBtn.style.display = "none";
 
     openModal("userProfileModal");
     return;
