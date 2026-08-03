@@ -4169,6 +4169,20 @@ function notifyProductChange() {
 let _lastProdsHash = "";
 
 async function syncProductsWithBackendAndStorage() {
+  // If user is currently in Admin Panel or editing inputs, pause background polling so inputs never reset!
+  const isAdminView =
+    window.location.pathname.includes("/admin") ||
+    state.currentCategory === "admin" ||
+    (document.activeElement &&
+      document.activeElement.closest("#adminProductsTableContainer")) ||
+    (document.getElementById("admin-dashboard-section") &&
+      document.getElementById("admin-dashboard-section").style.display !==
+        "none");
+
+  if (isAdminView) {
+    return;
+  }
+
   // Pre-load from IndexedDB immediately so custom products show instantly on refresh!
   try {
     const cachedProds = await EurotexIDB.get("eurotex_custom_products");
