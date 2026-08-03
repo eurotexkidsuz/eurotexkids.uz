@@ -32,14 +32,13 @@ const DEFAULT_MONGO_URL =
   "mongodb+srv://eurotexkids7775_db_user:yro1XElCJariRjzw@eurotexkidsuz.ntrgl4x.mongodb.net/?appName=Eurotexkidsuz";
 
 async function ensureDbConnected() {
-  if (mongoose.connection.readyState !== 1) {
-    try {
-      await mongoose.connect(DEFAULT_MONGO_URL, {
-        serverSelectionTimeoutMS: 5000,
-      });
-    } catch (e) {
-      console.error("MongoDB Connection Error:", e);
-    }
+  if (mongoose.connection.readyState === 1) return;
+  try {
+    await mongoose.connect(DEFAULT_MONGO_URL, {
+      serverSelectionTimeoutMS: 10000,
+    });
+  } catch (e) {
+    console.error("MongoDB Connection Error:", e);
   }
 }
 
@@ -48,8 +47,10 @@ router.get("/", async (req, res) => {
   try {
     await ensureDbConnected();
     let dbProds = [];
-    if (mongoose.connection.readyState === 1) {
+    try {
       dbProds = await Product.find().sort({ createdAt: -1 });
+    } catch (dbErr) {
+      console.error("Product.find Error:", dbErr);
     }
     const fileProds = readLocalProducts();
 

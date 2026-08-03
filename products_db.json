@@ -1,5 +1,13 @@
 [
   {
+    "customId": "prod-salom-test",
+    "title_uz": "SALOM",
+    "title_ru": "SALOM",
+    "price": 500000,
+    "category": "suits",
+    "id": "prod-salom-test"
+  },
+  {
     "customId": "prod-1785747462343",
     "title_uz": "ABDULAZIZ",
     "title_ru": "ABDULAZIZ",
