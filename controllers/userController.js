@@ -645,115 +645,7 @@ const telegramCallback = async (req, res) => {
   }
 };
 
-// ─── GITHUB AUTH ─────────────────────────────────────────────────────────
-const githubAuth = (req, res) => {
-  const clientId = process.env.GITHUB_CLIENT_ID;
-  const redirectUri = `${process.env.BASE_URL || "http://localhost:5000"}/users/auth/github/callback`;
-  const scope = "user:email";
-  console.log("GitHub Auth - Client ID:", clientId);
-  console.log("GitHub Auth - Redirect URI:", redirectUri);
-  const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
-  console.log("GitHub Auth - Auth URL:", authUrl);
-  return res.redirect(authUrl);
-};
 
-// ─── GITHUB CALLBACK ─────────────────────────────────────────────────────
-const githubCallback = async (req, res) => {
-  try {
-    const { code } = req.query;
-    console.log("GitHub Callback - Code:", code);
-    if (!code) {
-      return res.redirect("/?error=no_code");
-    }
-
-    const clientId = process.env.GITHUB_CLIENT_ID;
-    const clientSecret = process.env.GITHUB_CLIENT_SECRET;
-    const redirectUri = `${process.env.BASE_URL || "http://localhost:5000"}/users/auth/github/callback`;
-    console.log("GitHub Callback - Client ID:", clientId);
-    console.log("GitHub Callback - Redirect URI:", redirectUri);
-
-    // Exchange code for access token
-    const tokenResponse = await fetch(
-      "https://github.com/login/oauth/access_token",
-      {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          client_id: clientId,
-          client_secret: clientSecret,
-          code: code,
-          redirect_uri: redirectUri,
-        }),
-      },
-    );
-    const tokenData = await tokenResponse.json();
-    console.log("GitHub Callback - Token response:", tokenData);
-
-    if (!tokenData.access_token) {
-      console.error("GitHub Callback - No access token in response");
-      return res.redirect("/?error=token_exchange_failed");
-    }
-
-    // Get user info
-    const userResponse = await fetch("https://api.github.com/user", {
-      headers: {
-        Authorization: `Bearer ${tokenData.access_token}`,
-      },
-    });
-    const userData = await userResponse.json();
-    console.log("GitHub Callback - User data:", userData);
-
-    if (!userData.email) {
-      // If email is private, get it from emails endpoint
-      const emailsResponse = await fetch("https://api.github.com/user/emails", {
-        headers: {
-          Authorization: `Bearer ${tokenData.access_token}`,
-        },
-      });
-      const emailsData = await emailsResponse.json();
-      const primaryEmail = emailsData.find((e) => e.primary && e.verified);
-      if (!primaryEmail) {
-        return res.redirect("/?error=no_email");
-      }
-      userData.email = primaryEmail.email;
-    }
-
-    const email = userData.email.toLowerCase().trim();
-    const deviceInfo = getDeviceInfo(req);
-    const now = new Date();
-
-    let user = await User.findOne({ email });
-    if (!user) {
-      user = new User({
-        email,
-        githubUsername: userData.login,
-      });
-    }
-
-    user.resendCount = 0;
-    user.blockedUntil = null;
-    user.code = null;
-
-    const session = { ...deviceInfo, createdAt: now, lastActive: now };
-    user.sessions.push(session);
-    user.loginLogs.push({ ...deviceInfo, status: "success" });
-
-    const rememberToken = jwt.sign({ email }, JWT_SECRET, { expiresIn: "7d" });
-    user.rememberToken = rememberToken;
-
-    await user.save();
-
-    return res.redirect(
-      `/?email=${encodeURIComponent(email)}&googleToken=${encodeURIComponent(rememberToken)}`,
-    );
-  } catch (error) {
-    console.error("githubCallback xatosi:", error);
-    return res.redirect("/?error=auth_failed");
-  }
-};
 
 // ─── DELETE ACCOUNT ───────────────────────────────────────────────────────
 const deleteAccount = async (req, res) => {
@@ -1172,8 +1064,6 @@ module.exports = {
   checkRememberToken,
   googleAuth,
   googleCallback,
-  githubAuth,
-  githubCallback,
   guestAuth,
   validateEmail,
   deleteAccount,

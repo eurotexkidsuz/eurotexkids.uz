@@ -8,8 +8,6 @@ const {
   checkRememberToken,
   googleAuth,
   googleCallback,
-  githubAuth,
-  githubCallback,
   guestAuth,
   validateEmail,
   deleteAccount,
@@ -34,10 +32,6 @@ router.post("/slides/upload", saveSlideImage);
 // Google OAuth
 router.get("/auth/google", googleAuth);
 router.get("/auth/google/callback", googleCallback);
-
-// GitHub OAuth
-router.get("/auth/github", githubAuth);
-router.get("/auth/github/callback", githubCallback);
 
 // Guest Authentication
 router.get("/auth/guest", guestAuth);
