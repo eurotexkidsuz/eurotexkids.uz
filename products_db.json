@@ -1,5 +1,511 @@
 [
   {
+    "customId": "prod-20",
+    "title_uz": "Eurotex Exclusive Reversible Leather Belt Set (1 Pachka = 5 ta)",
+    "title_ru": "Двусторонние Ремни Eurotex (1 Пачка = 5 шт)",
+    "category": "accessories",
+    "priceUsd": 25,
+    "pachkaPriceUsd": 25,
+    "pachkaQty": 5,
+    "price": 25,
+    "oldPrice": 35,
+    "image": "/images/grey_trousers.jpg",
+    "images": [
+      "/images/grey_trousers.jpg"
+    ],
+    "sizes": [
+      110,
+      115,
+      120,
+      125
+    ],
+    "fabric_uz": "Ikki Tomonlama Ishlaydigan Deri Kamar (Qora/Jigarrang)",
+    "inStock": true,
+    "id": "prod-20"
+  },
+  {
+    "customId": "prod-19",
+    "title_uz": "Eurotex Handmade Brass Cufflinks & Clip Set (1 Pachka = 10 ta)",
+    "title_ru": "Запонки и Зажимы Eurotex (1 Пачка = 10 шт)",
+    "category": "accessories",
+    "priceUsd": 15,
+    "pachkaPriceUsd": 15,
+    "pachkaQty": 10,
+    "price": 15,
+    "oldPrice": 22,
+    "image": "/images/navy_suit.jpg",
+    "images": [
+      "/images/navy_suit.jpg"
+    ],
+    "sizes": [
+      10
+    ],
+    "fabric_uz": "Qutidagi Zaponka va Galstuk Qisqichi",
+    "inStock": true,
+    "id": "prod-19"
+  },
+  {
+    "customId": "prod-18",
+    "title_uz": "Eurotex Luxury Wool V-Neck Suit Vest / Jilet (1 Pachka = 6 ta)",
+    "title_ru": "Мужской Жилет Eurotex Luxury Wool (1 Пачка = 6 шт)",
+    "category": "suits",
+    "priceUsd": 38,
+    "pachkaPriceUsd": 38,
+    "pachkaQty": 6,
+    "price": 38,
+    "oldPrice": 55,
+    "image": "/images/black_tuxedo.jpg",
+    "images": [
+      "/images/black_tuxedo.jpg"
+    ],
+    "sizes": [
+      46,
+      48,
+      50,
+      52,
+      54,
+      56
+    ],
+    "fabric_uz": "Klassik Kostyum Jileti, Jun Mato",
+    "inStock": true,
+    "id": "prod-18"
+  },
+  {
+    "customId": "prod-17",
+    "title_uz": "Eurotex Premium Oxford Black Business Shirt (1 Pachka = 6 ta)",
+    "title_ru": "Черная Рубашка Eurotex Premium Oxford (1 Пачка = 6 шт)",
+    "category": "shirts",
+    "priceUsd": 35,
+    "pachkaPriceUsd": 35,
+    "pachkaQty": 6,
+    "price": 35,
+    "oldPrice": 50,
+    "image": "/images/navy_suit.jpg",
+    "images": [
+      "/images/navy_suit.jpg"
+    ],
+    "sizes": [
+      38,
+      39,
+      40,
+      41,
+      42,
+      43
+    ],
+    "fabric_uz": "Premium Oxford Cotton, Matyviy Qora",
+    "inStock": true,
+    "id": "prod-17"
+  },
+  {
+    "customId": "prod-16",
+    "title_uz": "Eurotex Modern Stretch Slim Chino Trousers (1 Pachka = 6 ta)",
+    "title_ru": "Брюки-Чинос Eurotex Modern Stretch (1 Пачка = 6 шт)",
+    "category": "trousers",
+    "priceUsd": 42,
+    "pachkaPriceUsd": 42,
+    "pachkaQty": 6,
+    "price": 42,
+    "oldPrice": 60,
+    "image": "/images/grey_trousers.jpg",
+    "images": [
+      "/images/grey_trousers.jpg"
+    ],
+    "sizes": [
+      46,
+      48,
+      50,
+      52,
+      54,
+      56
+    ],
+    "fabric_uz": "Paxta va Spandeks Yengil Shim",
+    "inStock": true,
+    "id": "prod-16"
+  },
+  {
+    "customId": "prod-15",
+    "title_uz": "Eurotex Sartorial Beige Linen Summer Suit (1 Pachka = 6 ta)",
+    "title_ru": "Льняной Костюм Eurotex Sartorial Beige (1 Пачка = 6 шт)",
+    "category": "suits",
+    "priceUsd": 130,
+    "pachkaPriceUsd": 130,
+    "pachkaQty": 6,
+    "price": 130,
+    "oldPrice": 170,
+    "image": "/images/navy_suit.jpg",
+    "images": [
+      "/images/navy_suit.jpg"
+    ],
+    "sizes": [
+      46,
+      48,
+      50,
+      52,
+      54,
+      56
+    ],
+    "fabric_uz": "100% Italiya Zig'ir (Linen) Salqin Mato",
+    "inStock": true,
+    "id": "prod-15"
+  },
+  {
+    "customId": "prod-14",
+    "title_uz": "Eurotex Gold Edition Velvet Wedding Tuxedo (1 Pachka = 6 ta)",
+    "title_ru": "Бархатный Смокинг Eurotex Gold Edition (1 Пачка = 6 шт)",
+    "category": "tuxedos",
+    "priceUsd": 175,
+    "pachkaPriceUsd": 175,
+    "pachkaQty": 6,
+    "price": 175,
+    "oldPrice": 230,
+    "image": "/images/black_tuxedo.jpg",
+    "images": [
+      "/images/black_tuxedo.jpg"
+    ],
+    "sizes": [
+      46,
+      48,
+      50,
+      52,
+      54,
+      56
+    ],
+    "fabric_uz": "Koreya Baxmal (Velvet) va Satin yoqa",
+    "inStock": true,
+    "id": "prod-14"
+  },
+  {
+    "customId": "prod-13",
+    "title_uz": "Eurotex Heritage Tweed Winter Coat & Blazer (1 Pachka = 6 ta)",
+    "title_ru": "Твидовый Пиджак Eurotex Heritage (1 Пачка = 6 шт)",
+    "category": "blazers",
+    "priceUsd": 110,
+    "pachkaPriceUsd": 110,
+    "pachkaQty": 6,
+    "price": 110,
+    "oldPrice": 145,
+    "image": "/images/black_tuxedo.jpg",
+    "images": [
+      "/images/black_tuxedo.jpg"
+    ],
+    "sizes": [
+      46,
+      48,
+      50,
+      52,
+      54,
+      56
+    ],
+    "fabric_uz": "Qalin Shotlandiya Tvid Juni",
+    "inStock": true,
+    "id": "prod-13"
+  },
+  {
+    "customId": "prod-12",
+    "title_uz": "Eurotex Diplomat Sky Blue Stretch Cotton Shirt (1 Pachka = 6 ta)",
+    "title_ru": "Голубая Рубашка Eurotex Diplomat (1 Пачка = 6 шт)",
+    "category": "shirts",
+    "priceUsd": 32,
+    "pachkaPriceUsd": 32,
+    "pachkaQty": 6,
+    "price": 32,
+    "oldPrice": 48,
+    "image": "/images/navy_suit.jpg",
+    "images": [
+      "/images/navy_suit.jpg"
+    ],
+    "sizes": [
+      38,
+      39,
+      40,
+      41,
+      42,
+      43
+    ],
+    "fabric_uz": "95% Paxta, 5% Elastan Stretch",
+    "inStock": true,
+    "id": "prod-12"
+  },
+  {
+    "customId": "prod-11",
+    "title_uz": "Eurotex Classic Fit Light Grey Wool Trousers (1 Pachka = 6 ta)",
+    "title_ru": "Классические Серые Брюки Eurotex (1 Пачка = 6 шт)",
+    "category": "trousers",
+    "priceUsd": 48,
+    "pachkaPriceUsd": 48,
+    "pachkaQty": 6,
+    "price": 48,
+    "oldPrice": 70,
+    "image": "/images/grey_trousers.jpg",
+    "images": [
+      "/images/grey_trousers.jpg"
+    ],
+    "sizes": [
+      46,
+      48,
+      50,
+      52,
+      54,
+      56
+    ],
+    "fabric_uz": "Ochiq Kulrang Jun Mato, Dazmol talab qilmaydi",
+    "inStock": true,
+    "id": "prod-11"
+  },
+  {
+    "customId": "prod-10",
+    "title_uz": "Eurotex Venetian Blue Slim Tailored Blazer (1 Pachka = 6 ta)",
+    "title_ru": "Блейзер Eurotex Venetian Blue (1 Пачка = 6 шт)",
+    "category": "blazers",
+    "priceUsd": 80,
+    "pachkaPriceUsd": 80,
+    "pachkaQty": 6,
+    "price": 80,
+    "oldPrice": 110,
+    "image": "/images/navy_suit.jpg",
+    "images": [
+      "/images/navy_suit.jpg"
+    ],
+    "sizes": [
+      46,
+      48,
+      50,
+      52,
+      54,
+      56
+    ],
+    "fabric_uz": "Soft Wool Blend, Zamonaviy Italiya Uslubi",
+    "inStock": true,
+    "id": "prod-10"
+  },
+  {
+    "customId": "prod-9",
+    "title_uz": "Eurotex Milano Charcoal Black Premium 3-Piece Kostyum (1 Pachka = 6 ta)",
+    "title_ru": "Костюм-Тройка Eurotex Milano Charcoal Black (1 Пачка = 6 шт)",
+    "category": "suits",
+    "priceUsd": 160,
+    "pachkaPriceUsd": 160,
+    "pachkaQty": 6,
+    "price": 160,
+    "oldPrice": 210,
+    "image": "/images/black_tuxedo.jpg",
+    "images": [
+      "/images/black_tuxedo.jpg"
+    ],
+    "sizes": [
+      46,
+      48,
+      50,
+      52,
+      54,
+      56
+    ],
+    "fabric_uz": "Italiya Jileli 3-Talik To'plam (Virgin Wool)",
+    "inStock": true,
+    "id": "prod-9"
+  },
+  {
+    "customId": "prod-8",
+    "title_uz": "Eurotex Genuine Leather Erkaklar Klassik Teri Kamari (1 Pachka = 5 ta)",
+    "title_ru": "Мужские Кожаные Ремни Eurotex (1 Пачка = 5 шт)",
+    "category": "accessories",
+    "priceUsd": 22,
+    "pachkaPriceUsd": 22,
+    "pachkaQty": 5,
+    "price": 22,
+    "oldPrice": 30,
+    "image": "/images/grey_trousers.jpg",
+    "images": [
+      "/images/grey_trousers.jpg"
+    ],
+    "sizes": [
+      110,
+      115,
+      120,
+      125
+    ],
+    "fabric_uz": "100% Tabiiy Sigir Derisi, Zanglamaydigan toqa",
+    "inStock": true,
+    "id": "prod-8"
+  },
+  {
+    "customId": "prod-7",
+    "title_uz": "Eurotex Italian Silk Galstuk & Zaponka To'plami (1 Pachka = 10 ta)",
+    "title_ru": "Подарочный Набор Eurotex: Галстуки (1 Пачка = 10 шт)",
+    "category": "accessories",
+    "priceUsd": 18,
+    "pachkaPriceUsd": 18,
+    "pachkaQty": 10,
+    "price": 18,
+    "oldPrice": 25,
+    "image": "/images/black_tuxedo.jpg",
+    "images": [
+      "/images/black_tuxedo.jpg"
+    ],
+    "sizes": [
+      10
+    ],
+    "fabric_uz": "100% Tabiiy Ipak (Silk), Latun zaponka",
+    "inStock": true,
+    "id": "prod-7"
+  },
+  {
+    "customId": "prod-6",
+    "title_uz": "Eurotex Imperial Slim Fit Klassik Oq Ko'ylak (1 Pachka = 6 ta)",
+    "title_ru": "Классическая Белая Рубашка Eurotex Imperial (1 Пачка = 6 шт)",
+    "category": "shirts",
+    "priceUsd": 30,
+    "pachkaPriceUsd": 30,
+    "pachkaQty": 6,
+    "price": 30,
+    "oldPrice": 45,
+    "image": "/images/navy_suit.jpg",
+    "images": [
+      "/images/navy_suit.jpg"
+    ],
+    "sizes": [
+      38,
+      39,
+      40,
+      41,
+      42,
+      43
+    ],
+    "fabric_uz": "100% Misr Paxtasi (Egyptian Cotton), Easy Iron",
+    "inStock": true,
+    "id": "prod-6"
+  },
+  {
+    "customId": "prod-5",
+    "title_uz": "Eurotex Smart Business Klassik Pijak / Blazer (1 Pachka = 6 ta)",
+    "title_ru": "Классический Блейзер Eurotex Smart Business (1 Пачка = 6 шт)",
+    "category": "blazers",
+    "priceUsd": 75,
+    "pachkaPriceUsd": 75,
+    "pachkaQty": 6,
+    "price": 75,
+    "oldPrice": 100,
+    "image": "/images/navy_suit.jpg",
+    "images": [
+      "/images/navy_suit.jpg"
+    ],
+    "sizes": [
+      46,
+      48,
+      50,
+      52,
+      54,
+      56
+    ],
+    "fabric_uz": "80% Jun, 20% Paxta, Yengil yoz-kuzgi bichim",
+    "inStock": true,
+    "id": "prod-5"
+  },
+  {
+    "customId": "prod-4",
+    "title_uz": "Eurotex Executive Double-Breasted Ikki Tomonli Kostyum (1 Pachka = 6 ta)",
+    "title_ru": "Двубортный Костюм Eurotex Executive (1 Пачка = 6 шт)",
+    "category": "suits",
+    "priceUsd": 140,
+    "pachkaPriceUsd": 140,
+    "pachkaQty": 6,
+    "price": 140,
+    "oldPrice": 180,
+    "image": "/images/navy_suit.jpg",
+    "images": [
+      "/images/navy_suit.jpg"
+    ],
+    "sizes": [
+      46,
+      48,
+      50,
+      52,
+      54,
+      56
+    ],
+    "fabric_uz": "Super 130s Italiya Jun matosi",
+    "inStock": true,
+    "id": "prod-4"
+  },
+  {
+    "customId": "prod-3",
+    "title_uz": "Eurotex Charcoal Grey Klassik Jun Shim (1 Pachka = 6 ta Seriya)",
+    "title_ru": "Классические Брюки Eurotex Charcoal Grey (1 Пачка = 6 шт Серия)",
+    "category": "trousers",
+    "priceUsd": 45,
+    "pachkaPriceUsd": 45,
+    "pachkaQty": 6,
+    "price": 45,
+    "oldPrice": 65,
+    "image": "/images/grey_trousers.jpg",
+    "images": [
+      "/images/grey_trousers.jpg"
+    ],
+    "sizes": [
+      46,
+      48,
+      50,
+      52,
+      54,
+      56
+    ],
+    "fabric_uz": "100% Jun, Qatlari o'chmaydigan texnologiya",
+    "inStock": true,
+    "id": "prod-3"
+  },
+  {
+    "customId": "prod-2",
+    "title_uz": "Eurotex Black Diamond Smoking & To'y Kostyum-Shimi (1 Pachka = 6 ta Seriya)",
+    "title_ru": "Смокинг Eurotex Black Diamond (1 Пачка = 6 шт Серия)",
+    "category": "tuxedos",
+    "priceUsd": 150,
+    "pachkaPriceUsd": 150,
+    "pachkaQty": 6,
+    "price": 150,
+    "oldPrice": 190,
+    "image": "/images/black_tuxedo.jpg",
+    "images": [
+      "/images/black_tuxedo.jpg"
+    ],
+    "sizes": [
+      46,
+      48,
+      50,
+      52,
+      54,
+      56
+    ],
+    "fabric_uz": "Wool & Satin Lapel, Kapalak va Zaponka sovg'a",
+    "inStock": true,
+    "id": "prod-2"
+  },
+  {
+    "customId": "prod-1",
+    "title_uz": "Eurotex Royal Navy Slim Fit Kostyum-Shim (1 Pachka = 6 ta Seriya)",
+    "title_ru": "Костюм-Двойка Eurotex Royal Navy Slim Fit (1 Пачка = 6 шт Серия)",
+    "category": "suits",
+    "priceUsd": 120,
+    "pachkaPriceUsd": 120,
+    "pachkaQty": 6,
+    "price": 120,
+    "oldPrice": 160,
+    "image": "/images/navy_suit.jpg",
+    "images": [
+      "/images/navy_suit.jpg"
+    ],
+    "sizes": [
+      46,
+      48,
+      50,
+      52,
+      54,
+      56
+    ],
+    "fabric_uz": "90% Jun (Virgin Wool), 10% Ipak. Viskoza astar",
+    "inStock": true,
+    "id": "prod-1"
+  },
+  {
     "customId": "prod-salom-test",
     "title_uz": "SALOM",
     "title_ru": "SALOM",

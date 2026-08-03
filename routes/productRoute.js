@@ -77,26 +77,33 @@ router.post("/", async (req, res) => {
     if (!pData.customId) pData.customId = pData.id || "prod_" + Date.now();
     if (!pData.id) pData.id = pData.customId;
 
-    // Save to local file
-    const fileProds = readLocalProducts();
-    const existingIdx = fileProds.findIndex(
-      (p) => String(p.id || p.customId) === String(pData.id),
-    );
-    if (existingIdx >= 0) {
-      fileProds[existingIdx] = { ...fileProds[existingIdx], ...pData };
-    } else {
-      fileProds.unshift(pData);
+    // 1. Save to MongoDB Atlas FIRST (Primary Database)
+    let dbResult = null;
+    try {
+      dbResult = await Product.findOneAndUpdate(
+        { customId: String(pData.customId) },
+        { $set: pData },
+        { upsert: true, new: true },
+      );
+    } catch (dbErr) {
+      console.error("MongoDB Save Error in POST /products:", dbErr);
     }
-    writeLocalProducts(fileProds);
 
-    // Save to MongoDB
-    await Product.findOneAndUpdate(
-      { customId: String(pData.customId) },
-      { $set: pData },
-      { upsert: true, new: true },
-    );
+    // 2. Local file update (Best-effort for local environment)
+    try {
+      const fileProds = readLocalProducts();
+      const existingIdx = fileProds.findIndex(
+        (p) => String(p.id || p.customId) === String(pData.id),
+      );
+      if (existingIdx >= 0) {
+        fileProds[existingIdx] = { ...fileProds[existingIdx], ...pData };
+      } else {
+        fileProds.unshift(pData);
+      }
+      writeLocalProducts(fileProds);
+    } catch (fileErr) {}
 
-    return res.json({ success: true, product: pData });
+    return res.json({ success: true, product: dbResult || pData });
   } catch (err) {
     console.error("Error in POST /products:", err);
     return res.json({ success: true, product: req.body, message: err.message });
@@ -110,28 +117,36 @@ router.put("/:id", async (req, res) => {
     const id = String(req.params.id);
     const pData = req.body;
 
-    // Update local file
-    const fileProds = readLocalProducts();
-    const existingIdx = fileProds.findIndex(
-      (p) => String(p.id || p.customId) === id,
-    );
-    if (existingIdx >= 0) {
-      fileProds[existingIdx] = { ...fileProds[existingIdx], ...pData };
-      writeLocalProducts(fileProds);
-    }
-
+    // 1. Save to MongoDB Atlas FIRST (Primary Database)
     const queryConditions = [{ customId: id }, { id: id }];
     if (mongoose.isValidObjectId(id)) {
       queryConditions.push({ _id: id });
     }
 
-    await Product.findOneAndUpdate(
-      { $or: queryConditions },
-      { $set: pData },
-      { upsert: true, new: true },
-    );
+    let dbResult = null;
+    try {
+      dbResult = await Product.findOneAndUpdate(
+        { $or: queryConditions },
+        { $set: pData },
+        { upsert: true, new: true },
+      );
+    } catch (dbErr) {
+      console.error("MongoDB Save Error in PUT /products:", dbErr);
+    }
 
-    return res.json({ success: true });
+    // 2. Local file update (Best-effort for local environment)
+    try {
+      const fileProds = readLocalProducts();
+      const existingIdx = fileProds.findIndex(
+        (p) => String(p.id || p.customId) === id,
+      );
+      if (existingIdx >= 0) {
+        fileProds[existingIdx] = { ...fileProds[existingIdx], ...pData };
+        writeLocalProducts(fileProds);
+      }
+    } catch (fileErr) {}
+
+    return res.json({ success: true, product: dbResult || pData });
   } catch (err) {
     return res.json({ success: true, error: err.message });
   }
@@ -142,18 +157,27 @@ router.delete("/:id", async (req, res) => {
   try {
     await ensureDbConnected();
     const id = String(req.params.id);
-    const fileProds = readLocalProducts();
-    const filtered = fileProds.filter(
-      (p) => String(p.id || p.customId) !== id,
-    );
-    writeLocalProducts(filtered);
 
+    // 1. Delete from MongoDB Atlas FIRST (Primary Database)
     const queryConditions = [{ customId: id }, { id: id }];
     if (mongoose.isValidObjectId(id)) {
       queryConditions.push({ _id: id });
     }
 
-    await Product.deleteOne({ $or: queryConditions });
+    try {
+      await Product.deleteOne({ $or: queryConditions });
+    } catch (dbErr) {
+      console.error("MongoDB Delete Error in DELETE /products:", dbErr);
+    }
+
+    // 2. Local file update (Best-effort for local environment)
+    try {
+      const fileProds = readLocalProducts();
+      const filtered = fileProds.filter(
+        (p) => String(p.id || p.customId) !== id,
+      );
+      writeLocalProducts(filtered);
+    } catch (fileErr) {}
 
     return res.json({ success: true, message: "Product deleted" });
   } catch (err) {
