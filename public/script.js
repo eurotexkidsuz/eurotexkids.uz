@@ -4065,12 +4065,49 @@ function getCombinedProducts() {
   return Array.from(map.values());
 }
 
+function compressBase64Image(dataUrl, maxWidth = 800, quality = 0.75) {
+  return new Promise((resolve) => {
+    if (!dataUrl || !dataUrl.startsWith("data:image")) return resolve(dataUrl);
+    const img = new Image();
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+      if (width > maxWidth) {
+        height = Math.round((height * maxWidth) / width);
+        width = maxWidth;
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
 function notifyProductChange() {
   EUROTEX_PRODUCTS = getCombinedProducts();
-  localStorage.setItem(
-    "eurotex_custom_products",
-    JSON.stringify(EUROTEX_PRODUCTS),
-  );
+  try {
+    localStorage.setItem(
+      "eurotex_custom_products",
+      JSON.stringify(EUROTEX_PRODUCTS),
+    );
+  } catch (e) {
+    console.warn("⚠️ LocalStorage quota exceed safely handled:", e);
+    try {
+      const lightProducts = EUROTEX_PRODUCTS.slice(0, 30).map((p) => ({
+        ...p,
+        images: (p.images || []).slice(0, 2),
+      }));
+      localStorage.setItem(
+        "eurotex_custom_products",
+        JSON.stringify(lightProducts),
+      );
+    } catch (err) {}
+  }
   if (productSyncChannel) {
     productSyncChannel.postMessage({
       type: "REFRESH_PRODUCTS",
@@ -4356,8 +4393,10 @@ function previewNewProductImages(event) {
 
   files.forEach((file, index) => {
     const reader = new FileReader();
-    reader.onload = function (e) {
-      base64List[index] = e.target.result;
+    reader.onload = async function (e) {
+      const rawBase64 = e.target.result;
+      const compressed = await compressBase64Image(rawBase64, 800, 0.75);
+      base64List[index] = compressed;
       loadedCount++;
       if (loadedCount === files.length) {
         const picker = document.getElementById("newProdImagePicker");
@@ -4383,7 +4422,7 @@ function previewNewProductImages(event) {
             )
             .join("");
         }
-        showToast(`✅ ${files.length} ta rasm yuklandi! 📸`);
+        showToast(`✅ ${files.length} ta rasm tayyorlandi va siqildi! 📸`);
       }
     };
     reader.readAsDataURL(file);
