@@ -3900,8 +3900,9 @@ button {
 }
 
 /* Admin Hero Banner Edit Buttons */
-.admin-slide-edit-btn {
-    display: none; /* Hidden by default for regular users */
+.admin-slide-edit-btn,
+.admin-img-edit-btn {
+    display: none !important; /* Hidden by default for regular users */
     align-items: center;
     justify-content: center;
     gap: 6px;
@@ -3945,7 +3946,6 @@ button {
         height: 44px !important;
         padding: 0 !important;
         border-radius: 50% !important;
-        display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
         box-shadow: 0 6px 20px rgba(112, 0, 255, 0.6) !important;
@@ -3983,11 +3983,11 @@ button {
 
 .admin-text-edit-btn {
     margin-bottom: 14px;
-    display: inline-flex;
 }
 
 /* Reveal edit buttons ONLY when body has .is-admin class */
-body.is-admin .admin-slide-edit-btn {
+body.is-admin .admin-slide-edit-btn,
+body.is-admin .admin-img-edit-btn {
     display: inline-flex !important;
 }
 
