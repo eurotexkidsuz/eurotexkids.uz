@@ -2511,17 +2511,25 @@ function closeModal(modalId) {
     return;
   }
   modal.classList.remove("show");
-  // Restore clean URL when product / auth modals are closed
-  const restoreModals = ["quickViewModal", "authModal", "loginModal"];
-  if (restoreModals.includes(modalId)) {
-    const p = window.location.pathname;
-    if (
-      p !== "/" &&
-      !p.startsWith("/cart") &&
-      !p.startsWith("/wishlist") &&
-      !p.startsWith("/checkout")
-    ) {
-      history.pushState({}, document.title, "/");
+
+  // Restore clean URL when addProductModal or other modals are closed
+  if (modalId === "addProductModal") {
+    if (window.location.pathname.includes("/admin/addcart") || window.location.pathname.includes("/addcart")) {
+      history.pushState({}, document.title, "/admin");
+    }
+  } else {
+    const restoreModals = ["quickViewModal", "authModal", "loginModal"];
+    if (restoreModals.includes(modalId)) {
+      const p = window.location.pathname;
+      if (
+        p !== "/" &&
+        !p.startsWith("/cart") &&
+        !p.startsWith("/wishlist") &&
+        !p.startsWith("/checkout") &&
+        !p.startsWith("/admin")
+      ) {
+        history.pushState({}, document.title, "/");
+      }
     }
   }
 }
