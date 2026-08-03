@@ -4193,6 +4193,10 @@ async function syncProductsWithBackendAndStorage() {
             p.oldPrice ||
             Math.round((p.priceUsd || 50) * 1.25) * (state.usdRate || 12650),
           image: p.image || "/images/navy_suit.jpg",
+          images:
+            p.images && p.images.length > 0
+              ? p.images
+              : [p.image || "/images/navy_suit.jpg"],
           sizes:
             p.sizes && p.sizes.length > 0 ? p.sizes : [46, 48, 50, 52, 54, 56],
           fabric_uz: p.fabric_uz || "Turkiya Premium Jun & Viskoza Blend",
@@ -4722,9 +4726,10 @@ function handleAddNewProduct(e) {
     parseInt(document.getElementById("newProdPachkaQty").value, 10) || 6;
   // Compute per-unit price from package total
   const priceUsd = Math.round(pachkaPriceUsd / pachkaQty) || 8;
-  const picker = document.getElementById("newProdImagePicker");
   let imagesArr = [];
-  if (picker && picker.dataset.images) {
+  if (window._prodImagesArr && window._prodImagesArr.length > 0) {
+    imagesArr = [...window._prodImagesArr];
+  } else if (picker && picker.dataset.images) {
     try {
       imagesArr = JSON.parse(picker.dataset.images);
     } catch (e) {}
@@ -4793,12 +4798,16 @@ function handleAddNewProduct(e) {
       price: newProd.price,
       oldPrice: newProd.oldPrice,
       image: newProd.image,
+      images: newProd.images,
       sizes: newProd.sizes,
       fabric_uz: newProd.fabric_uz,
       inStock: true,
     }),
   })
     .then((r) => r.json())
+    .then(() => {
+      syncProductsWithBackendAndStorage();
+    })
     .catch((err) => console.error("MongoDB POST error:", err));
 
   closeModal("addProductModal");

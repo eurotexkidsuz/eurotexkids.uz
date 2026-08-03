@@ -70,14 +70,18 @@ router.post("/", async (req, res) => {
     }
     writeLocalProducts(fileProds);
 
-    // Save to MongoDB if connected
+    // Save to MongoDB if connected using upsert
     if (mongoose.connection.readyState === 1) {
-      const newProduct = new Product(pData);
-      await newProduct.save();
+      await Product.findOneAndUpdate(
+        { customId: String(pData.customId) },
+        { $set: pData },
+        { upsert: true, new: true },
+      );
     }
 
     return res.json({ success: true, product: pData });
   } catch (err) {
+    console.error("Error in POST /products:", err);
     return res.json({ success: true, product: req.body, message: err.message });
   }
 });
