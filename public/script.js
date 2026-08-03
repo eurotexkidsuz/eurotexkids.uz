@@ -844,6 +844,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   initPWA();
   closeAllModals();
   await syncProductsWithBackendAndStorage();
+  // Auto-sync new products from MongoDB every 5 seconds for all users!
+  setInterval(syncProductsWithBackendAndStorage, 5000);
   loadCustomSizesFromStorage();
   setLanguage(state.currentLang);
   setupEventListeners();
@@ -4070,7 +4072,7 @@ function getCombinedProducts() {
   return Array.from(map.values());
 }
 
-function compressBase64Image(dataUrl, maxWidth = 800, quality = 0.75) {
+function compressBase64Image(dataUrl, maxWidth = 600, quality = 0.65) {
   return new Promise((resolve) => {
     if (!dataUrl || !dataUrl.startsWith("data:image")) return resolve(dataUrl);
     const img = new Image();
@@ -4540,7 +4542,7 @@ function previewNewProductImages(event) {
     const reader = new FileReader();
     reader.onload = async function (e) {
       const rawBase64 = e.target.result;
-      const compressed = await compressBase64Image(rawBase64, 800, 0.75);
+      const compressed = await compressBase64Image(rawBase64, 600, 0.65);
       newBase64List[index] = compressed;
       loadedCount++;
       if (loadedCount === filesToProcess.length) {
