@@ -4201,8 +4201,13 @@ async function syncProductsWithBackendAndStorage(isIntervalSync = false) {
     }
   } catch (e) {}
 
+  // Always fetch from Vercel production so localhost + all devices get MongoDB data!
+  const PROD_API = window.location.hostname === "localhost"
+    ? "https://eurotexkidsuz-omega.vercel.app/products"
+    : "/products";
+
   try {
-    const res = await fetch("/products");
+    const res = await fetch(PROD_API);
     if (res.ok) {
       const data = await res.json();
       if (
@@ -4259,7 +4264,10 @@ async function syncProductsWithBackendAndStorage(isIntervalSync = false) {
           if (p.isCustom && !dbCustomIds.has(String(p.id)) && !p._syncing) {
             p._syncing = true;
             compressBase64Image(p.image, 600, 0.65).then((compressedImg) => {
-              fetch("/products", {
+              const SYNC_API = window.location.hostname === "localhost"
+                ? "https://eurotexkidsuz-omega.vercel.app/products"
+                : "/products";
+              fetch(SYNC_API, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -4880,9 +4888,12 @@ async function handleAddNewProduct(e) {
   renderProducts();
   renderAdminProducts();
 
-  // Send POST to MongoDB backend
+  // Send POST to MongoDB backend (always Vercel prod API to guarantee MongoDB save!)
+  const POST_API = window.location.hostname === "localhost"
+    ? "https://eurotexkidsuz-omega.vercel.app/products"
+    : "/products";
   try {
-    await fetch("/products", {
+    await fetch(POST_API, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
