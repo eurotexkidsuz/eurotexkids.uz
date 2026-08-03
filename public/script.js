@@ -4230,6 +4230,41 @@ async function syncProductsWithBackendAndStorage() {
         try {
           localStorage.removeItem("eurotex_custom_products");
         } catch (err) {}
+
+        // Auto-upload any un-synced local custom products to MongoDB Atlas
+        const dbCustomIds = new Set(dbProds.map((p) => String(p.id)));
+        EUROTEX_PRODUCTS.forEach((p) => {
+          if (p.isCustom && !dbCustomIds.has(String(p.id)) && !p._syncing) {
+            p._syncing = true;
+            fetch("/products", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                customId: String(p.id),
+                title_uz: p.title_uz,
+                title_ru: p.title_ru || p.title_uz,
+                category: p.category,
+                priceUsd: p.priceUsd,
+                pachkaPriceUsd: p.pachkaPriceUsd,
+                pachkaQty: p.pachkaQty,
+                price: p.price,
+                oldPrice: p.oldPrice,
+                image: p.image,
+                images: p.images || [p.image],
+                sizes: p.sizes,
+                fabric_uz: p.fabric_uz,
+                inStock: true,
+              }),
+            })
+              .then(() => {
+                delete p._syncing;
+              })
+              .catch(() => {
+                delete p._syncing;
+              });
+          }
+        });
+
         renderProducts();
         renderAdminProducts();
       }
