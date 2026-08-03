@@ -6333,3 +6333,30 @@ html, body {
         padding: 6px 10px !important;
     }
 }
+
+/* 👑 100% UNBREAKABLE MEDIA PRECISION ENGINE (ZERO BUZILISH KAFOLATI) */
+html {
+    overflow-x: hidden !important;
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box !important;
+}
+
+img, video, iframe, svg {
+    max-width: 100% !important;
+}
+
+input, select, textarea, button {
+    max-width: 100% !important;
+    font-family: inherit;
+}
