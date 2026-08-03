@@ -8,12 +8,29 @@
   ],
   "routes": [
     {
-      "src": "/(.*)",
+      "src": "/products(.*)",
       "headers": {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type, Authorization"
       },
+      "dest": "index.js"
+    },
+    {
+      "src": "/users(.*)",
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization"
+      },
+      "dest": "index.js"
+    },
+    {
+      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|json|webp|mp4|webm))",
+      "dest": "/public/$1"
+    },
+    {
+      "src": "/(.*)",
       "dest": "index.js"
     }
   ]
