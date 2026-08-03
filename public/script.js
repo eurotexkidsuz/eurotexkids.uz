@@ -4044,21 +4044,18 @@ function getCombinedProducts() {
 
   const map = new Map();
 
-  // 1. Add current in-memory EUROTEX_PRODUCTS
-  (EUROTEX_PRODUCTS || []).forEach((item) => {
+  // 1. Add localStorage custom products first
+  (localProds || []).forEach((item) => {
     if (item && item.id) {
       map.set(String(item.id), {
         ...item,
-        isCustom:
-          item.isCustom === true ||
-          String(item.id).startsWith("prod-") ||
-          (item.dbId && String(item.dbId).length > 0),
+        isCustom: true,
       });
     }
   });
 
-  // 2. Add/override with localStorage custom products
-  (localProds || []).forEach((item) => {
+  // 2. Fresh in-memory EUROTEX_PRODUCTS (from MongoDB/Backend) OVERRIDE stale localStorage cache!
+  (EUROTEX_PRODUCTS || []).forEach((item) => {
     if (item && item.id) {
       map.set(String(item.id), {
         ...item,
@@ -4214,20 +4211,21 @@ async function syncProductsWithBackendAndStorage() {
         }));
 
         const map = new Map();
-        // 1. Add DB products
+        // 1. Add local custom products first
+        EUROTEX_PRODUCTS.forEach((p) => map.set(String(p.id), p));
+        // 2. DB products OVERRIDE local items so fresh covers & products from DB always win!
         dbProds.forEach((p) => map.set(String(p.id), p));
-        // 2. Add local custom products (never erase local items!)
-        EUROTEX_PRODUCTS.forEach((p) => {
-          if (!map.has(String(p.id)) || p.isCustom) {
-            map.set(String(p.id), p);
-          }
-        });
 
         EUROTEX_PRODUCTS = Array.from(map.values());
-        localStorage.setItem(
-          "eurotex_custom_products",
-          JSON.stringify(EUROTEX_PRODUCTS),
-        );
+        EurotexIDB.set("eurotex_custom_products", EUROTEX_PRODUCTS);
+        try {
+          localStorage.setItem(
+            "eurotex_custom_products",
+            JSON.stringify(EUROTEX_PRODUCTS),
+          );
+        } catch (err) {
+          console.warn("⚠️ LocalStorage full, using IndexedDB:", err);
+        }
         renderProducts();
         renderAdminProducts();
       }
