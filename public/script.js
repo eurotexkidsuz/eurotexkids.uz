@@ -881,11 +881,7 @@ function checkGoogleAuthRedirect() {
 
     state.user = {
       email: cleanEmail,
-      name: isAdmin
-        ? cleanEmail === "0600quetry@gmail.com"
-          ? "Master Admin (0600quetry)"
-          : "Eurotex Rasmiy Admin"
-        : cleanEmail.split("@")[0],
+      name: isAdmin ? "Eurotex Rasmiy Admin" : cleanEmail.split("@")[0],
       role: isAdmin ? "admin" : "user",
       rememberToken: googleToken,
     };
@@ -2902,11 +2898,7 @@ async function handleEmailAuth(e) {
         const isAdmin = data.role === "admin" || isAdminEmail(email);
         state.user = {
           email: email,
-          name: isAdmin
-            ? email === "0600quetry@gmail.com"
-              ? "Master Admin (0600quetry)"
-              : "Eurotex Rasmiy Admin"
-            : email.split("@")[0],
+          name: isAdmin ? "Eurotex Rasmiy Admin" : email.split("@")[0],
           role: isAdmin ? "admin" : "user",
           rememberToken: data.rememberToken,
         };
@@ -2934,11 +2926,7 @@ async function handleEmailAuth(e) {
         const isAdmin = isAdminEmail(email);
         state.user = {
           email: email,
-          name: isAdmin
-            ? email === "0600quetry@gmail.com"
-              ? "Master Admin (0600quetry)"
-              : "Eurotex Rasmiy Admin"
-            : email.split("@")[0],
+          name: isAdmin ? "Eurotex Rasmiy Admin" : email.split("@")[0],
           role: isAdmin ? "admin" : "user",
         };
         localStorage.setItem("eurotex_user", JSON.stringify(state.user));
@@ -2984,11 +2972,7 @@ function handleGoogleFormSubmit(e) {
   const isAdmin = isAdminEmail(cleanEmail);
   state.user = {
     email: cleanEmail,
-    name: isAdmin
-      ? cleanEmail === "0600quetry@gmail.com"
-        ? "Master Admin (0600quetry)"
-        : "Eurotex Rasmiy Admin"
-      : cleanEmail.split("@")[0],
+    name: isAdmin ? "Eurotex Rasmiy Admin" : cleanEmail.split("@")[0],
     role: isAdmin ? "admin" : "user",
     rememberToken: "google_auto_token_" + Date.now(),
   };
@@ -3042,11 +3026,7 @@ function handleGoogleGsiCredential(response) {
 
     state.user = {
       email: cleanEmail,
-      name: isAdmin
-        ? cleanEmail === "0600quetry@gmail.com"
-          ? "Master Admin (0600quetry)"
-          : "Eurotex Rasmiy Admin"
-        : displayName,
+      name: isAdmin ? "Eurotex Rasmiy Admin" : displayName,
       role: isAdmin ? "admin" : "user",
       picture: payload.picture || "",
       rememberToken: response.credential,
@@ -3096,11 +3076,7 @@ function executeGoogleQuickLogin(overrideEmail) {
 
   state.user = {
     email: cleanEmail,
-    name: isAdmin
-      ? cleanEmail === "0600quetry@gmail.com"
-        ? "Master Admin (0600quetry)"
-        : "Eurotex Rasmiy Admin"
-      : formattedName,
+    name: isAdmin ? "Eurotex Rasmiy Admin" : formattedName,
     role: isAdmin ? "admin" : "user",
     rememberToken: "google_auto_token_" + Date.now(),
   };
@@ -3248,11 +3224,7 @@ function handleGsiCredentialResponse(response) {
 
     state.user = {
       email: realEmail,
-      name: isAdmin
-        ? realEmail === "0600quetry@gmail.com"
-          ? "Master Admin (0600quetry)"
-          : "Eurotex Rasmiy Admin"
-        : formatted,
+      name: isAdmin ? "Eurotex Rasmiy Admin" : formatted,
       role: isAdmin ? "admin" : "user",
       picture: realPicture,
       rememberToken: response.credential,
@@ -3315,11 +3287,7 @@ function quickAdminLogin(email) {
   const isAdmin = isAdminEmail(cleanEmail);
   state.user = {
     email: cleanEmail,
-    name: isAdmin
-      ? cleanEmail === "0600quetry@gmail.com"
-        ? "Master Admin (0600quetry)"
-        : "Eurotex Rasmiy Admin"
-      : cleanEmail.split("@")[0],
+    name: isAdmin ? "Eurotex Rasmiy Admin" : cleanEmail.split("@")[0],
     role: isAdmin ? "admin" : "user",
     rememberToken: "admin_master_token_2026",
   };
@@ -3376,6 +3344,10 @@ function updateUserAuthUI() {
 
   if (isAdmin) {
     document.body.classList.add("is-admin");
+    const adminHeaderEmailEl = document.getElementById("adminHeaderEmail");
+    if (adminHeaderEmailEl && state.user && state.user.email) {
+      adminHeaderEmailEl.textContent = state.user.email;
+    }
   } else {
     document.body.classList.remove("is-admin");
   }
