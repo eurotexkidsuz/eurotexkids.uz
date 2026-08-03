@@ -4166,9 +4166,21 @@ function notifyProductChange() {
   }
 }
 
-// Sync products with localStorage and MongoDB (non-destructive)
 async function syncProductsWithBackendAndStorage() {
-  EUROTEX_PRODUCTS = getCombinedProducts();
+  // Pre-load from IndexedDB immediately so custom products show instantly on refresh!
+  try {
+    const cachedProds = await EurotexIDB.get("eurotex_custom_products");
+    if (Array.isArray(cachedProds) && cachedProds.length > 0) {
+      const map = new Map();
+      cachedProds.forEach((p) => map.set(String(p.id), p));
+      (EUROTEX_PRODUCTS || []).forEach((p) => {
+        if (!map.has(String(p.id))) map.set(String(p.id), p);
+      });
+      EUROTEX_PRODUCTS = Array.from(map.values());
+      renderProducts();
+      renderAdminProducts();
+    }
+  } catch (e) {}
 
   try {
     const res = await fetch("/products");
