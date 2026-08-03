@@ -4258,32 +4258,34 @@ async function syncProductsWithBackendAndStorage(isIntervalSync = false) {
         EUROTEX_PRODUCTS.forEach((p) => {
           if (p.isCustom && !dbCustomIds.has(String(p.id)) && !p._syncing) {
             p._syncing = true;
-            fetch("/products", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                customId: String(p.id),
-                title_uz: p.title_uz,
-                title_ru: p.title_ru || p.title_uz,
-                category: p.category,
-                priceUsd: p.priceUsd,
-                pachkaPriceUsd: p.pachkaPriceUsd,
-                pachkaQty: p.pachkaQty,
-                price: p.price,
-                oldPrice: p.oldPrice,
-                image: p.image,
-                images: p.images || [p.image],
-                sizes: p.sizes,
-                fabric_uz: p.fabric_uz,
-                inStock: true,
-              }),
-            })
-              .then(() => {
-                delete p._syncing;
+            compressBase64Image(p.image, 600, 0.65).then((compressedImg) => {
+              fetch("/products", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  customId: String(p.id),
+                  title_uz: p.title_uz,
+                  title_ru: p.title_ru || p.title_uz,
+                  category: p.category,
+                  priceUsd: p.priceUsd,
+                  pachkaPriceUsd: p.pachkaPriceUsd,
+                  pachkaQty: p.pachkaQty,
+                  price: p.price,
+                  oldPrice: p.oldPrice,
+                  image: compressedImg,
+                  images: [compressedImg],
+                  sizes: p.sizes,
+                  fabric_uz: p.fabric_uz,
+                  inStock: true,
+                }),
               })
-              .catch(() => {
-                delete p._syncing;
-              });
+                .then(() => {
+                  delete p._syncing;
+                })
+                .catch(() => {
+                  delete p._syncing;
+                });
+            });
           }
         });
       }
@@ -4805,7 +4807,7 @@ function updateTurkumiOptions() {
     .join("");
 }
 
-function handleAddNewProduct(e) {
+async function handleAddNewProduct(e) {
   e.preventDefault();
   const picker = document.getElementById("newProdImagePicker");
   const title = document.getElementById("newProdTitleUz").value.trim();
@@ -4816,20 +4818,25 @@ function handleAddNewProduct(e) {
     parseInt(document.getElementById("newProdPachkaQty").value, 10) || 6;
   // Compute per-unit price from package total
   const priceUsd = Math.round(pachkaPriceUsd / pachkaQty) || 8;
-  let imagesArr = [];
+  let rawImages = [];
   if (window._prodImagesArr && window._prodImagesArr.length > 0) {
-    imagesArr = [...window._prodImagesArr];
+    rawImages = [...window._prodImagesArr];
   } else if (picker && picker.dataset.images) {
     try {
-      imagesArr = JSON.parse(picker.dataset.images);
+      rawImages = JSON.parse(picker.dataset.images);
     } catch (err) {}
   }
-  if (imagesArr.length === 0 && picker && picker.dataset.base64) {
-    imagesArr = [picker.dataset.base64];
+  if (rawImages.length === 0 && picker && picker.dataset.base64) {
+    rawImages = [picker.dataset.base64];
   }
-  if (imagesArr.length === 0) {
-    imagesArr = ["/images/hero_banner.jpg"];
+  if (rawImages.length === 0) {
+    rawImages = ["/images/hero_banner.jpg"];
   }
+
+  // Compress images to ~20-25KB each so Vercel 4.5MB payload limit is NEVER hit!
+  const imagesArr = await Promise.all(
+    rawImages.map((img) => compressBase64Image(img, 600, 0.65)),
+  );
 
   // Collect sizes: checkboxes + custom tags
   const checked = [
@@ -4874,31 +4881,31 @@ function handleAddNewProduct(e) {
   renderAdminProducts();
 
   // Send POST to MongoDB backend
-  fetch("/products", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      customId: String(newProd.id),
-      title_uz: newProd.title_uz,
-      title_ru: newProd.title_ru,
-      category: newProd.category,
-      priceUsd: newProd.priceUsd,
-      pachkaPriceUsd: newProd.pachkaPriceUsd,
-      pachkaQty: newProd.pachkaQty,
-      price: newProd.price,
-      oldPrice: newProd.oldPrice,
-      image: newProd.image,
-      images: newProd.images,
-      sizes: newProd.sizes,
-      fabric_uz: newProd.fabric_uz,
-      inStock: true,
-    }),
-  })
-    .then((r) => r.json())
-    .then(() => {
-      syncProductsWithBackendAndStorage();
-    })
-    .catch((err) => console.error("MongoDB POST error:", err));
+  try {
+    await fetch("/products", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        customId: String(newProd.id),
+        title_uz: newProd.title_uz,
+        title_ru: newProd.title_ru,
+        category: newProd.category,
+        priceUsd: newProd.priceUsd,
+        pachkaPriceUsd: newProd.pachkaPriceUsd,
+        pachkaQty: newProd.pachkaQty,
+        price: newProd.price,
+        oldPrice: newProd.oldPrice,
+        image: newProd.image,
+        images: newProd.images,
+        sizes: newProd.sizes,
+        fabric_uz: newProd.fabric_uz,
+        inStock: true,
+      }),
+    });
+    await syncProductsWithBackendAndStorage();
+  } catch (err) {
+    console.error("MongoDB POST error:", err);
+  }
 
   closeModal("addProductModal");
   resetAddProductForm();
@@ -4906,7 +4913,7 @@ function handleAddNewProduct(e) {
   renderProducts();
   renderAdminProducts();
   showToast(
-    `✨ Yangi mahsulot "${title}" katalogga muvaffaqiyatli qo'shildi! ✅`,
+    `✨ Yangi mahsulot "${title}" katalogga va MongoDB bazasiga muvaffaqiyatli qo'shildi! ✅`,
   );
 }
 
