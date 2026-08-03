@@ -843,9 +843,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   initTheme();
   initPWA();
   closeAllModals();
-  await syncProductsWithBackendAndStorage();
+  await syncProductsWithBackendAndStorage(false);
   // Auto-sync new products from MongoDB every 5 seconds for all users!
-  setInterval(syncProductsWithBackendAndStorage, 5000);
+  setInterval(() => syncProductsWithBackendAndStorage(true), 5000);
   loadCustomSizesFromStorage();
   setLanguage(state.currentLang);
   setupEventListeners();
@@ -4168,8 +4168,8 @@ function notifyProductChange() {
 
 let _lastProdsHash = "";
 
-async function syncProductsWithBackendAndStorage() {
-  // If user is currently in Admin Panel or editing inputs, pause background polling so inputs never reset!
+async function syncProductsWithBackendAndStorage(isIntervalSync = false) {
+  // If this is a background interval tick AND admin is in Admin Panel, pause polling so inputs never reset!
   const isAdminView =
     window.location.pathname.includes("/admin") ||
     state.currentCategory === "admin" ||
@@ -4179,7 +4179,7 @@ async function syncProductsWithBackendAndStorage() {
       document.getElementById("admin-dashboard-section").style.display !==
         "none");
 
-  if (isAdminView) {
+  if (isIntervalSync && isAdminView) {
     return;
   }
 
@@ -4289,7 +4289,7 @@ async function syncProductsWithBackendAndStorage() {
     (p) => `${p.id}:${p.title_uz}:${p.price}:${p.category}`,
   ).join("|");
 
-  if (newHash !== _lastProdsHash) {
+  if (newHash !== _lastProdsHash || !isIntervalSync) {
     _lastProdsHash = newHash;
     renderProducts();
     const isTypingInAdmin =
