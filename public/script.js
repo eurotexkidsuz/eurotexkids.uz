@@ -854,6 +854,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   initSlideLiveSync();
   checkGoogleAuthRedirect();
   updateUserAuthUI();
+  handleURLRouting();
   initAutoGooglePrompt();
 });
 
