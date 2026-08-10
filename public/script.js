@@ -4013,72 +4013,71 @@ function renderAdminOrders() {
     return;
   }
 
+  const rate = state.usdRate || 12650;
+
   container.innerHTML = `
-    <!-- Admin Orders Large 4-Corner Cards Grid (Screenshot 1 Design System) -->
-    <div class="admin-orders-cards-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:20px;">
+    <!-- Admin Orders Cards Grid (Identical Design to Mahsulotlar Narxlari) -->
+    <div class="admin-products-cards-grid">
       ${state.orders
         .map((o, idx) => {
-          const totalFormatted = formatPriceUsdAndSom(o.total);
+          const firstItem = (o.items && o.items[0]) || {};
+          const itemImg = firstItem.image || firstItem.img || "/images/default-product.png";
+          const itemTitle = firstItem.title || "Eurotex Kostyum";
+          const pachkaQty = firstItem.quantity || 6;
+          
+          const totalVal = parseFloat(o.total) || 0;
+          let usdVal = 0;
+          let uzsVal = 0;
+          if (totalVal > 5000) {
+            uzsVal = Math.round(totalVal);
+            usdVal = Math.round(uzsVal / rate);
+          } else {
+            usdVal = Math.round(totalVal);
+            uzsVal = Math.round(usdVal * rate);
+          }
+          
+          const totalSomFormatted = uzsVal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+          const recipientName = o.recipient || "Mijoz";
+
           return `
-            <div class="admin-order-card" style="background:#090d16; border:1px solid #1e293b; border-radius:16px; padding:18px; box-shadow:0 10px 30px rgba(0,0,0,0.3); color:#ffffff; display:flex; flex-direction:column; justify-content:space-between;">
-              <div>
-                <!-- Top Header: Order ID & Status Badge -->
-                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1e293b; padding-bottom:12px; margin-bottom:14px;">
-                  <div>
-                    <strong style="font-size:17px; color:#06b6d4;">Buyurtma #${o.id}</strong>
-                    <div style="font-size:12px; color:#94a3b8; margin-top:2px;">📅 ${o.date}</div>
-                  </div>
-                  <span style="background:${o.statusStep === 4 ? '#166534' : '#854d0e'}; color:#ffffff; font-weight:800; font-size:12px; padding:4px 10px; border-radius:20px;">
-                    ${o.status}
-                  </span>
-                </div>
-
-                <!-- Recipient & Address Box -->
-                <div style="background:#0f172a; border:1px solid #1e293b; border-radius:12px; padding:12px; margin-bottom:14px;">
-                  <div style="font-weight:700; font-size:14px; color:#f8fafc; margin-bottom:4px;">
-                    👤 ${o.recipient || "Mijoz"}
-                  </div>
-                  <div style="font-size:12.5px; color:#94a3b8; line-height:1.4;">
-                    📍 ${o.address || "Manzil ko'rsatilmagan"}
-                  </div>
-                </div>
-
-                <!-- Purchased Items List -->
-                <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
-                  ${(o.items || [])
-                    .map((i) => {
-                      const itemPriceFormatted = formatPriceUsdAndSom(i.price);
-                      return `
-                      <div style="display:flex; gap:12px; background:#0f172a; border:1px solid #1e293b; border-radius:12px; padding:10px; align-items:center;">
-                        <img src="${i.image || i.img || '/images/default-product.png'}" alt="${i.title || 'Mahsulot'}" style="width:60px; height:60px; object-fit:cover; border-radius:10px; border:1px solid #334155; flex-shrink:0;" onerror="this.src='/images/default-product.png'" />
-                        <div style="flex:1; font-size:13px;">
-                          <div style="font-weight:700; color:#ffffff; line-height:1.2; margin-bottom:4px;">${i.title || 'Kostyum-shim'}</div>
-                          <div style="color:#94a3b8; font-size:12px; margin-bottom:4px;">
-                            O'lcham: <b style="color:#06b6d4;">${i.size || 'M'}</b> | Soni: <b style="color:#06b6d4;">${i.quantity || 1}x</b>
-                          </div>
-                          <div style="color:#06b6d4; font-weight:800; font-size:13px;">
-                            ${itemPriceFormatted.display}
-                          </div>
-                        </div>
-                      </div>
-                    `;
-                    })
-                    .join("")}
-                </div>
+            <div class="admin-product-card">
+              <!-- Top Image Box (Screenshot 3 Design) -->
+              <div class="admin-card-media">
+                <img src="${itemImg}" alt="${itemTitle}" class="admin-card-img" onerror="this.src='/images/default-product.png'">
+                <span class="admin-card-badge">Pachka: ${pachkaQty} dona</span>
               </div>
 
-              <!-- Footer: Total Price Box & Status Dropdown -->
-              <div style="border-top:1px solid #1e293b; padding-top:14px; margin-top:6px;">
-                <!-- Total Price Line -->
-                <div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; border:1px solid #1e293b; border-radius:12px; padding:10px 14px; margin-bottom:12px;">
-                  <span style="font-size:13px; color:#94a3b8; font-weight:600;">Jami so'mda:</span>
-                  <span style="font-size:16px; font-weight:800; color:#06b6d4;">${totalFormatted.display}</span>
+              <!-- Card Content Body -->
+              <div class="admin-card-body">
+                <!-- Title & Order ID Input Row -->
+                <div class="admin-card-header-row">
+                  <input type="text" value="${recipientName.toUpperCase()}" class="admin-card-title-input" readonly title="Mijoz nomi">
                 </div>
 
-                <!-- Admin Status Change Dropdown -->
-                <div style="display:flex; flex-direction:column; gap:4px;">
-                  <label style="font-size:12px; color:#94a3b8; font-weight:600;">Statusni o'zgartirish (Admin):</label>
-                  <select onchange="updateOrderStatusByAdmin(${idx}, this.value)" style="width:100%; padding:10px; font-weight:700; border-radius:10px; font-size:13px; border:1px solid #06b6d4; background:#0f172a; color:#ffffff; cursor:pointer; outline:none;">
+                <!-- Category Subtitle Dropdown / Address -->
+                <div class="admin-card-subtitle" style="font-size:12px; color:#00e5ff; font-weight:600;">
+                  📍 ${o.address || "Manzil ko'rsatilmagan"} (#${o.id})
+                </div>
+
+                <!-- Detail Lines (Screenshot 3 Style) -->
+                <div class="admin-card-details">
+                  <div class="detail-line">
+                    <span class="detail-label">Pachka ($ USD):</span>
+                    <div class="detail-input-wrap">
+                      <input type="number" value="${usdVal}" class="admin-price-input pachka" readonly>
+                      <span class="detail-unit">$</span>
+                    </div>
+                  </div>
+
+                  <div class="detail-line total">
+                    <span class="detail-label">Jami so'mda:</span>
+                    <span class="detail-value cyan" id="orderTotalSom_${idx}">${totalSomFormatted} so'm</span>
+                  </div>
+                </div>
+
+                <!-- Status Change Select Box -->
+                <div style="margin-top:6px;">
+                  <select class="admin-card-cat-select" onchange="updateOrderStatusByAdmin(${idx}, this.value)" style="width:100%; border-color:#00e5ff; color:#ffffff; font-weight:700; background:rgba(0, 229, 255, 0.1);">
                     <option value="1" ${o.statusStep === 1 ? "selected" : ""}>1. Qabul qilindi 🟡</option>
                     <option value="2" ${o.statusStep === 2 ? "selected" : ""}>2. Tayyorlanmoqda 🟠</option>
                     <option value="3" ${o.statusStep === 3 ? "selected" : ""}>3. Kuryerda 🚚</option>
