@@ -2,28 +2,79 @@ const mongoose = require("mongoose");
 
 const productSchema = new mongoose.Schema(
   {
-    customId: { type: String, unique: true },
-    title_uz: { type: String, required: true },
-    title_ru: { type: String },
-    title_en: { type: String },
-    category: { type: String, default: "Kostyum-Shimlar" },
-    subCategory: { type: String, default: "slim" },
-    price: { type: Number },
-    oldPrice: { type: Number },
-    priceUsd: { type: Number, default: 50 },
+    customId: { type: String, unique: true, index: true },
+    title_uz: { type: String, required: true, trim: true },
+    title_ru: { type: String, trim: true, default: "" },
+    title_en: { type: String, trim: true, default: "" },
+    category: {
+      type: String,
+      default: "suits",
+      enum: [
+        "suits",
+        "trousers",
+        "blazers",
+        "tuxedos",
+        "shirts",
+        "accessories",
+      ],
+      index: true,
+    },
+    subCategory: { type: String, default: "slim", index: true },
+    price: { type: Number, default: 0 },
+    oldPrice: { type: Number, default: 0 },
+    priceUsd: { type: Number, default: 50, required: true },
     pachkaPriceUsd: { type: Number, default: 45 },
-    pachkaQty: { type: Number, default: 6 },
-    rating: { type: Number, default: 5.0 },
-    reviewsCount: { type: Number, default: 12 },
+    pachkaQty: { type: Number, default: 6, min: 1 },
+    unitPriceUsd: { type: Number, default: 0 },
+    rating: { type: Number, default: 5.0, min: 0, max: 5 },
+    reviewsCount: { type: Number, default: 12, min: 0 },
     badge_uz: { type: String, default: "ULGURJI PACHKA" },
-    badgeType: { type: String, default: "gold" },
+    badge_ru: { type: String, default: "ОПТОВАЯ УПАКОВКА" },
+    badge_en: { type: String, default: "WHOLESALE PACK" },
+    badgeType: {
+      type: String,
+      default: "gold",
+      enum: ["gold", "red", "purple", "neon", "none"],
+    },
     image: { type: String, default: "/images/hero_banner.jpg" },
     images: { type: Array, default: [] },
     sizes: { type: Array, default: [46, 48, 50, 52, 54, 56] },
     fabric_uz: { type: String, default: "Turkiya Premium Jun & Viskoza Blend" },
-    inStock: { type: Boolean, default: true },
+    fabric_ru: { type: String, default: "Турецкая Премиум Шерсть & Вискоза" },
+    fabric_en: {
+      type: String,
+      default: "Turkish Premium Wool & Viscose Blend",
+    },
+    color_uz: { type: String, default: "" },
+    color_ru: { type: String, default: "" },
+    color_en: { type: String, default: "" },
+    inStock: { type: Boolean, default: true, index: true },
+    isFeatured: { type: Boolean, default: false, index: true },
+    isNewArrival: { type: Boolean, default: false, index: true },
+    wholesaleOnly: { type: Boolean, default: true },
   },
   { timestamps: true },
 );
+
+productSchema.pre("save", function (next) {
+  if (!this.customId) {
+    this.customId =
+      "prod_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
+  }
+  if (this.pachkaQty > 0 && this.priceUsd > 0 && !this.unitPriceUsd) {
+    this.unitPriceUsd =
+      Math.round((this.priceUsd / this.pachkaQty) * 100) / 100;
+  }
+  if (this.pachkaPriceUsd === 0 && this.priceUsd > 0) {
+    this.pachkaPriceUsd = this.priceUsd;
+  }
+  if (this.price === 0 && this.priceUsd > 0) {
+    this.price = this.priceUsd;
+  }
+  next();
+});
+
+productSchema.index({ category: 1, inStock: 1 });
+productSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model("Product", productSchema);

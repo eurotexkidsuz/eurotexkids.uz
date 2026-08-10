@@ -446,7 +446,8 @@ const DEFAULT_EUROTEX_PRODUCTS = [
   },
   {
     id: "prod-5",
-    title_uz: "Eurotex Oxford Premium Oq Erkaklar Ko'ylagi (1 Pachka = 6 ta Seriya)",
+    title_uz:
+      "Eurotex Oxford Premium Oq Erkaklar Ko'ylagi (1 Pachka = 6 ta Seriya)",
     title_ru: "Сорочка Мужская Eurotex Oxford Белая (1 Пачка = 6 шт Серия)",
     title_en: "Eurotex Oxford Premium White Shirt (1 Pack = 6 pcs Wholesale)",
     category: "shirts",
@@ -1116,7 +1117,8 @@ function getRotatingHomeProducts() {
 
 function safeFormatMoney(priceVal) {
   try {
-    const rate = typeof state !== "undefined" && state.usdRate ? state.usdRate : 12650;
+    const rate =
+      typeof state !== "undefined" && state.usdRate ? state.usdRate : 12650;
     let usd = 0;
     let uzs = 0;
     const num = parseFloat(priceVal) || 45;
@@ -1152,15 +1154,28 @@ function renderProducts() {
   const activeSearch = (state.activeSearchQuery || "").trim();
   let pool = EUROTEX_PRODUCTS;
 
-  if (!activeSearch && (state.currentCategory === "all" || !state.currentCategory)) {
+  if (
+    !activeSearch &&
+    (state.currentCategory === "all" || !state.currentCategory)
+  ) {
     pool = getRotatingHomeProducts();
   }
 
   let filtered = pool.filter((item) => {
     if (!item) return false;
     const titleUz = (item.title_uz || item.title || "").toLowerCase();
-    const titleRu = (item.title_ru || item.title_uz || item.title || "").toLowerCase();
-    const titleEn = (item.title_en || item.title_uz || item.title || "").toLowerCase();
+    const titleRu = (
+      item.title_ru ||
+      item.title_uz ||
+      item.title ||
+      ""
+    ).toLowerCase();
+    const titleEn = (
+      item.title_en ||
+      item.title_uz ||
+      item.title ||
+      ""
+    ).toLowerCase();
     const colorUz = (item.color_uz || "").toLowerCase();
     const fabricUz = (item.fabric_uz || "").toLowerCase();
     const categoryUz = (item.category || "").toLowerCase();
@@ -1169,7 +1184,8 @@ function renderProducts() {
     const matchesCategory = !activeSearch
       ? state.currentCategory === "all" ||
         !state.currentCategory ||
-        (state.currentCategory === "super-deal" && item.oldPrice > item.price) ||
+        (state.currentCategory === "super-deal" &&
+          item.oldPrice > item.price) ||
         matchCategory(item.category, state.currentCategory)
       : true;
 
@@ -1209,30 +1225,50 @@ function renderProducts() {
   const displayLimit = state.displayLimit || 24;
   const visibleItems = filtered.slice(0, displayLimit);
 
-  grid.innerHTML = visibleItems
-    .map((product) => {
-      try {
-        if (!product) return "";
-        const isWishlisted = (state.wishlist || []).some((w) => w && w.id === product.id);
-        const title = (product[`title_${lang}`] || product.title_uz || product.title || "Eurotex Kostyum").toString();
-        const badgeText = (product[`badge_${lang}`] || product.badge_uz || "ULGURJI PACHKA").toString();
-        const formattedPrice = safeFormatMoney(product.priceUsd || product.pachkaPriceUsd || product.price || 45);
-        const formattedOldPrice = product.oldPrice ? safeFormatMoney(product.oldPrice) : "";
-        const monthlyInstallment = safeFormatMoney(product.nasiyaMonthly || Math.round((product.priceUsd || product.price || 45) / 6));
+  grid.innerHTML =
+    visibleItems
+      .map((product) => {
+        try {
+          if (!product) return "";
+          const isWishlisted = (state.wishlist || []).some(
+            (w) => w && w.id === product.id,
+          );
+          const title = (
+            product[`title_${lang}`] ||
+            product.title_uz ||
+            product.title ||
+            "Eurotex Kostyum"
+          ).toString();
+          const badgeText = (
+            product[`badge_${lang}`] ||
+            product.badge_uz ||
+            "ULGURJI PACHKA"
+          ).toString();
+          const formattedPrice = safeFormatMoney(
+            product.priceUsd || product.pachkaPriceUsd || product.price || 45,
+          );
+          const formattedOldPrice = product.oldPrice
+            ? safeFormatMoney(product.oldPrice)
+            : "";
+          const monthlyInstallment = safeFormatMoney(
+            product.nasiyaMonthly ||
+              Math.round((product.priceUsd || product.price || 45) / 6),
+          );
 
-        const unitPriceStr = product.unitPrice
-          ? ` ($${product.unitPrice}/ta)`
-          : "";
-        const perMonthText = (dict?.perMonth || "oyiga").toLowerCase();
-        const imgSrc = product.image || product.img || "/images/default-product.png";
+          const unitPriceStr = product.unitPrice
+            ? ` ($${product.unitPrice}/ta)`
+            : "";
+          const perMonthText = (dict?.perMonth || "oyiga").toLowerCase();
+          const imgSrc =
+            product.image || product.img || "/images/default-product.png";
 
-        return `
-            <div class="product-card" data-id="${product.id || 'prod-1'}">
-                <div class="card-image-wrap" onclick="openQuickView('${product.id || 'prod-1'}')">
+          return `
+            <div class="product-card" data-id="${product.id || "prod-1"}">
+                <div class="card-image-wrap" onclick="openQuickView('${product.id || "prod-1"}')">
                     <img src="${imgSrc}" alt="${title}" loading="lazy" onerror="this.src='/images/default-product.png'">
-                    ${badgeText ? `<span class="card-badge-tag ${product.badgeType || 'gold'}">${badgeText}</span>` : ""}
+                    ${badgeText ? `<span class="card-badge-tag ${product.badgeType || "gold"}">${badgeText}</span>` : ""}
                     <button class="wishlist-heart-btn ${isWishlisted ? "active" : ""}" 
-                            onclick="event.stopPropagation(); toggleWishlist('${product.id || 'prod-1'}')" 
+                            onclick="event.stopPropagation(); toggleWishlist('${product.id || "prod-1"}')" 
                             title="Wishlist">
                         ${isWishlisted ? "❤️" : "🤍"}
                     </button>
@@ -1246,14 +1282,14 @@ function renderProducts() {
                             <span class="current-price" style="font-size:15px; font-weight:800; color:var(--color-navy);">${formattedPrice} <small style="font-size:11px; font-weight:600; color:#059669;">/pachka${unitPriceStr}</small></span>
                             ${product.oldPrice ? `<span class="old-price">${formattedOldPrice}</span>` : ""}
                         </div>
-                        <button class="quick-add-btn" onclick="openQuickView('${product.id || 'prod-1'}')" title="Savatga qo'shish">
+                        <button class="quick-add-btn" onclick="openQuickView('${product.id || "prod-1"}')" title="Savatga qo'shish">
                             🛒
                         </button>
                     </div>
                     <div class="card-nasiya-box" style="margin-bottom: 8px;">
                         Eurotex Nasiya: ${monthlyInstallment}/${perMonthText}
                     </div>
-                    <h3 class="card-title" onclick="openQuickView('${product.id || 'prod-1'}')" style="margin-bottom: 4px;">${title}</h3>
+                    <h3 class="card-title" onclick="openQuickView('${product.id || "prod-1"}')" style="margin-bottom: 4px;">${title}</h3>
                     <div class="card-rating">
                         <span>⭐ ${product.rating || 5.0}</span>
                         <span>(${product.reviewsCount || 12} ${lang === "ru" ? "отзывов" : lang === "en" ? "reviews" : "sharhlar"})</span>
@@ -1261,19 +1297,19 @@ function renderProducts() {
                 </div>
             </div>
         `;
-      } catch (err) {
-        console.error("renderProducts item map error:", err);
-        return "";
-      }
-    })
-    .join("") +
-  (filtered.length > visibleItems.length
-    ? `<div style="grid-column: 1/-1; text-align: center; padding: 28px 0;">
+        } catch (err) {
+          console.error("renderProducts item map error:", err);
+          return "";
+        }
+      })
+      .join("") +
+    (filtered.length > visibleItems.length
+      ? `<div style="grid-column: 1/-1; text-align: center; padding: 28px 0;">
          <button type="button" class="btn btn-primary btn-large" onclick="loadMoreProducts()" style="padding: 14px 36px; border-radius: 12px; font-weight: 800; font-size: 15px; background: linear-gradient(135deg, #7000ff, #4c00b0); color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(112, 0, 255, 0.3);">
            🚀 Yana ${filtered.length - visibleItems.length} ta mahsulotni ko'rsatish
          </button>
        </div>`
-    : "");
+      : "");
 }
 
 function loadMoreProducts() {
@@ -2414,9 +2450,7 @@ function openDashboardView(tabName = "cart") {
   if (tabName === "admin" && !isUserAdmin()) {
     closeDashboardView();
     history.replaceState({}, document.title, "/");
-    showToast(
-      "🔒 Siz kirolmaysiz! Admin emassiz! ⛔",
-    );
+    showToast("🔒 Siz kirolmaysiz! Admin emassiz! ⛔");
     openAuthModal();
     return;
   }
@@ -3284,7 +3318,11 @@ function handleGsiCredentialResponse(response) {
 
     // Cancel and disable any further Google One Tap prompts when logged in
     try {
-      if (window.google && window.google.accounts && window.google.accounts.id) {
+      if (
+        window.google &&
+        window.google.accounts &&
+        window.google.accounts.id
+      ) {
         window.google.accounts.id.cancel();
         window.google.accounts.id.disableAutoSelect();
       }
@@ -3311,7 +3349,11 @@ function initAutoGooglePrompt() {
   // If user is already logged in, cancel Google One Tap so it NEVER shows!
   if (state.user) {
     try {
-      if (window.google && window.google.accounts && window.google.accounts.id) {
+      if (
+        window.google &&
+        window.google.accounts &&
+        window.google.accounts.id
+      ) {
         window.google.accounts.id.cancel();
         window.google.accounts.id.disableAutoSelect();
       }
@@ -3440,6 +3482,14 @@ function handleOrderSubmit(e) {
   const finalTotal = rawSubtotal - discountAmount;
   const orderId = `EUR-${Math.floor(100000 + Math.random() * 900000)}`;
 
+  const rateApplied = state.usdRate || 12650;
+  let totalPriceUsd = finalTotal;
+  let totalPriceUzs = Math.round(finalTotal * rateApplied);
+  if (finalTotal > 5000) {
+    totalPriceUzs = Math.round(finalTotal);
+    totalPriceUsd = Math.round(totalPriceUzs / rateApplied);
+  }
+
   const currentUserEmail = state.user?.email || "";
   const newOrder = {
     id: orderId,
@@ -3447,9 +3497,13 @@ function handleOrderSubmit(e) {
     date: new Date().toLocaleDateString(),
     items: [...state.cart],
     total: finalTotal > 0 ? finalTotal : 120,
+    totalPriceUsd: totalPriceUsd,
+    totalPriceUzs: totalPriceUzs,
+    usdRateApplied: rateApplied,
     status: "Qabul qilindi 🟡",
     statusStep: 1,
     recipient: `${name} (${phone})`,
+    phone,
     address: addrText,
   };
 
@@ -3464,22 +3518,28 @@ function handleOrderSubmit(e) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         orderId,
+        customerName: name,
         userEmail: currentUserEmail,
         recipient: `${name} (${phone})`,
         phone,
         address: addrText,
         items: [...state.cart],
         total: finalTotal > 0 ? finalTotal : 120,
+        totalPriceUsd,
+        totalPriceUzs,
+        usdRateApplied: rateApplied,
         statusStep: 1,
         status: "Qabul qilindi 🟡",
         date: new Date().toLocaleDateString("uz-UZ"),
       }),
-    }).then(() => {
-      fetchOrdersFromServer();
-      if (orderSyncChannel) {
-        orderSyncChannel.postMessage({ type: "NEW_ORDER", order: newOrder });
-      }
-    }).catch((e) => console.error("POST /orders error:", e));
+    })
+      .then(() => {
+        fetchOrdersFromServer();
+        if (orderSyncChannel) {
+          orderSyncChannel.postMessage({ type: "NEW_ORDER", order: newOrder });
+        }
+      })
+      .catch((e) => console.error("POST /orders error:", e));
   } catch (err) {}
 
   state.cart = [];
@@ -3492,9 +3552,10 @@ function handleOrderSubmit(e) {
   openDashboardView("orders");
 }
 
-const orderSyncChannel = typeof BroadcastChannel !== "undefined"
-  ? new BroadcastChannel("eurotex_orders_channel")
-  : null;
+const orderSyncChannel =
+  typeof BroadcastChannel !== "undefined"
+    ? new BroadcastChannel("eurotex_orders_channel")
+    : null;
 
 if (orderSyncChannel) {
   orderSyncChannel.onmessage = (event) => {
@@ -3557,7 +3618,9 @@ async function fetchOrdersFromServer() {
             total: o.total || 0,
             statusStep: o.statusStep !== undefined ? o.statusStep : 1,
             status: o.status || "Qabul qilindi 🟡",
-            date: o.date || new Date(o.createdAt || Date.now()).toLocaleDateString("uz-UZ"),
+            date:
+              o.date ||
+              new Date(o.createdAt || Date.now()).toLocaleDateString("uz-UZ"),
           };
         });
 
@@ -4038,6 +4101,14 @@ function saveAdminUsdRate() {
   }
   state.usdRate = newRate;
   localStorage.setItem("eurotex_usd_rate", newRate);
+  try {
+    if (
+      window.EurotexEngine &&
+      typeof window.EurotexEngine.setUsdRate === "function"
+    ) {
+      window.EurotexEngine.setUsdRate(newRate);
+    }
+  } catch (e) {}
 
   // Re-render all prices across website
   renderProducts();
@@ -4095,10 +4166,11 @@ function renderAdminOrders() {
       ${state.orders
         .map((o, idx) => {
           const firstItem = (o.items && o.items[0]) || {};
-          const itemImg = firstItem.image || firstItem.img || "/images/default-product.png";
+          const itemImg =
+            firstItem.image || firstItem.img || "/images/default-product.png";
           const itemTitle = firstItem.title || "Eurotex Kostyum";
           const pachkaQty = firstItem.quantity || 6;
-          
+
           const totalVal = parseFloat(o.total) || 0;
           let usdVal = 0;
           let uzsVal = 0;
@@ -4109,8 +4181,10 @@ function renderAdminOrders() {
             usdVal = Math.round(totalVal);
             uzsVal = Math.round(usdVal * rate);
           }
-          
-          const totalSomFormatted = uzsVal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+
+          const totalSomFormatted = uzsVal
+            .toString()
+            .replace(/\B(?=(\d{3})+(?!\d))/g, " ");
           const recipientName = o.recipient || "Mijoz";
 
           return `
@@ -4145,16 +4219,16 @@ function renderAdminOrders() {
 
                   <div class="detail-line total">
                     <span class="detail-label">Jami so'mda:</span>
-                    <span class="detail-value cyan" id="orderTotalSom_${idx}">${totalSomFormatted} so'm</span>
+                    <span class="detail-value cyan admin-order-total-amount" id="orderTotalSom_${idx}">${totalSomFormatted} so'm</span>
                   </div>
                 </div>
 
                 <!-- Status Change Select Box -->
                 <div style="margin-top:6px;">
-                  <select class="admin-card-cat-select" onchange="updateOrderStatusByAdmin(${idx}, this.value)" style="width:100%; border-color:#00e5ff; color:#ffffff; font-weight:700; background:rgba(0, 229, 255, 0.1);">
+                  <select class="admin-card-cat-select admin-select-dark" onchange="updateOrderStatusByAdmin(${idx}, this.value)">
                     <option value="1" ${o.statusStep === 1 ? "selected" : ""}>1. Qabul qilindi 🟡</option>
-                    <option value="2" ${o.statusStep === 2 ? "selected" : ""}>2. Tayyorlanmoqda 🟠</option>
-                    <option value="3" ${o.statusStep === 3 ? "selected" : ""}>3. Kuryerda 🚚</option>
+                    <option value="2" ${o.statusStep === 2 ? "selected" : ""}>2. Tayyorlanmoqda 🔵</option>
+                    <option value="3" ${o.statusStep === 3 ? "selected" : ""}>3. Kuryerda 🟣</option>
                     <option value="4" ${o.statusStep === 4 ? "selected" : ""}>4. Yetkazib berildi ✅</option>
                     <option value="0" ${o.statusStep === 0 ? "selected" : ""}>0. Bekor qilindi ❌</option>
                   </select>
@@ -4204,8 +4278,15 @@ function renderAdminProducts() {
   const container = document.getElementById("adminProductsTableContainer");
   if (!container) return;
 
-  if (!window.EUROTEX_PRODUCTS || !Array.isArray(window.EUROTEX_PRODUCTS) || window.EUROTEX_PRODUCTS.length === 0) {
-    window.EUROTEX_PRODUCTS = typeof DEFAULT_EUROTEX_PRODUCTS !== "undefined" ? [...DEFAULT_EUROTEX_PRODUCTS] : [];
+  if (
+    !window.EUROTEX_PRODUCTS ||
+    !Array.isArray(window.EUROTEX_PRODUCTS) ||
+    window.EUROTEX_PRODUCTS.length === 0
+  ) {
+    window.EUROTEX_PRODUCTS =
+      typeof DEFAULT_EUROTEX_PRODUCTS !== "undefined"
+        ? [...DEFAULT_EUROTEX_PRODUCTS]
+        : [];
   }
   EUROTEX_PRODUCTS = window.EUROTEX_PRODUCTS;
 
@@ -4251,7 +4332,7 @@ function renderAdminProducts() {
                             <!-- Category Subtitle Dropdown -->
                             <div class="admin-card-subtitle">
                                 Turkumi: 
-                                <select id="pCat_${idx}" class="admin-card-cat-select">
+                                <select id="pCat_${idx}" class="admin-card-cat-select admin-select-dark">
                                     <option value="suits" ${p.category === "suits" ? "selected" : ""}>Kostyum-Shimlar</option>
                                     <option value="tuxedos" ${p.category === "tuxedos" ? "selected" : ""}>Smoking & To'y liboslari</option>
                                     <option value="trousers" ${p.category === "trousers" ? "selected" : ""}>GBP Klassik Shimlar</option>
@@ -5179,7 +5260,10 @@ function handleAddNewProduct(e) {
   };
 
   if (!window.EUROTEX_PRODUCTS || !Array.isArray(window.EUROTEX_PRODUCTS)) {
-    window.EUROTEX_PRODUCTS = typeof DEFAULT_EUROTEX_PRODUCTS !== "undefined" ? [...DEFAULT_EUROTEX_PRODUCTS] : [];
+    window.EUROTEX_PRODUCTS =
+      typeof DEFAULT_EUROTEX_PRODUCTS !== "undefined"
+        ? [...DEFAULT_EUROTEX_PRODUCTS]
+        : [];
   }
   window.EUROTEX_PRODUCTS.unshift(newProd);
   EUROTEX_PRODUCTS = window.EUROTEX_PRODUCTS;
@@ -5520,4 +5604,3 @@ function updateSlideImageInDOM(slideIndex, imgUrl) {
     }, 350);
   }
 }
-

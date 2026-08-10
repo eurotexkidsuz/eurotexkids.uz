@@ -8,6 +8,7 @@ const {
   checkRememberToken,
   googleAuth,
   googleCallback,
+  googleOneTap,
   guestAuth,
   validateEmail,
   deleteAccount,
@@ -32,6 +33,7 @@ router.post("/slides/upload", saveSlideImage);
 // Google OAuth
 router.get("/auth/google", googleAuth);
 router.get("/auth/google/callback", googleCallback);
+router.post("/auth/google-one-tap", googleOneTap);
 
 // Guest Authentication
 router.get("/auth/guest", guestAuth);

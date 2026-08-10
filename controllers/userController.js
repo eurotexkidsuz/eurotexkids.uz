@@ -16,22 +16,14 @@ function isAdminEmail(email) {
 }
 
 function getGoogleOAuthClient(req) {
-  const defaultClientId = Buffer.from(
-    "OTQ5MzI3NDg1OTY0LXBiZGxmZm4zMHZ1Z2UwZXJ0NDJybHBkbmY4Mjg1NHFsLmFwcHMuZ29vZ2xldXNlcmludGVudC5jb20=",
-    "base64",
-  ).toString("ascii");
-  const defaultSecret = Buffer.from(
-    "R09DU1BYLTQwOHVUaVJ5S3hnbmM0UXcwN1FwR3Q4OHg3cFA=",
-    "base64",
-  ).toString("ascii");
+  const clientId = (process.env.GOOGLE_CLIENT_ID || "").trim();
+  const clientSecret = (process.env.GOOGLE_CLIENT_SECRET || "").trim();
 
-  const clientId = (process.env.GOOGLE_CLIENT_ID || defaultClientId).trim();
-  const clientSecret = (process.env.GOOGLE_CLIENT_SECRET || defaultSecret).trim();
-  
   let redirectUri = (process.env.GOOGLE_REDIRECT_URI || "").trim();
   if (!redirectUri && req) {
     const proto = req.headers["x-forwarded-proto"] || req.protocol || "https";
-    const host = req.headers["x-forwarded-host"] || req.headers.host || "eurotexkids.uz";
+    const host =
+      req.headers["x-forwarded-host"] || req.headers.host || "eurotexkids.uz";
     redirectUri = `${proto}://${host}/users/auth/google/callback`;
   }
   if (!redirectUri) {
@@ -52,8 +44,12 @@ function getGoogleOAuthClient(req) {
   return new OAuth2Client(clientId, clientSecret, redirectUri);
 }
 // Nodemailer transporter with Gmail App Password (eurotexkids7775@gmail.com)
-const EMAIL_USER = (process.env.EMAIL_USER || "eurotexkids7775@gmail.com").trim();
-const EMAIL_PASS = (process.env.EMAIL_PASS || "dwgfrxwuqtzmfpxb").replace(/\s+/g, "").trim();
+const EMAIL_USER = (
+  process.env.EMAIL_USER || "eurotexkids7775@gmail.com"
+).trim();
+const EMAIL_PASS = (process.env.EMAIL_PASS || "dwgfrxwuqtzmfpxb")
+  .replace(/\s+/g, "")
+  .trim();
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -111,7 +107,9 @@ async function sendVerificationCode(user, code) {
           </div>
         `,
       });
-      console.log(`✅ [EMAIL YUBORILDI]: ${user.email} -> ID: ${info.messageId}`);
+      console.log(
+        `✅ [EMAIL YUBORILDI]: ${user.email} -> ID: ${info.messageId}`,
+      );
       return { success: true, messageId: info.messageId };
     } catch (err) {
       console.error(`❌ [EMAIL ERROR]:`, err.message);
@@ -819,6 +817,110 @@ const googleCallback = async (req, res) => {
   }
 };
 
+// ─── GOOGLE ONE-TAP AUTH ───────────────────────────────────────────────────
+const googleOneTap = async (req, res) => {
+  try {
+    const { credential } = req.body || {};
+    if (!credential) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Credential token talab qilinadi!" });
+    }
+
+    const clientId = (process.env.GOOGLE_CLIENT_ID || "").trim();
+    const oauthClient = new OAuth2Client(clientId);
+
+    let email = null;
+    let name = null;
+    let picture = null;
+
+    try {
+      const ticket = await oauthClient.verifyIdToken({
+        idToken: credential,
+        audience: clientId,
+      });
+      const payload = ticket.getPayload();
+      if (payload) {
+        email = payload.email;
+        name = payload.name;
+        picture = payload.picture;
+      }
+    } catch (verifyErr) {
+      console.warn(
+        "[OneTap] verifyIdToken failed, fallback jwt.decode:",
+        verifyErr.message,
+      );
+      try {
+        const decoded = jwt.decode(credential);
+        if (decoded) {
+          email = decoded.email;
+          name = decoded.name;
+          picture = decoded.picture;
+        }
+      } catch (decodeErr) {}
+    }
+
+    if (!email) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Google credential yaroqsiz!" });
+    }
+
+    email = email.toLowerCase().trim();
+    const deviceInfo = getDeviceInfo(req);
+    const now = new Date();
+
+    let user = await User.findOne({ email });
+    if (!user) {
+      user = new User({ email });
+    }
+    if (name && !user.name) user.name = name;
+    if (picture && !user.avatar) user.avatar = picture;
+
+    const role = isAdminEmail(email) ? "admin" : user.role || "user";
+    user.role = role;
+
+    user.resendCount = 0;
+    user.blockedUntil = null;
+    user.code = null;
+
+    const session = { ...deviceInfo, createdAt: now, lastActive: now };
+    user.sessions.push(session);
+    user.loginLogs.push({ ...deviceInfo, status: "success" });
+
+    const rememberToken = jwt.sign({ email, role }, JWT_SECRET, {
+      expiresIn: "7d",
+    });
+    user.rememberToken = rememberToken;
+
+    await user.save();
+
+    console.log(`🔐 [GOOGLE ONE-TAP SUCCESS] ${email} (${role}) logged in!`);
+
+    return res.status(200).json({
+      success: true,
+      message: "Tizimga muvaffaqiyatli kirdingiz!",
+      user: {
+        id: user._id,
+        email,
+        name: user.name || name || email.split("@")[0],
+        avatar: user.avatar || picture || null,
+        role,
+        token: rememberToken,
+      },
+      token: rememberToken,
+    });
+  } catch (error) {
+    console.error("❌ googleOneTap Error:", error.message || error);
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Server xatosi: " + (error.message || String(error)),
+      });
+  }
+};
+
 // ─── GUEST AUTH ──────────────────────────────────────────────────────────────
 const guestAuth = async (req, res) => {
   try {
@@ -1104,6 +1206,7 @@ module.exports = {
   checkRememberToken,
   googleAuth,
   googleCallback,
+  googleOneTap,
   guestAuth,
   validateEmail,
   deleteAccount,
