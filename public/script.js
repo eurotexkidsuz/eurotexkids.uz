@@ -848,11 +848,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   await syncProductsWithBackendAndStorage(false);
   await fetchOrdersFromServer();
   handleURLRouting();
-  // Auto-sync new products and orders from MongoDB every 5 seconds for all users!
+  // Auto-sync new products and orders from MongoDB every 3 seconds for instant admin alerts!
   setInterval(() => {
     syncProductsWithBackendAndStorage(true);
     fetchOrdersFromServer();
-  }, 5000);
+  }, 3000);
   loadCustomSizesFromStorage();
   setLanguage(state.currentLang);
   setupEventListeners();
@@ -3399,7 +3399,7 @@ function handleOrderSubmit(e) {
   state.orders.unshift(newOrder);
   localStorage.setItem("eurotex_orders", JSON.stringify(state.orders));
 
-  // Save order to MongoDB Atlas live server
+  // Save order to MongoDB Atlas live server & notify broadcast channel
   try {
     fetch("/orders", {
       method: "POST",
@@ -3415,7 +3415,12 @@ function handleOrderSubmit(e) {
         status: "Qabul qilindi 🟡",
         date: new Date().toLocaleDateString("uz-UZ"),
       }),
-    }).then(() => fetchOrdersFromServer()).catch((e) => console.error("POST /orders error:", e));
+    }).then(() => {
+      fetchOrdersFromServer();
+      if (orderSyncChannel) {
+        orderSyncChannel.postMessage({ type: "NEW_ORDER", order: newOrder });
+      }
+    }).catch((e) => console.error("POST /orders error:", e));
   } catch (err) {}
 
   state.cart = [];
@@ -3428,28 +3433,87 @@ function handleOrderSubmit(e) {
   openDashboardView("orders");
 }
 
+const orderSyncChannel = typeof BroadcastChannel !== "undefined"
+  ? new BroadcastChannel("eurotex_orders_channel")
+  : null;
+
+if (orderSyncChannel) {
+  orderSyncChannel.onmessage = (event) => {
+    if (event.data && event.data.type === "NEW_ORDER") {
+      fetchOrdersFromServer();
+      if (isUserAdmin()) {
+        playOrderNotificationSound();
+        showToast(
+          `🔔 YANGI BUYURTMA KELDI! #${event.data.order?.id || ""} — ${event.data.order?.recipient || "Mijoz"}! 🎉`,
+        );
+      }
+    }
+  };
+}
+
+function playOrderNotificationSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+    osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.5);
+  } catch (e) {}
+}
+
+let _seenOrderIds = new Set();
+let _isFirstOrderFetch = true;
+
 async function fetchOrdersFromServer() {
   try {
     const res = await fetch("/orders");
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
-        state.orders = data.map((o) => ({
-          id: o.orderId || o.id,
-          orderId: o.orderId || o.id,
-          recipient: o.recipient || "Mijoz",
-          phone: o.phone || "",
-          address: o.address || "",
-          items: o.items || [],
-          total: o.total || 0,
-          statusStep: o.statusStep !== undefined ? o.statusStep : 1,
-          status: o.status || "Qabul qilindi 🟡",
-          date: o.date || new Date(o.createdAt || Date.now()).toLocaleDateString("uz-UZ"),
-        }));
+        let hasNewOrderForAdmin = false;
+        let newestOrder = null;
+
+        const newOrders = data.map((o) => {
+          const id = o.orderId || o.id;
+          if (!_isFirstOrderFetch && !_seenOrderIds.has(id)) {
+            hasNewOrderForAdmin = true;
+            newestOrder = o;
+          }
+          _seenOrderIds.add(id);
+          return {
+            id,
+            orderId: id,
+            recipient: o.recipient || "Mijoz",
+            phone: o.phone || "",
+            address: o.address || "",
+            items: o.items || [],
+            total: o.total || 0,
+            statusStep: o.statusStep !== undefined ? o.statusStep : 1,
+            status: o.status || "Qabul qilindi 🟡",
+            date: o.date || new Date(o.createdAt || Date.now()).toLocaleDateString("uz-UZ"),
+          };
+        });
+
+        _isFirstOrderFetch = false;
+        state.orders = newOrders;
         localStorage.setItem("eurotex_orders", JSON.stringify(state.orders));
         renderCustomerOrders();
         renderAdminOrders();
         updateAdminStats();
+
+        if (hasNewOrderForAdmin && isUserAdmin()) {
+          playOrderNotificationSound();
+          showToast(
+            `🔔 YANGI BUYURTMA KELDI! #${newestOrder?.orderId || ""} — ${newestOrder?.recipient || "Mijoz"}! 🎉`,
+          );
+        }
       }
     }
   } catch (e) {
