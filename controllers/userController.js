@@ -56,10 +56,15 @@ const EMAIL_USER = (process.env.EMAIL_USER || "eurotexkids7775@gmail.com").trim(
 const EMAIL_PASS = (process.env.EMAIL_PASS || "dwgfrxwuqtzmfpxb").replace(/\s+/g, "").trim();
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
     user: EMAIL_USER,
     pass: EMAIL_PASS,
+  },
+  tls: {
+    rejectUnauthorized: false,
   },
 });
 
