@@ -2159,19 +2159,12 @@ function handleURLRouting() {
 
   // --- Admin Add Product Modals & Sub-routes ---
   if (raw.startsWith("/admin")) {
-    if (
-      !state.user ||
-      (state.user &&
-        state.user.role !== "admin" &&
-        !isAdminEmail(state.user.email))
-    ) {
-      state.user = {
-        email: "eurotexkids7775@gmail.com",
-        name: "Eurotex Rasmiy Admin",
-        role: "admin",
-      };
-      localStorage.setItem("eurotex_user", JSON.stringify(state.user));
-      updateUserAuthUI();
+    if (!isUserAdmin()) {
+      closeDashboardView();
+      history.replaceState({}, document.title, "/");
+      showToast("🔒 Siz kirolmaysiz! Admin emassiz! ⛔");
+      openAuthModal();
+      return;
     }
 
     openDashboardView("admin");
@@ -2340,7 +2333,7 @@ function openDashboardView(tabName = "cart") {
     closeDashboardView();
     history.replaceState({}, document.title, "/");
     showToast(
-      "🔒 Kirish rad etildi! Admin panel uchun Admin hisobiga kirish talab etiladi. ⛔",
+      "🔒 Siz kirolmaysiz! Admin emassiz! ⛔",
     );
     openAuthModal();
     return;
@@ -2360,7 +2353,7 @@ function openDashboardView(tabName = "cart") {
 }
 
 function closeDashboardView() {
-  if (window.location.pathname.startsWith("/admin")) {
+  if (window.location.pathname.startsWith("/admin") && isUserAdmin()) {
     const homeWrapper = document.getElementById("homePageWrapper");
     const dashView = document.getElementById("dashboardPageView");
     if (homeWrapper) homeWrapper.style.display = "none";
