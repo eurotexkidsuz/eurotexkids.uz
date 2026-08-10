@@ -16,7 +16,7 @@ router.get("/", async (req, res) => {
 // POST /orders - Create new customer order in MongoDB Atlas
 router.post("/", async (req, res) => {
   try {
-    const { orderId, recipient, phone, address, region, district, items, total, statusStep, status, date } = req.body;
+    const { orderId, userEmail, recipient, phone, address, region, district, items, total, statusStep, status, date } = req.body;
 
     if (!orderId || !items || items.length === 0) {
       return res.status(400).json({ message: "Buyurtma ma'lumotlari yetarli emas!" });
@@ -24,6 +24,7 @@ router.post("/", async (req, res) => {
 
     const newOrder = new Order({
       orderId: orderId || `EUR-${Math.floor(100000 + Math.random() * 900000)}`,
+      userEmail: userEmail || "",
       recipient: recipient || "Mijoz",
       phone: phone || "",
       address: address || "",
@@ -37,7 +38,7 @@ router.post("/", async (req, res) => {
     });
 
     await newOrder.save();
-    console.log(`📦 [YANGI BUYURTMA SAQLANDI]: #${newOrder.orderId} - Summa: ${newOrder.total}`);
+    console.log(`📦 [YANGI BUYURTMA SAQLANDI]: #${newOrder.orderId} - User: ${userEmail || "guest"} - Summa: ${newOrder.total}`);
 
     return res.status(201).json({ message: "Buyurtma saqlandi!", order: newOrder });
   } catch (error) {

@@ -3381,8 +3381,10 @@ function handleOrderSubmit(e) {
   const finalTotal = rawSubtotal - discountAmount;
   const orderId = `EUR-${Math.floor(100000 + Math.random() * 900000)}`;
 
+  const currentUserEmail = state.user?.email || "";
   const newOrder = {
     id: orderId,
+    userEmail: currentUserEmail,
     date: new Date().toLocaleDateString(),
     items: [...state.cart],
     total: finalTotal > 0 ? finalTotal : 120,
@@ -3403,6 +3405,7 @@ function handleOrderSubmit(e) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         orderId,
+        userEmail: currentUserEmail,
         recipient: `${name} (${phone})`,
         phone,
         address: addrText,
@@ -3487,6 +3490,7 @@ async function fetchOrdersFromServer() {
           return {
             id,
             orderId: id,
+            userEmail: o.userEmail || "",
             recipient: o.recipient || "Mijoz",
             phone: o.phone || "",
             address: o.address || "",
@@ -3732,12 +3736,41 @@ function renderOrdersHistory() {
   const container = document.getElementById("ordersListContainer");
   if (!container) return;
 
-  if (!state.orders || state.orders.length === 0) {
-    state.orders = getDemoOrders();
-    localStorage.setItem("eurotex_orders", JSON.stringify(state.orders));
+  const currentUserEmail = (state.user?.email || "").toLowerCase().trim();
+
+  let myOrders = [];
+  if (isUserAdmin()) {
+    // Admin sees all orders
+    myOrders = state.orders || [];
+  } else if (currentUserEmail) {
+    // Customer sees ONLY their own orders matched by userEmail or recipient
+    myOrders = (state.orders || []).filter((o) => {
+      const oEmail = (o.userEmail || "").toLowerCase().trim();
+      const rText = (o.recipient || "").toLowerCase().trim();
+      return (
+        oEmail === currentUserEmail ||
+        rText.includes(currentUserEmail) ||
+        o.userEmail === currentUserEmail
+      );
+    });
+  } else {
+    // Guest user sees orders created in current browser session
+    myOrders = state.orders || [];
   }
 
-  container.innerHTML = state.orders
+  if (!myOrders || myOrders.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:40px 20px; color:var(--text-secondary);">
+        <div style="font-size:48px; margin-bottom:12px;">📦</div>
+        <h3 style="font-size:18px; margin-bottom:8px; color:var(--text-primary);">Hozircha sizda buyurtmalar yo'q</h3>
+        <p style="font-size:14px; margin-bottom:20px; color:var(--text-muted);">Erkaklar kostyum-shimlari va kiyimlari katalogimizdan xaridlarni amalga oshiring!</p>
+        <button type="button" class="btn btn-primary" onclick="closeDashboardView(true)">🛍️ Xarid qilishni boshlash</button>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = myOrders
     .map(
       (order) => `
         <div class="checkout-card-box" style="margin-bottom: 16px;">

@@ -3,6 +3,7 @@ const { Schema, model } = require("mongoose");
 const orderSchema = new Schema(
   {
     orderId: { type: String, required: true, unique: true },
+    userEmail: { type: String, default: "" },
     recipient: { type: String, default: "Mijoz" },
     phone: { type: String, default: "" },
     address: { type: String, default: "" },
