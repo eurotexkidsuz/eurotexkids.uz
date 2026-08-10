@@ -15,13 +15,19 @@ function isAdminEmail(email) {
   return ADMIN_EMAILS.includes(email.toLowerCase().trim());
 }
 
-function getGoogleOAuthClient() {
+function getGoogleOAuthClient(req) {
   const clientId = (process.env.GOOGLE_CLIENT_ID || "").trim();
   const clientSecret = (process.env.GOOGLE_CLIENT_SECRET || "").trim();
-  const redirectUri = (
-    process.env.GOOGLE_REDIRECT_URI ||
-    "http://localhost:5000/users/auth/google/callback"
-  ).trim();
+  
+  let redirectUri = (process.env.GOOGLE_REDIRECT_URI || "").trim();
+  if (!redirectUri && req) {
+    const proto = req.headers["x-forwarded-proto"] || req.protocol || "https";
+    const host = req.headers["x-forwarded-host"] || req.headers.host || "eurotexkids.uz";
+    redirectUri = `${proto}://${host}/users/auth/google/callback`;
+  }
+  if (!redirectUri) {
+    redirectUri = "https://eurotexkids.uz/users/auth/google/callback";
+  }
 
   // Tekshiruv va loglar
   if (!clientId) console.error("❌ [ERROR]: GOOGLE_CLIENT_ID topilmadi!");
@@ -433,7 +439,7 @@ const checkRememberToken = async (req, res) => {
 
 // ─── GOOGLE AUTH ─────────────────────────────────────────────────────────────
 const googleAuth = (req, res) => {
-  const client = getGoogleOAuthClient();
+  const client = getGoogleOAuthClient(req);
   const authorizeUrl = client.generateAuthUrl({
     access_type: "offline",
     scope: [
@@ -689,7 +695,7 @@ const googleCallback = async (req, res) => {
       return res.redirect("/");
     }
 
-    const client = getGoogleOAuthClient();
+    const client = getGoogleOAuthClient(req);
     console.log(
       "👉 Google OAuth Exchange for code:",
       code.slice(0, 10) + "...",

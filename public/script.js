@@ -3247,15 +3247,28 @@ function handleGsiCredentialResponse(response) {
 }
 
 function initAutoGooglePrompt() {
-  // Auto-prompt only on desktop and only if not logged in
-  if (state.user) return;
+  if (state.user) {
+    try {
+      if (window.google && window.google.accounts && window.google.accounts.id) {
+        window.google.accounts.id.cancel();
+      }
+    } catch (e) {}
+    return;
+  }
   const isMobile =
     window.innerWidth <= 768 ||
     /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
   if (isMobile) return;
 
   const tryInit = () => {
-    if (state.user) return;
+    if (state.user) {
+      try {
+        if (window.google && window.google.accounts && window.google.accounts.id) {
+          window.google.accounts.id.cancel();
+        }
+      } catch (e) {}
+      return;
+    }
     if (window.google && window.google.accounts && window.google.accounts.id) {
       if (!_gsiInitialized) {
         window.google.accounts.id.initialize({
@@ -3266,8 +3279,11 @@ function initAutoGooglePrompt() {
         });
         _gsiInitialized = true;
       }
-      // Silent auto-prompt - shows native widget if Google has session
-      window.google.accounts.id.prompt();
+      window.google.accounts.id.prompt((notification) => {
+        if (state.user && window.google && window.google.accounts && window.google.accounts.id) {
+          window.google.accounts.id.cancel();
+        }
+      });
     } else {
       setTimeout(() => {
         if (!state.user) tryInit();
@@ -5262,36 +5278,4 @@ function updateSlideImageInDOM(slideIndex, imgUrl) {
     }, 350);
   }
 }
-// -----------------------------------------------------------------------------
-// GOOGLE ONE TAP (AUTO DESKTOP PROMPT) INTEGRATION
-// -----------------------------------------------------------------------------
-function initAutoGooglePrompt() {
-  if (state.user) return;
-  const isMobile =
-    window.innerWidth <= 768 ||
-    /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-  if (isMobile) return;
 
-  const tryInit = () => {
-    if (state.user) return;
-    if (window.google && window.google.accounts && window.google.accounts.id) {
-      if (!_gsiInitialized) {
-        window.google.accounts.id.initialize({
-          client_id: GOOGLE_CLIENT_ID,
-          callback: handleGsiCredentialResponse,
-          cancel_on_tap_outside: true,
-          use_fedcm_for_prompt: true,
-        });
-        _gsiInitialized = true;
-      }
-      // Saytga kirishi bilan avtomatik One Tap prompt oynasini chiqarish
-      window.google.accounts.id.prompt();
-    } else {
-      setTimeout(() => {
-        if (!state.user) tryInit();
-      }, 600);
-    }
-  };
-
-  setTimeout(tryInit, 1000);
-}
