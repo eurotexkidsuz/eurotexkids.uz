@@ -1048,6 +1048,29 @@ function getRotatingHomeProducts() {
   return [...customProds, ...standardProds];
 }
 
+function safeFormatMoney(priceVal) {
+  try {
+    const rate = typeof state !== "undefined" && state.usdRate ? state.usdRate : 12650;
+    let usd = 0;
+    let uzs = 0;
+    const num = parseFloat(priceVal) || 45;
+
+    if (num > 5000) {
+      uzs = Math.round(num);
+      usd = Math.round(uzs / rate);
+    } else {
+      usd = Math.round(num);
+      uzs = Math.round(usd * rate);
+    }
+
+    const formattedUsd = `$${usd.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")}`;
+    const formattedUzs = uzs.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    return `${formattedUsd} (${formattedUzs} so'm)`;
+  } catch (e) {
+    return "$45 (569 250 so'm)";
+  }
+}
+
 function renderProducts() {
   const grid = document.getElementById("productGrid");
   const countBadge = document.getElementById("productCountBadge");
@@ -1057,7 +1080,7 @@ function renderProducts() {
   const dict = TRANSLATIONS[lang] || TRANSLATIONS.uz;
 
   if (!EUROTEX_PRODUCTS || EUROTEX_PRODUCTS.length === 0) {
-    EUROTEX_PRODUCTS = getDemoProducts();
+    EUROTEX_PRODUCTS = [...DEFAULT_EUROTEX_PRODUCTS];
   }
 
   const activeSearch = (state.activeSearchQuery || "").trim();
@@ -1098,8 +1121,8 @@ function renderProducts() {
     return matchesCategory && matchesSearch;
   });
 
-  if (filtered.length === 0) {
-    filtered = EUROTEX_PRODUCTS;
+  if (!filtered || filtered.length === 0) {
+    filtered = [...DEFAULT_EUROTEX_PRODUCTS];
   }
 
   if (countBadge) {
@@ -1117,93 +1140,74 @@ function renderProducts() {
     filtered.sort((a, b) => b.rating - a.rating);
   }
 
-  if (countBadge) {
-    countBadge.textContent = `${filtered.length} ${lang === "ru" ? "товаров" : lang === "en" ? "items" : "ta mahsulot"}`;
-  }
-
-  if (filtered.length === 0) {
-    grid.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px;">
-                <div style="font-size: 48px; margin-bottom: 12px;">🔍</div>
-                <h3 style="font-size: 20px; color: var(--color-navy); margin-bottom: 8px;">${lang === "ru" ? "Товары не найдены" : lang === "en" ? "No products found" : "Mahsulot topilmadi"}</h3>
-                <p style="color: var(--text-secondary);">${lang === "ru" ? "По вашему запросу ничего не найдено." : lang === "en" ? "No items matching your filter." : "Qidiruv yoki kategoriya bo'yicha mos keladigan kiyimlar mavjud emas."}</p>
-                <button class="btn btn-primary" onclick="resetFilters()" style="margin-top: 16px;">${lang === "ru" ? "Сбросить фильтры" : lang === "en" ? "Reset Filters" : "Barcha keyimlarni ko'rish"}</button>
-            </div>
-        `;
-    return;
-  }
-
   const displayLimit = state.displayLimit || 24;
   const visibleItems = filtered.slice(0, displayLimit);
 
-  grid.innerHTML =
-    visibleItems
-      .map((product) => {
-        try {
-          if (!product) return "";
-          const isWishlisted = (state.wishlist || []).some((w) => w && w.id === product.id);
-          const title = product[`title_${lang}`] || product.title_uz || product.title || "Eurotex Kostyum";
-          const badgeText = product[`badge_${lang}`] || product.badge_uz || "";
-          const formattedPrice = formatMoney(product.price);
-          const formattedOldPrice = product.oldPrice
-            ? formatMoney(product.oldPrice)
-            : "";
-          const monthlyInstallment = formatMoney(product.nasiyaMonthly || Math.round((product.price || 0) / 6));
+  grid.innerHTML = visibleItems
+    .map((product) => {
+      try {
+        if (!product) return "";
+        const isWishlisted = (state.wishlist || []).some((w) => w && w.id === product.id);
+        const title = (product[`title_${lang}`] || product.title_uz || product.title || "Eurotex Kostyum").toString();
+        const badgeText = (product[`badge_${lang}`] || product.badge_uz || "ULGURJI PACHKA").toString();
+        const formattedPrice = safeFormatMoney(product.priceUsd || product.pachkaPriceUsd || product.price || 45);
+        const formattedOldPrice = product.oldPrice ? safeFormatMoney(product.oldPrice) : "";
+        const monthlyInstallment = safeFormatMoney(product.nasiyaMonthly || Math.round((product.priceUsd || product.price || 45) / 6));
 
-          const unitPriceStr = product.unitPrice
-            ? ` ($${product.unitPrice}/ta)`
-            : "";
-          const perMonthText = (dict?.perMonth || "oyiga").toLowerCase();
-          const imgSrc = product.image || product.img || "/images/default-product.png";
+        const unitPriceStr = product.unitPrice
+          ? ` ($${product.unitPrice}/ta)`
+          : "";
+        const perMonthText = (dict?.perMonth || "oyiga").toLowerCase();
+        const imgSrc = product.image || product.img || "/images/default-product.png";
 
-          return `
-              <div class="product-card" data-id="${product.id}">
-                  <div class="card-image-wrap" onclick="openQuickView('${product.id}')">
-                      <img src="${imgSrc}" alt="${title}" loading="lazy" onerror="this.src='/images/default-product.png'">
-                      ${badgeText ? `<span class="card-badge-tag ${product.badgeType || 'gold'}">${badgeText}</span>` : ""}
-                      <button class="wishlist-heart-btn ${isWishlisted ? "active" : ""}" 
-                              onclick="event.stopPropagation(); toggleWishlist('${product.id}')" 
-                              title="Wishlist">
-                          ${isWishlisted ? "❤️" : "🤍"}
-                      </button>
-                  </div>
-                  <div class="card-body">
-                      <div style="background:#fef08a; color:#854d0e; font-weight:800; font-size:11px; padding:3px 8px; border-radius:4px; margin-bottom:6px; display:inline-block;">
-                          📦 1 Pachka (${product.pachkaItems || 6} ta seriya)
-                      </div>
-                      <div class="card-price-row" style="margin-top: 0; margin-bottom: 6px;">
-                          <div class="price-group">
-                              <span class="current-price" style="font-size:15px; font-weight:800; color:var(--color-navy);">${formattedPrice} <small style="font-size:11px; font-weight:600; color:#059669;">/pachka${unitPriceStr}</small></span>
-                              ${product.oldPrice ? `<span class="old-price">${formattedOldPrice}</span>` : ""}
-                          </div>
-                          <button class="quick-add-btn" onclick="openQuickView('${product.id}')" title="Savatga qo'shish">
-                              🛒
-                          </button>
-                      </div>
-                      <div class="card-nasiya-box" style="margin-bottom: 8px;">
-                          Eurotex Nasiya: ${monthlyInstallment}/${perMonthText}
-                      </div>
-                      <h3 class="card-title" onclick="openQuickView('${product.id}')" style="margin-bottom: 4px;">${title}</h3>
-                      <div class="card-rating">
-                          <span>⭐ ${product.rating || 5.0}</span>
-                          <span>(${product.reviewsCount || 12} ${lang === "ru" ? "отзывов" : lang === "en" ? "reviews" : "sharhlar"})</span>
-                      </div>
-                  </div>
-              </div>
-          `;
-        } catch (err) {
-          console.error("renderProducts item map error:", err);
-          return "";
-        }
-      })
-      .join("") +
-    (filtered.length > visibleItems.length
-      ? `<div style="grid-column: 1/-1; text-align: center; padding: 28px 0;">
-           <button type="button" class="btn btn-primary btn-large" onclick="loadMoreProducts()" style="padding: 14px 36px; border-radius: 12px; font-weight: 800; font-size: 15px; background: linear-gradient(135deg, #7000ff, #4c00b0); color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(112, 0, 255, 0.3);">
-             🚀 Yana ${filtered.length - visibleItems.length} ta mahsulotni ko'rsatish
-           </button>
-         </div>`
-      : "");
+        return `
+            <div class="product-card" data-id="${product.id || 'prod-1'}">
+                <div class="card-image-wrap" onclick="openQuickView('${product.id || 'prod-1'}')">
+                    <img src="${imgSrc}" alt="${title}" loading="lazy" onerror="this.src='/images/default-product.png'">
+                    ${badgeText ? `<span class="card-badge-tag ${product.badgeType || 'gold'}">${badgeText}</span>` : ""}
+                    <button class="wishlist-heart-btn ${isWishlisted ? "active" : ""}" 
+                            onclick="event.stopPropagation(); toggleWishlist('${product.id || 'prod-1'}')" 
+                            title="Wishlist">
+                        ${isWishlisted ? "❤️" : "🤍"}
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div style="background:#fef08a; color:#854d0e; font-weight:800; font-size:11px; padding:3px 8px; border-radius:4px; margin-bottom:6px; display:inline-block;">
+                        📦 1 Pachka (${product.pachkaItems || 6} ta seriya)
+                    </div>
+                    <div class="card-price-row" style="margin-top: 0; margin-bottom: 6px;">
+                        <div class="price-group">
+                            <span class="current-price" style="font-size:15px; font-weight:800; color:var(--color-navy);">${formattedPrice} <small style="font-size:11px; font-weight:600; color:#059669;">/pachka${unitPriceStr}</small></span>
+                            ${product.oldPrice ? `<span class="old-price">${formattedOldPrice}</span>` : ""}
+                        </div>
+                        <button class="quick-add-btn" onclick="openQuickView('${product.id || 'prod-1'}')" title="Savatga qo'shish">
+                            🛒
+                        </button>
+                    </div>
+                    <div class="card-nasiya-box" style="margin-bottom: 8px;">
+                        Eurotex Nasiya: ${monthlyInstallment}/${perMonthText}
+                    </div>
+                    <h3 class="card-title" onclick="openQuickView('${product.id || 'prod-1'}')" style="margin-bottom: 4px;">${title}</h3>
+                    <div class="card-rating">
+                        <span>⭐ ${product.rating || 5.0}</span>
+                        <span>(${product.reviewsCount || 12} ${lang === "ru" ? "отзывов" : lang === "en" ? "reviews" : "sharhlar"})</span>
+                    </div>
+                </div>
+            </div>
+        `;
+      } catch (err) {
+        console.error("renderProducts item map error:", err);
+        return "";
+      }
+    })
+    .join("") +
+  (filtered.length > visibleItems.length
+    ? `<div style="grid-column: 1/-1; text-align: center; padding: 28px 0;">
+         <button type="button" class="btn btn-primary btn-large" onclick="loadMoreProducts()" style="padding: 14px 36px; border-radius: 12px; font-weight: 800; font-size: 15px; background: linear-gradient(135deg, #7000ff, #4c00b0); color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(112, 0, 255, 0.3);">
+           🚀 Yana ${filtered.length - visibleItems.length} ta mahsulotni ko'rsatish
+         </button>
+       </div>`
+    : "");
 }
 
 function loadMoreProducts() {
