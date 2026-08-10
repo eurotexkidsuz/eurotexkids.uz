@@ -154,7 +154,6 @@ const sendCode = async (req, res) => {
     return res.status(200).json({
       message: "Tasdiqlash kodi yuborildi!",
       channel,
-      code: user.code, // Returned for instant UX hint/verification
       telegramLinked: !!user.telegramChatId,
       resendCount: user.resendCount || 0,
       email, // return normalized email

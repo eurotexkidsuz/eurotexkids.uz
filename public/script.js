@@ -2753,13 +2753,11 @@ async function resendOtpCode(e) {
 
     if (res.ok) {
       if (otpInput) {
-        if (data.code) otpInput.value = data.code;
+        otpInput.value = "";
         otpInput.focus();
       }
       showToast(
-        data.code
-          ? `📧 Tasdiqlash kodi: ${data.code} (Avto-kiritildi) 🔑`
-          : `📧 Yangi tasdiqlash kodi ${email} pochtangizga yuborildi! 📩`,
+        `📧 Yangi tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshiring va 6 xonali kodni kiriting! 📩`,
       );
       startResendTimer(30);
     } else {
@@ -2847,13 +2845,11 @@ async function handleEmailAuth(e) {
             ? "Подтвердить вход"
             : "Kirishni tasdiqlash";
         if (otpInput) {
-          if (data.code) otpInput.value = data.code;
+          otpInput.value = "";
           otpInput.focus();
         }
         showToast(
-          data.code
-            ? `📧 Tasdiqlash kodi: ${data.code} (Avto-kiritildi) 🔑`
-            : `📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! 📩`,
+          `📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshiring va 6 xonali kodni kiriting! 📩`,
         );
         startResendTimer(60);
       } else {
@@ -3868,6 +3864,17 @@ function renderAdminPanel() {
 
   if (!isAdmin) return;
 
+  updateAdminStats();
+
+  const usdInput = document.getElementById("adminUsdRateInput");
+  if (usdInput) usdInput.value = state.usdRate || 12650;
+
+  renderAdminOrders();
+  renderAdminProducts();
+  renderAdminReturns();
+}
+
+function updateAdminStats() {
   const totalRevenue = (state.orders || []).reduce(
     (sum, o) => sum + (o.total || 0),
     0,
@@ -3882,13 +3889,6 @@ function renderAdminPanel() {
   if (statRev) statRev.textContent = formatMoney(totalRevenue);
   if (statOrd) statOrd.textContent = `${orderCount} ta`;
   if (statRet) statRet.textContent = `${returnCount} ta`;
-
-  const usdInput = document.getElementById("adminUsdRateInput");
-  if (usdInput) usdInput.value = state.usdRate || 12650;
-
-  renderAdminOrders();
-  renderAdminProducts();
-  renderAdminReturns();
 }
 
 function showAdminSection(sec, pushUrl = true) {
