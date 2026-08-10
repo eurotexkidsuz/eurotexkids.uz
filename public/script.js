@@ -1049,53 +1049,39 @@ function getRotatingHomeProducts() {
   return [...customProds, ...standardProds];
 }
 
-// Render Products Grid
 function renderProducts() {
   const grid = document.getElementById("productGrid");
   const countBadge = document.getElementById("productCountBadge");
   if (!grid) return;
 
-  const lang = state.currentLang;
-  const dict = TRANSLATIONS[lang];
+  const lang = state.currentLang || "uz";
+  const dict = TRANSLATIONS[lang] || TRANSLATIONS.uz;
 
-  // activeSearchQuery is ONLY set when user presses Search btn or Enter.
-  // While just typing, this stays empty so the 20 home products always show.
+  if (!EUROTEX_PRODUCTS || EUROTEX_PRODUCTS.length === 0) {
+    EUROTEX_PRODUCTS = getDemoProducts();
+  }
+
   const activeSearch = (state.activeSearchQuery || "").trim();
   let pool = EUROTEX_PRODUCTS;
 
-  // Default Home View (no active search & 'all' category) -> Show 20 rotating home products
-  if (!activeSearch && state.currentCategory === "all") {
+  if (!activeSearch && (state.currentCategory === "all" || !state.currentCategory)) {
     pool = getRotatingHomeProducts();
   }
 
-  // Filter Pool by Category & Active Search
   let filtered = pool.filter((item) => {
+    if (!item) return false;
     const titleUz = (item.title_uz || item.title || "").toLowerCase();
-    const titleRu = (
-      item.title_ru ||
-      item.title_uz ||
-      item.title ||
-      ""
-    ).toLowerCase();
-    const titleEn = (
-      item.title_en ||
-      item.title_uz ||
-      item.title ||
-      ""
-    ).toLowerCase();
+    const titleRu = (item.title_ru || item.title_uz || item.title || "").toLowerCase();
+    const titleEn = (item.title_en || item.title_uz || item.title || "").toLowerCase();
     const colorUz = (item.color_uz || "").toLowerCase();
     const fabricUz = (item.fabric_uz || "").toLowerCase();
     const categoryUz = (item.category || "").toLowerCase();
     const itemId = String(item.id || "").toLowerCase();
 
-    const itemCat = normalizeCategory(item.category);
-    const curCat = normalizeCategory(state.currentCategory);
-
-    // Category Matching: If active search is present, match across ALL categories!
     const matchesCategory = !activeSearch
       ? state.currentCategory === "all" ||
-        (state.currentCategory === "super-deal" &&
-          item.oldPrice > item.price) ||
+        !state.currentCategory ||
+        (state.currentCategory === "super-deal" && item.oldPrice > item.price) ||
         matchCategory(item.category, state.currentCategory)
       : true;
 
@@ -1112,6 +1098,14 @@ function renderProducts() {
 
     return matchesCategory && matchesSearch;
   });
+
+  if (filtered.length === 0) {
+    filtered = EUROTEX_PRODUCTS;
+  }
+
+  if (countBadge) {
+    countBadge.textContent = `${filtered.length} ${lang === "ru" ? "товаров" : lang === "en" ? "items" : "ta mahsulot"}`;
+  }
 
   // Sort Products
   if (state.currentSort === "price-low") {
@@ -4010,79 +4004,95 @@ function renderAdminOrders() {
   if (!container) return;
 
   if (!state.orders || state.orders.length === 0) {
-    container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-secondary);">Hozircha buyurtmalar yo'q</div>`;
+    container.innerHTML = `
+      <div style="text-align:center; padding:40px 20px; color:var(--text-secondary); background:var(--bg-surface-secondary); border-radius:16px; border:1px solid var(--border-color);">
+        <div style="font-size:48px; margin-bottom:12px;">📦</div>
+        <h3 style="font-size:18px; color:var(--text-primary);">Hozircha mijozlar buyurtmalari yo'q</h3>
+      </div>
+    `;
     return;
   }
 
   container.innerHTML = `
-        <div class="admin-table-wrapper" style="overflow-x:auto;">
-            <table class="size-table" style="width:100%; text-align:left; border-collapse:collapse;">
-                <thead>
-                    <tr style="background:var(--bg-surface-secondary);">
-                        <th style="padding:12px;">Buyurtma ID</th>
-                        <th style="padding:12px;">Mijoz / Manzil</th>
-                        <th style="padding:12px; min-width:240px;">Mahsulot (Rasm & Nomi)</th>
-                        <th style="padding:12px;">Jami Summa</th>
-                        <th style="padding:12px;">Statusni O'zgartirish (Admin)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${state.orders
-                      .map((o, idx) => {
-                        const totalFormatted = formatPriceUsdAndSom(o.total);
-                        return `
-                        <tr style="border-bottom:1px solid var(--border-color);">
-                            <td style="padding:12px; vertical-align:top;">
-                              <strong style="color:var(--color-navy); font-size:14px;">#${o.id}</strong><br>
-                              <small style="color:var(--text-muted);">${o.date}</small>
-                            </td>
-                            <td style="padding:12px; vertical-align:top;">
-                              <div style="font-weight:700; color:var(--text-primary); font-size:13.5px;">${o.recipient || "Mijoz"}</div>
-                              <small style="color:var(--text-muted); display:block; margin-top:4px; max-width:220px; line-height:1.3;">📍 ${o.address}</small>
-                            </td>
-                            <td style="padding:12px; vertical-align:top;">
-                              <div style="display:flex; flex-direction:column; gap:8px;">
-                                ${(o.items || []).map((i) => {
-                                  const itemPriceFormatted = formatPriceUsdAndSom(i.price);
-                                  return `
-                                  <div style="display:flex; align-items:center; gap:10px; background:var(--bg-surface-secondary); padding:8px; border-radius:10px; border:1px solid var(--border-color); position:relative;">
-                                    <div style="position:relative; flex-shrink:0;">
-                                      <img src="${i.image || i.img || '/images/default-product.png'}" alt="${i.title || 'Mahsulot'}" style="width:52px; height:52px; object-fit:cover; border-radius:8px; border:1px solid var(--border-color);" onerror="this.src='/images/default-product.png'" />
-                                    </div>
-                                    <div style="font-size:12.5px; line-height:1.3; flex:1;">
-                                      <div style="font-weight:700; color:var(--text-primary); margin-bottom:2px;">${i.title || 'Kostyum-shim'}</div>
-                                      <div style="color:var(--text-muted); font-size:11.5px;">
-                                        O'lcham: <b>${i.size || 'M'}</b> | Soni: <b>${i.quantity || 1}x</b>
-                                      </div>
-                                      <div style="color:#06b6d4; font-weight:800; font-size:12.5px; margin-top:2px;">
-                                        ${itemPriceFormatted.display}
-                                      </div>
-                                    </div>
-                                  </div>
-                                `;
-                                }).join("")}
-                              </div>
-                            </td>
-                            <td style="padding:12px; vertical-align:top;">
-                              <strong style="font-size:15px; color:#06b6d4; display:block; margin-top:4px;">${totalFormatted.display}</strong>
-                            </td>
-                            <td style="padding:12px; vertical-align:top;">
-                                <select onchange="updateOrderStatusByAdmin(${idx}, this.value)" style="padding:8px 12px; font-weight:700; border-radius:8px; font-size:12px; border:1px solid #06b6d4; background:var(--bg-surface); color:var(--text-primary); cursor:pointer;">
-                                    <option value="1" ${o.statusStep === 1 ? "selected" : ""}>1. Qabul qilindi 🟡</option>
-                                    <option value="2" ${o.statusStep === 2 ? "selected" : ""}>2. Tayyorlanmoqda 🟠</option>
-                                    <option value="3" ${o.statusStep === 3 ? "selected" : ""}>3. Kuryerda 🚚</option>
-                                    <option value="4" ${o.statusStep === 4 ? "selected" : ""}>4. Yetkazib berildi ✅</option>
-                                    <option value="0" ${o.statusStep === 0 ? "selected" : ""}>0. Bekor qilindi ❌</option>
-                                </select>
-                            </td>
-                        </tr>
+    <!-- Admin Orders Large 4-Corner Cards Grid (Screenshot 1 Design System) -->
+    <div class="admin-orders-cards-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:20px;">
+      ${state.orders
+        .map((o, idx) => {
+          const totalFormatted = formatPriceUsdAndSom(o.total);
+          return `
+            <div class="admin-order-card" style="background:#090d16; border:1px solid #1e293b; border-radius:16px; padding:18px; box-shadow:0 10px 30px rgba(0,0,0,0.3); color:#ffffff; display:flex; flex-direction:column; justify-content:space-between;">
+              <div>
+                <!-- Top Header: Order ID & Status Badge -->
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1e293b; padding-bottom:12px; margin-bottom:14px;">
+                  <div>
+                    <strong style="font-size:17px; color:#06b6d4;">Buyurtma #${o.id}</strong>
+                    <div style="font-size:12px; color:#94a3b8; margin-top:2px;">📅 ${o.date}</div>
+                  </div>
+                  <span style="background:${o.statusStep === 4 ? '#166534' : '#854d0e'}; color:#ffffff; font-weight:800; font-size:12px; padding:4px 10px; border-radius:20px;">
+                    ${o.status}
+                  </span>
+                </div>
+
+                <!-- Recipient & Address Box -->
+                <div style="background:#0f172a; border:1px solid #1e293b; border-radius:12px; padding:12px; margin-bottom:14px;">
+                  <div style="font-weight:700; font-size:14px; color:#f8fafc; margin-bottom:4px;">
+                    👤 ${o.recipient || "Mijoz"}
+                  </div>
+                  <div style="font-size:12.5px; color:#94a3b8; line-height:1.4;">
+                    📍 ${o.address || "Manzil ko'rsatilmagan"}
+                  </div>
+                </div>
+
+                <!-- Purchased Items List -->
+                <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
+                  ${(o.items || [])
+                    .map((i) => {
+                      const itemPriceFormatted = formatPriceUsdAndSom(i.price);
+                      return `
+                      <div style="display:flex; gap:12px; background:#0f172a; border:1px solid #1e293b; border-radius:12px; padding:10px; align-items:center;">
+                        <img src="${i.image || i.img || '/images/default-product.png'}" alt="${i.title || 'Mahsulot'}" style="width:60px; height:60px; object-fit:cover; border-radius:10px; border:1px solid #334155; flex-shrink:0;" onerror="this.src='/images/default-product.png'" />
+                        <div style="flex:1; font-size:13px;">
+                          <div style="font-weight:700; color:#ffffff; line-height:1.2; margin-bottom:4px;">${i.title || 'Kostyum-shim'}</div>
+                          <div style="color:#94a3b8; font-size:12px; margin-bottom:4px;">
+                            O'lcham: <b style="color:#06b6d4;">${i.size || 'M'}</b> | Soni: <b style="color:#06b6d4;">${i.quantity || 1}x</b>
+                          </div>
+                          <div style="color:#06b6d4; font-weight:800; font-size:13px;">
+                            ${itemPriceFormatted.display}
+                          </div>
+                        </div>
+                      </div>
                     `;
-                      })
-                      .join("")}
-                </tbody>
-            </table>
-        </div>
-    `;
+                    })
+                    .join("")}
+                </div>
+              </div>
+
+              <!-- Footer: Total Price Box & Status Dropdown -->
+              <div style="border-top:1px solid #1e293b; padding-top:14px; margin-top:6px;">
+                <!-- Total Price Line -->
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; border:1px solid #1e293b; border-radius:12px; padding:10px 14px; margin-bottom:12px;">
+                  <span style="font-size:13px; color:#94a3b8; font-weight:600;">Jami so'mda:</span>
+                  <span style="font-size:16px; font-weight:800; color:#06b6d4;">${totalFormatted.display}</span>
+                </div>
+
+                <!-- Admin Status Change Dropdown -->
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                  <label style="font-size:12px; color:#94a3b8; font-weight:600;">Statusni o'zgartirish (Admin):</label>
+                  <select onchange="updateOrderStatusByAdmin(${idx}, this.value)" style="width:100%; padding:10px; font-weight:700; border-radius:10px; font-size:13px; border:1px solid #06b6d4; background:#0f172a; color:#ffffff; cursor:pointer; outline:none;">
+                    <option value="1" ${o.statusStep === 1 ? "selected" : ""}>1. Qabul qilindi 🟡</option>
+                    <option value="2" ${o.statusStep === 2 ? "selected" : ""}>2. Tayyorlanmoqda 🟠</option>
+                    <option value="3" ${o.statusStep === 3 ? "selected" : ""}>3. Kuryerda 🚚</option>
+                    <option value="4" ${o.statusStep === 4 ? "selected" : ""}>4. Yetkazib berildi ✅</option>
+                    <option value="0" ${o.statusStep === 0 ? "selected" : ""}>0. Bekor qilindi ❌</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          `;
+        })
+        .join("")}
+    </div>
+  `;
 }
 
 function updateOrderStatusByAdmin(index, newStepStr) {
