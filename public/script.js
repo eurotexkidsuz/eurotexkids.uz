@@ -3737,20 +3737,25 @@ function renderOrdersHistory() {
   if (!container) return;
 
   const currentUserEmail = (state.user?.email || "").toLowerCase().trim();
+  const currentUserName = (state.user?.name || "").toLowerCase().trim();
+  const userFirst = currentUserName.split("@")[0].split(" ")[0];
 
   let myOrders = [];
   if (isUserAdmin()) {
     // Admin sees all orders
     myOrders = state.orders || [];
   } else if (currentUserEmail) {
-    // Customer sees ONLY their own orders matched by userEmail or recipient
     myOrders = (state.orders || []).filter((o) => {
       const oEmail = (o.userEmail || "").toLowerCase().trim();
       const rText = (o.recipient || "").toLowerCase().trim();
+      if (!oEmail || oEmail === "") {
+        // Legacy order without userEmail field -> show to logged in user so old orders never vanish
+        return true;
+      }
       return (
         oEmail === currentUserEmail ||
         rText.includes(currentUserEmail) ||
-        o.userEmail === currentUserEmail
+        (userFirst && rText.includes(userFirst))
       );
     });
   } else {
