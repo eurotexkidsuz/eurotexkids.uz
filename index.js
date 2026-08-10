@@ -1,6 +1,3 @@
-const dns = require("dns");
-dns.setServers(["8.8.8.8", "1.1.1.1"]);
-
 const express = require("express");
 const { connect } = require("mongoose");
 const cors = require("cors");
@@ -20,7 +17,7 @@ const MONGO_URI =
 
 async function connectToDB() {
   try {
-    await connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 });
+    await connect(MONGO_URI, { serverSelectionTimeoutMS: 10000 });
     console.log("✅ MongoDB ulandi!");
   } catch (error) {
     console.error("❌ MongoDB xatosi:", error.message);

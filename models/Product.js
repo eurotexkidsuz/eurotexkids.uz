@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
-const productSchema = new mongoose.Schema({
+const productSchema = new mongoose.Schema(
+  {
     customId: { type: String, unique: true },
     title_uz: { type: String, required: true },
     title_ru: { type: String },
@@ -20,7 +21,9 @@ const productSchema = new mongoose.Schema({
     images: { type: Array, default: [] },
     sizes: { type: Array, default: [46, 48, 50, 52, 54, 56] },
     fabric_uz: { type: String, default: "Turkiya Premium Jun & Viskoza Blend" },
-    inStock: { type: Boolean, default: true }
-}, { timestamps: true });
+    inStock: { type: Boolean, default: true },
+  },
+  { timestamps: true },
+);
 
 module.exports = mongoose.model("Product", productSchema);

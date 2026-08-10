@@ -645,8 +645,6 @@ const telegramCallback = async (req, res) => {
   }
 };
 
-
-
 // ─── DELETE ACCOUNT ───────────────────────────────────────────────────────
 const deleteAccount = async (req, res) => {
   try {

@@ -2504,7 +2504,10 @@ function closeModal(modalId) {
 
   // Restore clean URL when addProductModal or other modals are closed
   if (modalId === "addProductModal") {
-    if (window.location.pathname.includes("/admin/addcart") || window.location.pathname.includes("/addcart")) {
+    if (
+      window.location.pathname.includes("/admin/addcart") ||
+      window.location.pathname.includes("/addcart")
+    ) {
       history.pushState({}, document.title, "/admin");
     }
   } else {
@@ -3918,14 +3921,15 @@ function renderAdminProducts() {
   container.innerHTML = `
         <!-- Admin Product Cards Grid (Screenshot 2 Design System) -->
         <div class="admin-products-cards-grid">
-            ${visibleAdmin.map((p, idx) => {
-              const pachkaUsd = p.pachkaPriceUsd || p.priceUsd || 50;
-              const uzs = Math.round(pachkaUsd * rate);
-              const totalSomFormatted = uzs
-                .toString()
-                .replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+            ${visibleAdmin
+              .map((p, idx) => {
+                const pachkaUsd = p.pachkaPriceUsd || p.priceUsd || 50;
+                const uzs = Math.round(pachkaUsd * rate);
+                const totalSomFormatted = uzs
+                  .toString()
+                  .replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 
-              return `
+                return `
                     <div class="admin-product-card">
                         <!-- Top Image Box -->
                         <div class="admin-card-media">
@@ -3979,7 +3983,8 @@ function renderAdminProducts() {
                         </div>
                     </div>
                 `;
-            }).join("")}
+              })
+              .join("")}
         </div>
         ${
           EUROTEX_PRODUCTS.length > visibleAdmin.length
@@ -4541,7 +4546,7 @@ function renderProdImagePreviews() {
         (src, i) => `
           <div class="apm-preview-thumb-slot ${i === 0 ? "main-cover" : ""}" onclick="event.stopPropagation(); setPrimaryProdImage(${i})">
               <img src="${src}" alt="preview-${i}">
-              ${i === 0 ? '<span class="slot-badge">⭐️ Asosiy</span>' : ''}
+              ${i === 0 ? '<span class="slot-badge">⭐️ Asosiy</span>' : ""}
               <div class="thumb-controls">
                   <button type="button" class="btn-thumb-action star ${i === 0 ? "active" : ""}" title="Asosiy rasm qilish" onclick="event.stopPropagation(); setPrimaryProdImage(${i})">⭐️</button>
                   <button type="button" class="btn-thumb-action replace" title="Rasmni almashtirish" onclick="event.stopPropagation(); replaceSingleProdImage(${i})">🔄</button>
@@ -4596,7 +4601,11 @@ function replaceSingleProdImage(idx) {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = async (evt) => {
-      const compressed = await compressBase64Image(evt.target.result, 800, 0.75);
+      const compressed = await compressBase64Image(
+        evt.target.result,
+        800,
+        0.75,
+      );
       if (window._prodImagesArr) {
         window._prodImagesArr[idx] = compressed;
         renderProdImagePreviews();
