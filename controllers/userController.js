@@ -52,17 +52,24 @@ function getGoogleOAuthClient(req) {
   return new OAuth2Client(clientId, clientSecret, redirectUri);
 }
 // Nodemailer transporter with Gmail App Password (eurotexkids7775@gmail.com)
+const EMAIL_USER = (process.env.EMAIL_USER || "eurotexkids7775@gmail.com").trim();
+const EMAIL_PASS = (process.env.EMAIL_PASS || "dwgfrxwuqtzmfpxb").replace(/\s+/g, "").trim();
+
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
+  service: "gmail",
   auth: {
-    user: process.env.EMAIL_USER || "eurotexkids7775@gmail.com",
-    pass: process.env.EMAIL_PASS || "dwgf rxwu qtzm fpxb",
+    user: EMAIL_USER,
+    pass: EMAIL_PASS,
   },
-  tls: {
-    rejectUnauthorized: false,
-  },
+});
+
+// Verify SMTP connection on boot
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("❌ [GMAIL SMTP ERROR]:", error.message);
+  } else {
+    console.log("✅ [GMAIL SMTP SERVER TAYYOR]: Pochtaga xat yuborish faol!");
+  }
 });
 
 // Parse device info from request
@@ -82,20 +89,27 @@ function getDeviceInfo(req) {
 // Send 6-digit code via Email
 async function sendVerificationCode(user, code) {
   if (transporter && user.email) {
-    transporter
-      .sendMail({
-        from: `"Eurotexkids.uz" <${process.env.SMTP_USER || "eurotexkids7775@gmail.com"}>`,
+    try {
+      const info = await transporter.sendMail({
+        from: `"Eurotexkids.uz" <${EMAIL_USER}>`,
         to: user.email,
-        subject: "Eurotexkids.uz — Tasdiqlash kodi: " + code,
+        subject: `🔑 Eurotexkids.uz — Tasdiqlash kodingiz: ${code}`,
         text: `Eurotexkids.uz tizimiga kirish uchun tasdiqlash kodingiz: ${code}`,
-        html: `<div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f8fafc;">
-                <h2 style="color: #4f46e5;">Eurotexkids.uz Kirish Kodi</h2>
-                <p>Sizning 6 xonali tasdiqlash kodingiz:</p>
-                <h1 style="background: #e0e7ff; color: #4338ca; padding: 12px 24px; display: inline-block; border-radius: 8px; font-size: 32px; letter-spacing: 4px;">${code}</h1>
-            </div>`,
-      })
-      .then((info) => console.log(`✅ [EMAIL YUBORILDI]: ${user.email}`))
-      .catch((err) => console.error(`❌ [EMAIL ERROR]:`, err.message));
+        html: `
+          <div style="font-family: Arial, sans-serif; padding: 24px; background-color: #f8fafc; border-radius: 12px; max-width: 500px; margin: 0 auto; border: 1px solid #e2e8f0;">
+            <h2 style="color: #4f46e5; margin-top: 0; font-size: 22px;">Eurotexkids.uz Kirish Kodi</h2>
+            <p style="color: #334155; font-size: 15px;">Salom! Sizning 6 xonali tasdiqlash kodingiz:</p>
+            <div style="text-align: center; margin: 20px 0;">
+              <span style="background: #4f46e5; color: #ffffff; padding: 14px 28px; border-radius: 10px; font-size: 32px; font-weight: 800; letter-spacing: 6px; display: inline-block;">${code}</span>
+            </div>
+            <p style="color: #64748b; font-size: 13px; margin-bottom: 0;">Ushbu kodni hech kimga bermang. Agar siz so'ramagan bo'lsangiz, ushbu xatga e'tibor bermang.</p>
+          </div>
+        `,
+      });
+      console.log(`✅ [EMAIL YUBORILDI]: ${user.email} -> ID: ${info.messageId}`);
+    } catch (err) {
+      console.error(`❌ [EMAIL ERROR]:`, err.message);
+    }
   }
   return "email";
 }
