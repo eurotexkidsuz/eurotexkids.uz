@@ -3139,7 +3139,7 @@ function fillTopRightWidgetWithGoogleUser(name, email, picture) {
 
 // Qator: 1315-1345
 const GOOGLE_CLIENT_ID =
-  "949327485964-jm338fpmt3ndjd6578bndu7mmr4lb10r.apps.googleusercontent.com";
+  "949327485964-pbdlffn30vuge0ert42rlpdnf82854ql.apps.googleusercontent.com";
 let _gsiInitialized = false;
 
 // Called when user clicks "Google orqali kirish"

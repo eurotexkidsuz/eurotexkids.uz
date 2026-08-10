@@ -17,11 +17,11 @@ function isAdminEmail(email) {
 
 function getGoogleOAuthClient(req) {
   const defaultClientId = Buffer.from(
-    "OTQ5MzI3NDg1OTY0LWptMzM4ZnBtdDNuZGpkNjU3OGJuZHU3bW1yNGxiMTByLmFwcHMuZ29vZ2xldXNlcmludGVudC5jb20=",
+    "OTQ5MzI3NDg1OTY0LXBiZGxmZm4zMHZ1Z2UwZXJ0NDJybHBkbmY4Mjg1NHFsLmFwcHMuZ29vZ2xldXNlcmludGVudC5jb20=",
     "base64",
   ).toString("ascii");
   const defaultSecret = Buffer.from(
-    "R09DU1BYLTRQV2cwR1VfNjZGT3RFbXg0bTJNQ2FyV0ZjeUg=",
+    "R09DU1BYLTQwOHVUaVJ5S3hnbmM0UXcwN1FwR3Q4OHg3cFA=",
     "base64",
   ).toString("ascii");
 
