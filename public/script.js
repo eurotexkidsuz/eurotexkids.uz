@@ -3133,45 +3133,6 @@ function executeGoogleQuickLogin(overrideEmail) {
   }
 }
 
-function showTopRightGooglePrompt() {
-  if (state.user) return;
-  const widget = document.getElementById("googleTopRightOneTapWidget");
-  if (widget) widget.classList.add("show");
-}
-
-function hideTopRightGooglePrompt() {
-  const widget = document.getElementById("googleTopRightOneTapWidget");
-  if (widget) widget.classList.remove("show");
-}
-
-function triggerGoogleGsiPrompt() {
-  showTopRightGooglePrompt();
-}
-
-function fillTopRightWidgetWithGoogleUser(name, email, picture) {
-  if (!name || !email) return;
-
-  const avatarEl = document.getElementById("gsiAvatar");
-  const nameEl = document.getElementById("gsiName");
-  const emailEl = document.getElementById("gsiEmail");
-  const btn = document.getElementById("gsiContinueBtn");
-
-  if (avatarEl) {
-    avatarEl.innerHTML = picture
-      ? `<img src="${picture}" alt="${name}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">`
-      : `<span>${name.charAt(0).toUpperCase()}</span>`;
-  }
-  if (nameEl) nameEl.textContent = name.split(" ")[0].toLowerCase();
-  if (emailEl) emailEl.textContent = email;
-  if (btn) {
-    btn.textContent = `Continue as ${name.split(" ")[0]}`;
-    btn.onclick = () => executeGoogleQuickLogin(email);
-  }
-
-  // Only now reveal the widget — real data is ready
-  showTopRightGooglePrompt();
-}
-
 // Qator: 1315-1345
 const GOOGLE_CLIENT_ID =
   "949327485964-pbdlffn30vuge0ert42rlpdnf82854ql.apps.googleusercontent.com";
@@ -3183,30 +3144,23 @@ function handleGoogleSignIn() {
     window.innerWidth <= 768 ||
     /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-  // Agar telefonda bo'lsa - to'g'ridan-to'g'ri Google OAuth sahifasiga o'tadi
   if (isMobile) {
     window.location.href = "/users/auth/google";
     return;
   }
 
-  // Agar noutbukda (kompyuterda) bo'lsa - Google One Tap oynasini chiqaradi
   try {
     if (window.google && window.google.accounts && window.google.accounts.id) {
       if (!_gsiInitialized) {
         window.google.accounts.id.initialize({
           client_id: GOOGLE_CLIENT_ID,
           callback: handleGsiCredentialResponse,
-          cancel_on_tap_outside: true,
+          cancel_on_tap_outside: false,
           use_fedcm_for_prompt: false,
         });
         _gsiInitialized = true;
       }
-      window.google.accounts.id.prompt((notification) => {
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          // Agar brauzer One Tap ni bloklasa, zahira sifatida redirect qilamiz
-          window.location.href = "/users/auth/google";
-        }
-      });
+      window.google.accounts.id.prompt();
     } else {
       window.location.href = "/users/auth/google";
     }
@@ -3214,27 +3168,22 @@ function handleGoogleSignIn() {
     window.location.href = "/users/auth/google";
   }
 }
+
 // Trigger native GSI One Tap on desktop
 function _triggerGsiOneTap() {
-  const tryPrompt = () => {
-    if (window.google && window.google.accounts && window.google.accounts.id) {
-      if (!_gsiInitialized) {
-        window.google.accounts.id.initialize({
-          client_id: GOOGLE_CLIENT_ID,
-          callback: handleGsiCredentialResponse,
-          cancel_on_tap_outside: true,
-          use_fedcm_for_prompt: true,
-        });
-        _gsiInitialized = true;
-      }
-      // This shows the native floating Google One Tap widget (Screenshot 2)
-      window.google.accounts.id.prompt();
-    } else {
-      // GSI not loaded yet - fallback to OAuth redirect
-      window.location.href = "/users/auth/google";
+  if (state.user) return;
+  if (window.google && window.google.accounts && window.google.accounts.id) {
+    if (!_gsiInitialized) {
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGsiCredentialResponse,
+        cancel_on_tap_outside: false,
+        use_fedcm_for_prompt: false,
+      });
+      _gsiInitialized = true;
     }
-  };
-  tryPrompt();
+    window.google.accounts.id.prompt();
+  }
 }
 
 // Called by Google after user picks an account (native One Tap callback)
@@ -3265,6 +3214,14 @@ function handleGsiCredentialResponse(response) {
     updateUserAuthUI();
     closeAllModals();
 
+    // Cancel and disable any further Google One Tap prompts when logged in
+    try {
+      if (window.google && window.google.accounts && window.google.accounts.id) {
+        window.google.accounts.id.cancel();
+        window.google.accounts.id.disableAutoSelect();
+      }
+    } catch (e) {}
+
     if (isAdmin) {
       showToast(
         `👑 ${state.user.name} sifatida kirdingiz! Admin Panel faollashtirildi. ✅`,
@@ -3276,7 +3233,6 @@ function handleGsiCredentialResponse(response) {
       );
     }
   } catch (e) {
-    // Token decode failed — fallback to OAuth redirect
     window.location.href = "/users/auth/google";
   }
 }
@@ -3284,19 +3240,21 @@ window.handleGsiCredentialResponse = handleGsiCredentialResponse;
 window.handleGsiCredentialResponseImpl = handleGsiCredentialResponse;
 
 function initAutoGooglePrompt() {
-  if (state.user) return;
+  // If user is already logged in, cancel Google One Tap so it NEVER shows!
+  if (state.user) {
+    try {
+      if (window.google && window.google.accounts && window.google.accounts.id) {
+        window.google.accounts.id.cancel();
+        window.google.accounts.id.disableAutoSelect();
+      }
+    } catch (e) {}
+    return;
+  }
 
   const isMobile =
     window.innerWidth <= 768 ||
     /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-
-  if (!isMobile) {
-    setTimeout(() => {
-      if (!state.user) {
-        showTopRightGooglePrompt();
-      }
-    }, 800);
-  }
+  if (isMobile) return;
 
   const tryInit = () => {
     if (state.user) return;
@@ -3305,8 +3263,8 @@ function initAutoGooglePrompt() {
         window.google.accounts.id.initialize({
           client_id: GOOGLE_CLIENT_ID,
           callback: handleGsiCredentialResponse,
-          cancel_on_tap_outside: true,
-          use_fedcm_for_prompt: true,
+          cancel_on_tap_outside: false,
+          use_fedcm_for_prompt: false,
         });
         _gsiInitialized = true;
       }
@@ -3314,7 +3272,7 @@ function initAutoGooglePrompt() {
     }
   };
 
-  setTimeout(tryInit, 1200);
+  setTimeout(tryInit, 800);
 }
 
 function quickAdminLogin(email) {
