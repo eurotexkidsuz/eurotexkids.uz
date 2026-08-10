@@ -1425,11 +1425,28 @@ html[data-theme="dark"] .main-header.scrolled {
   outline: none;
 }
 
-/* Product Cards Grid (Uzum Style) */
+/* Product Cards Grid (World-Class Responsive Uzum & Farfetch Hybrid) */
 .product-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
+  min-height: 280px;
+  width: 100%;
+}
+
+/* 4K and Ultra-Wide Screens */
+@media (min-width: 1800px) {
+  .product-grid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 24px;
+  }
+}
+
+@media (min-width: 1440px) and (max-width: 1799px) {
+  .product-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 22px;
+  }
 }
 
 @media (max-width: 1024px) {
@@ -1456,6 +1473,13 @@ html[data-theme="dark"] .main-header.scrolled {
   }
   .slide-media {
     display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
   }
 }
 

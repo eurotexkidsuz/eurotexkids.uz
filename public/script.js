@@ -1098,18 +1098,36 @@ function matchCategory(itemCat, curCat) {
   return false;
 }
 
-function getRotatingHomeProducts() {
-  if (!EUROTEX_PRODUCTS || EUROTEX_PRODUCTS.length === 0) return [];
+function getGlobalProductsPool() {
+  if (window.EUROTEX_PRODUCTS && Array.isArray(window.EUROTEX_PRODUCTS) && window.EUROTEX_PRODUCTS.length > 0) {
+    EUROTEX_PRODUCTS = window.EUROTEX_PRODUCTS;
+    return window.EUROTEX_PRODUCTS;
+  }
+  if (typeof DEFAULT_EUROTEX_PRODUCTS_V2 !== "undefined" && Array.isArray(DEFAULT_EUROTEX_PRODUCTS_V2) && DEFAULT_EUROTEX_PRODUCTS_V2.length > 0) {
+    EUROTEX_PRODUCTS = [...DEFAULT_EUROTEX_PRODUCTS_V2];
+    window.EUROTEX_PRODUCTS = EUROTEX_PRODUCTS;
+    return EUROTEX_PRODUCTS;
+  }
+  if (typeof DEFAULT_EUROTEX_PRODUCTS !== "undefined" && Array.isArray(DEFAULT_EUROTEX_PRODUCTS) && DEFAULT_EUROTEX_PRODUCTS.length > 0) {
+    EUROTEX_PRODUCTS = [...DEFAULT_EUROTEX_PRODUCTS];
+    window.EUROTEX_PRODUCTS = EUROTEX_PRODUCTS;
+    return EUROTEX_PRODUCTS;
+  }
+  return [];
+}
 
-  // Custom/Newly added admin products: detect by isCustom flag OR id starting with 'prod-'
-  const customProds = EUROTEX_PRODUCTS.filter(
+function getRotatingHomeProducts() {
+  const pool = getGlobalProductsPool();
+  if (!pool || pool.length === 0) return [];
+
+  const customProds = pool.filter(
     (p) =>
-      p.isCustom === true ||
-      String(p.id).startsWith("prod-") ||
-      (p.dbId && String(p.dbId).length > 0),
+      p && (p.isCustom === true ||
+      String(p.id || "").startsWith("prod-") ||
+      (p.dbId && String(p.dbId).length > 0))
   );
-  const standardProds = EUROTEX_PRODUCTS.filter(
-    (p) => !customProds.includes(p),
+  const standardProds = pool.filter(
+    (p) => p && !customProds.includes(p)
   );
 
   return [...customProds, ...standardProds];
@@ -1147,12 +1165,9 @@ function renderProducts() {
   const lang = state.currentLang || "uz";
   const dict = TRANSLATIONS[lang] || TRANSLATIONS.uz;
 
-  if (!EUROTEX_PRODUCTS || EUROTEX_PRODUCTS.length === 0) {
-    EUROTEX_PRODUCTS = [...DEFAULT_EUROTEX_PRODUCTS];
-  }
-
+  const masterPool = getGlobalProductsPool();
   const activeSearch = (state.activeSearchQuery || "").trim();
-  let pool = EUROTEX_PRODUCTS;
+  let pool = masterPool;
 
   if (
     !activeSearch &&
@@ -1204,7 +1219,7 @@ function renderProducts() {
   });
 
   if (!filtered || filtered.length === 0) {
-    filtered = [...DEFAULT_EUROTEX_PRODUCTS];
+    filtered = getGlobalProductsPool();
   }
 
   if (countBadge) {
