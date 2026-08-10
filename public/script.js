@@ -3982,6 +3982,29 @@ function saveAdminUsdRate() {
   );
 }
 
+function formatPriceUsdAndSom(priceVal) {
+  const rate = state.usdRate || 12650;
+  let usd = 0;
+  let som = 0;
+  const num = parseFloat(priceVal) || 0;
+
+  if (num > 5000) {
+    som = Math.round(num);
+    usd = Math.round(som / rate);
+  } else {
+    usd = Math.round(num);
+    som = Math.round(usd * rate);
+  }
+
+  const formattedSom = som.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  return {
+    usd,
+    som,
+    formattedSom: `${formattedSom} so'm`,
+    display: `$${usd} (${formattedSom} so'm)`,
+  };
+}
+
 function renderAdminOrders() {
   const container = document.getElementById("adminOrdersTableContainer");
   if (!container) return;
@@ -3996,49 +4019,55 @@ function renderAdminOrders() {
             <table class="size-table" style="width:100%; text-align:left; border-collapse:collapse;">
                 <thead>
                     <tr style="background:var(--bg-surface-secondary);">
-                        <th style="padding:10px;">Buyurtma ID</th>
-                        <th style="padding:10px;">Mijoz / Manzil</th>
-                        <th style="padding:10px; min-width:220px;">Mahsulot (Rasm & Nomi)</th>
-                        <th style="padding:10px;">Jami Summa</th>
-                        <th style="padding:10px;">Statusni O'zgartirish (Admin)</th>
+                        <th style="padding:12px;">Buyurtma ID</th>
+                        <th style="padding:12px;">Mijoz / Manzil</th>
+                        <th style="padding:12px; min-width:240px;">Mahsulot (Rasm & Nomi)</th>
+                        <th style="padding:12px;">Jami Summa</th>
+                        <th style="padding:12px;">Statusni O'zgartirish (Admin)</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${state.orders
-                      .map(
-                        (o, idx) => `
+                      .map((o, idx) => {
+                        const totalFormatted = formatPriceUsdAndSom(o.total);
+                        return `
                         <tr style="border-bottom:1px solid var(--border-color);">
-                            <td style="padding:10px; vertical-align:top;">
+                            <td style="padding:12px; vertical-align:top;">
                               <strong style="color:var(--color-navy); font-size:14px;">#${o.id}</strong><br>
                               <small style="color:var(--text-muted);">${o.date}</small>
                             </td>
-                            <td style="padding:10px; vertical-align:top;">
+                            <td style="padding:12px; vertical-align:top;">
                               <div style="font-weight:700; color:var(--text-primary); font-size:13.5px;">${o.recipient || "Mijoz"}</div>
-                              <small style="color:var(--text-muted); display:block; margin-top:4px; max-width:200px; line-height:1.3;">📍 ${o.address}</small>
+                              <small style="color:var(--text-muted); display:block; margin-top:4px; max-width:220px; line-height:1.3;">📍 ${o.address}</small>
                             </td>
-                            <td style="padding:10px; vertical-align:top;">
+                            <td style="padding:12px; vertical-align:top;">
                               <div style="display:flex; flex-direction:column; gap:8px;">
-                                ${(o.items || []).map((i) => `
-                                  <div style="display:flex; align-items:center; gap:8px; background:var(--bg-surface-secondary); padding:6px; border-radius:8px; border:1px solid var(--border-color);">
-                                    <img src="${i.image || i.img || '/images/default-product.png'}" alt="${i.title || 'Mahsulot'}" style="width:48px; height:48px; object-fit:cover; border-radius:6px; flex-shrink:0; border:1px solid var(--border-color);" onerror="this.src='/images/default-product.png'" />
-                                    <div style="font-size:12.5px; line-height:1.2;">
+                                ${(o.items || []).map((i) => {
+                                  const itemPriceFormatted = formatPriceUsdAndSom(i.price);
+                                  return `
+                                  <div style="display:flex; align-items:center; gap:10px; background:var(--bg-surface-secondary); padding:8px; border-radius:10px; border:1px solid var(--border-color); position:relative;">
+                                    <div style="position:relative; flex-shrink:0;">
+                                      <img src="${i.image || i.img || '/images/default-product.png'}" alt="${i.title || 'Mahsulot'}" style="width:52px; height:52px; object-fit:cover; border-radius:8px; border:1px solid var(--border-color);" onerror="this.src='/images/default-product.png'" />
+                                    </div>
+                                    <div style="font-size:12.5px; line-height:1.3; flex:1;">
                                       <div style="font-weight:700; color:var(--text-primary); margin-bottom:2px;">${i.title || 'Kostyum-shim'}</div>
                                       <div style="color:var(--text-muted); font-size:11.5px;">
                                         O'lcham: <b>${i.size || 'M'}</b> | Soni: <b>${i.quantity || 1}x</b>
                                       </div>
-                                      <div style="color:var(--color-navy); font-weight:700; font-size:12px; margin-top:2px;">
-                                        ${formatMoney(i.price || 0)} so'm
+                                      <div style="color:#06b6d4; font-weight:800; font-size:12.5px; margin-top:2px;">
+                                        ${itemPriceFormatted.display}
                                       </div>
                                     </div>
                                   </div>
-                                `).join("")}
+                                `;
+                                }).join("")}
                               </div>
                             </td>
-                            <td style="padding:10px; vertical-align:top;">
-                              <strong style="font-size:15px; color:var(--color-navy); display:block; margin-top:4px;">${formatMoney(o.total)} so'm</strong>
+                            <td style="padding:12px; vertical-align:top;">
+                              <strong style="font-size:15px; color:#06b6d4; display:block; margin-top:4px;">${totalFormatted.display}</strong>
                             </td>
-                            <td style="padding:10px; vertical-align:top;">
-                                <select onchange="updateOrderStatusByAdmin(${idx}, this.value)" style="padding:8px; font-weight:700; border-radius:8px; font-size:12px; border:1px solid var(--border-color); background:var(--bg-surface); color:var(--text-primary); cursor:pointer;">
+                            <td style="padding:12px; vertical-align:top;">
+                                <select onchange="updateOrderStatusByAdmin(${idx}, this.value)" style="padding:8px 12px; font-weight:700; border-radius:8px; font-size:12px; border:1px solid #06b6d4; background:var(--bg-surface); color:var(--text-primary); cursor:pointer;">
                                     <option value="1" ${o.statusStep === 1 ? "selected" : ""}>1. Qabul qilindi 🟡</option>
                                     <option value="2" ${o.statusStep === 2 ? "selected" : ""}>2. Tayyorlanmoqda 🟠</option>
                                     <option value="3" ${o.statusStep === 3 ? "selected" : ""}>3. Kuryerda 🚚</option>
@@ -4047,8 +4076,8 @@ function renderAdminOrders() {
                                 </select>
                             </td>
                         </tr>
-                    `,
-                      )
+                    `;
+                      })
                       .join("")}
                 </tbody>
             </table>
