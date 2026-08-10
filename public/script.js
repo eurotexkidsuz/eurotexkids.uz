@@ -2765,11 +2765,13 @@ async function resendOtpCode(e) {
 
     if (res.ok) {
       if (otpInput) {
-        otpInput.value = "";
+        if (data.code) otpInput.value = data.code;
         otpInput.focus();
       }
       showToast(
-        `📧 Yangi tasdiqlash kodi ${email} pochtangizga qayta yuborildi! Gmail'ingizni tekshiring! 📩`,
+        data.code
+          ? `📧 Tasdiqlash kodi: ${data.code} (Avto-kiritildi) 🔑`
+          : `📧 Yangi tasdiqlash kodi ${email} pochtangizga yuborildi! 📩`,
       );
       startResendTimer(30);
     } else {
@@ -2857,11 +2859,13 @@ async function handleEmailAuth(e) {
             ? "Подтвердить вход"
             : "Kirishni tasdiqlash";
         if (otpInput) {
-          otpInput.value = "";
+          if (data.code) otpInput.value = data.code;
           otpInput.focus();
         }
         showToast(
-          `📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshiring! 📩`,
+          data.code
+            ? `📧 Tasdiqlash kodi: ${data.code} (Avto-kiritildi) 🔑`
+            : `📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! 📩`,
         );
         startResendTimer(60);
       } else {
