@@ -4204,10 +4204,10 @@ function renderAdminProducts() {
   const container = document.getElementById("adminProductsTableContainer");
   if (!container) return;
 
-  if (!EUROTEX_PRODUCTS || EUROTEX_PRODUCTS.length === 0) {
-    container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-secondary);">Katalogda mahsulotlar yo'q</div>`;
-    return;
+  if (!window.EUROTEX_PRODUCTS || !Array.isArray(window.EUROTEX_PRODUCTS) || window.EUROTEX_PRODUCTS.length === 0) {
+    window.EUROTEX_PRODUCTS = typeof DEFAULT_EUROTEX_PRODUCTS !== "undefined" ? [...DEFAULT_EUROTEX_PRODUCTS] : [];
   }
+  EUROTEX_PRODUCTS = window.EUROTEX_PRODUCTS;
 
   const rate = state.usdRate || 12650;
 
@@ -5178,7 +5178,11 @@ function handleAddNewProduct(e) {
     reviewsCount: 12,
   };
 
-  EUROTEX_PRODUCTS.unshift(newProd);
+  if (!window.EUROTEX_PRODUCTS || !Array.isArray(window.EUROTEX_PRODUCTS)) {
+    window.EUROTEX_PRODUCTS = typeof DEFAULT_EUROTEX_PRODUCTS !== "undefined" ? [...DEFAULT_EUROTEX_PRODUCTS] : [];
+  }
+  window.EUROTEX_PRODUCTS.unshift(newProd);
+  EUROTEX_PRODUCTS = window.EUROTEX_PRODUCTS;
   notifyProductChange();
 
   // Reset filters & refresh products view immediately
