@@ -346,9 +346,8 @@ const TRANSLATIONS = {
   },
 };
 
-// Initial Products Data Store
 // Initial Wholesale Products Data Store (All Prices in USD $ / Pachkalab Sotuv)
-let EUROTEX_PRODUCTS = [
+const DEFAULT_EUROTEX_PRODUCTS = [
   {
     id: "prod-1",
     title_uz:
@@ -418,7 +417,7 @@ let EUROTEX_PRODUCTS = [
     image: "/images/grey_trousers.jpg",
     sizes: [46, 48, 50, 52, 54, 56],
     fabric_uz: "100% Jun, Qatlari o'chmaydigan texnologiya",
-    color_uz: "Kulrang (Charcoal Grey)",
+    color_uz: "To'q Kulrang",
     inStock: true,
   },
   {
@@ -4468,12 +4467,19 @@ async function syncProductsWithBackendAndStorage(isIntervalSync = false) {
         }));
 
         const map = new Map();
-        // 1. Add DB products first
-        dbProds.forEach((p) => map.set(String(p.id), p));
-        // 2. Overlay local EUROTEX_PRODUCTS on top so user edits in EurotexIDB always win & persist on refresh!
-        EUROTEX_PRODUCTS.forEach((p) => {
-          const dbItem = map.get(String(p.id)) || {};
-          map.set(String(p.id), { ...dbItem, ...p });
+        // 1. Seed base default products first so product catalog never empties
+        DEFAULT_EUROTEX_PRODUCTS.forEach((p) => map.set(String(p.id), p));
+        // 2. Overlay DB products from MongoDB Atlas
+        dbProds.forEach((p) => {
+          const baseItem = map.get(String(p.id)) || {};
+          map.set(String(p.id), { ...baseItem, ...p });
+        });
+        // 3. Overlay local EUROTEX_PRODUCTS so admin edits win & persist
+        (EUROTEX_PRODUCTS || []).forEach((p) => {
+          if (p && p.id) {
+            const dbItem = map.get(String(p.id)) || {};
+            map.set(String(p.id), { ...dbItem, ...p });
+          }
         });
 
         EUROTEX_PRODUCTS = Array.from(map.values());
