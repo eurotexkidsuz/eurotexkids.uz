@@ -2343,6 +2343,16 @@ function openDashboardView(tabName = "cart") {
     return;
   }
 
+  if (tabName === "checkout" && !state.user) {
+    closeDashboardView();
+    history.replaceState({}, document.title, "/");
+    showToast(
+      "🔒 Buyurtmani rasmiylashtirish uchun avval tizimga kiring! Kirish sahifasi ochildi. 🔑",
+    );
+    openAuthModal();
+    return;
+  }
+
   const homeWrapper = document.getElementById("homePageWrapper");
   const dashView = document.getElementById("dashboardPageView");
   if (!dashView) {
@@ -2466,6 +2476,13 @@ function openWishlistModal() {
 }
 
 function openCheckoutModal() {
+  if (!state.user) {
+    showToast(
+      "🔒 Buyurtmani rasmiylashtirish uchun avval tizimga kiring! Kirish sahifasi ochildi. 🔑",
+    );
+    openAuthModal();
+    return;
+  }
   openDashboardView("checkout");
 }
 
@@ -3378,6 +3395,13 @@ function updateUserAuthUI() {
 // Order Submission Handling (Feature 1: Creates real order in state & localStorage)
 function handleOrderSubmit(e) {
   e.preventDefault();
+  if (!state.user) {
+    showToast(
+      "🔒 Buyurtmani rasmiylashtirish uchun avval tizimga kiring! Kirish sahifasi ochildi. 🔑",
+    );
+    openAuthModal();
+    return;
+  }
   const name = document.getElementById("custName").value || "Xaridor";
   const phone =
     document.getElementById("custPhone").value || "+998 (90) 555-77-75";
