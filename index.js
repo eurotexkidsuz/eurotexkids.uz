@@ -33,6 +33,9 @@ app.use("/users", users);
  
 const productRouter = require("./routes/productRoute");
 app.use("/products", productRouter);
+
+const orderRouter = require("./routes/orderRoute");
+app.use("/orders", orderRouter);
  
 // Express SPA Fallback for /savat, /saralanganlar, /checkout, etc.
 const path = require("path");

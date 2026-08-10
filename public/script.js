@@ -846,9 +846,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   checkGoogleAuthRedirect();
   updateUserAuthUI();
   await syncProductsWithBackendAndStorage(false);
+  await fetchOrdersFromServer();
   handleURLRouting();
-  // Auto-sync new products from MongoDB every 5 seconds for all users!
-  setInterval(() => syncProductsWithBackendAndStorage(true), 5000);
+  // Auto-sync new products and orders from MongoDB every 5 seconds for all users!
+  setInterval(() => {
+    syncProductsWithBackendAndStorage(true);
+    fetchOrdersFromServer();
+  }, 5000);
   loadCustomSizesFromStorage();
   setLanguage(state.currentLang);
   setupEventListeners();
@@ -3388,6 +3392,25 @@ function handleOrderSubmit(e) {
   state.orders.unshift(newOrder);
   localStorage.setItem("eurotex_orders", JSON.stringify(state.orders));
 
+  // Save order to MongoDB Atlas live server
+  try {
+    fetch("/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderId,
+        recipient: `${name} (${phone})`,
+        phone,
+        address: addrText,
+        items: [...state.cart],
+        total: finalTotal > 0 ? finalTotal : 120,
+        statusStep: 1,
+        status: "Qabul qilindi 🟡",
+        date: new Date().toLocaleDateString("uz-UZ"),
+      }),
+    }).then(() => fetchOrdersFromServer()).catch((e) => console.error("POST /orders error:", e));
+  } catch (err) {}
+
   state.cart = [];
   localStorage.removeItem("eurotex_cart");
   updateCartUI();
@@ -3396,6 +3419,35 @@ function handleOrderSubmit(e) {
     `Buyurtma #${orderId} muvaffaqiyatli qabul qilindi! Rahmat, ${name}! 🎉`,
   );
   openDashboardView("orders");
+}
+
+async function fetchOrdersFromServer() {
+  try {
+    const res = await fetch("/orders");
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        state.orders = data.map((o) => ({
+          id: o.orderId || o.id,
+          orderId: o.orderId || o.id,
+          recipient: o.recipient || "Mijoz",
+          phone: o.phone || "",
+          address: o.address || "",
+          items: o.items || [],
+          total: o.total || 0,
+          statusStep: o.statusStep !== undefined ? o.statusStep : 1,
+          status: o.status || "Qabul qilindi 🟡",
+          date: o.date || new Date(o.createdAt || Date.now()).toLocaleDateString("uz-UZ"),
+        }));
+        localStorage.setItem("eurotex_orders", JSON.stringify(state.orders));
+        renderCustomerOrders();
+        renderAdminOrders();
+        updateAdminStats();
+      }
+    }
+  } catch (e) {
+    console.error("fetchOrdersFromServer xatosi:", e);
+  }
 }
 
 function handleTailoringSubmit(e) {
@@ -3889,14 +3941,23 @@ function updateOrderStatusByAdmin(index, newStepStr) {
   };
 
   if (state.orders && state.orders[index]) {
-    state.orders[index].statusStep = step;
-    state.orders[index].status = labels[step] || "Yangilandi";
+    const targetOrder = state.orders[index];
+    targetOrder.statusStep = step;
+    targetOrder.status = labels[step] || "Yangilandi";
     localStorage.setItem("eurotex_orders", JSON.stringify(state.orders));
 
-    renderOrdersHistory();
+    // Update status in MongoDB Atlas
+    fetch(`/orders/${targetOrder.id || targetOrder.orderId}/status`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ statusStep: step, status: labels[step] }),
+    }).catch((e) => console.error("PUT /orders status error:", e));
+
+    renderCustomerOrders();
     renderAdminOrders();
+    updateAdminStats();
     showToast(
-      `Buyurtma #${state.orders[index].id} statusi yangilandi: ${labels[step]}`,
+      `Buyurtma #${targetOrder.id} statusi yangilandi: ${labels[step]}`,
     );
   }
 }
@@ -4171,6 +4232,8 @@ function notifyProductChange() {
       timestamp: Date.now(),
     });
   }
+  renderProducts();
+  renderAdminProducts();
 }
 
 let _lastProdsHash = "";
