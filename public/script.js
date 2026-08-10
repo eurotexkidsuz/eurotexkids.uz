@@ -3274,28 +3274,22 @@ window.handleGsiCredentialResponse = handleGsiCredentialResponse;
 window.handleGsiCredentialResponseImpl = handleGsiCredentialResponse;
 
 function initAutoGooglePrompt() {
-  if (state.user) {
-    try {
-      if (window.google && window.google.accounts && window.google.accounts.id) {
-        window.google.accounts.id.cancel();
-      }
-    } catch (e) {}
-    return;
-  }
+  if (state.user) return;
+
   const isMobile =
     window.innerWidth <= 768 ||
     /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-  if (isMobile) return;
+
+  if (!isMobile) {
+    setTimeout(() => {
+      if (!state.user) {
+        showTopRightGooglePrompt();
+      }
+    }, 800);
+  }
 
   const tryInit = () => {
-    if (state.user) {
-      try {
-        if (window.google && window.google.accounts && window.google.accounts.id) {
-          window.google.accounts.id.cancel();
-        }
-      } catch (e) {}
-      return;
-    }
+    if (state.user) return;
     if (window.google && window.google.accounts && window.google.accounts.id) {
       if (!_gsiInitialized) {
         window.google.accounts.id.initialize({
@@ -3306,19 +3300,11 @@ function initAutoGooglePrompt() {
         });
         _gsiInitialized = true;
       }
-      window.google.accounts.id.prompt((notification) => {
-        if (state.user && window.google && window.google.accounts && window.google.accounts.id) {
-          window.google.accounts.id.cancel();
-        }
-      });
-    } else {
-      setTimeout(() => {
-        if (!state.user) tryInit();
-      }, 600);
+      window.google.accounts.id.prompt();
     }
   };
 
-  setTimeout(tryInit, 1000);
+  setTimeout(tryInit, 1200);
 }
 
 function quickAdminLogin(email) {
