@@ -3245,6 +3245,7 @@ function handleGsiCredentialResponse(response) {
     window.location.href = "/users/auth/google";
   }
 }
+window.handleGsiCredentialResponse = handleGsiCredentialResponse;
 
 function initAutoGooglePrompt() {
   if (state.user) {
@@ -3504,7 +3505,7 @@ async function fetchOrdersFromServer() {
         _isFirstOrderFetch = false;
         state.orders = newOrders;
         localStorage.setItem("eurotex_orders", JSON.stringify(state.orders));
-        renderCustomerOrders();
+        renderOrdersHistory();
         renderAdminOrders();
         updateAdminStats();
 
