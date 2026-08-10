@@ -440,6 +440,70 @@ const DEFAULT_EUROTEX_PRODUCTS = [
     badgeType: "gold",
     image: "/images/navy_suit.jpg",
     sizes: [46, 48, 50, 52, 54, 56],
+    fabric_uz: "100% Jun",
+    color_uz: "Ko'k Katakli",
+    inStock: true,
+  },
+  {
+    id: "prod-5",
+    title_uz: "Eurotex Oxford Premium Oq Erkaklar Ko'ylagi (1 Pachka = 6 ta Seriya)",
+    title_ru: "Сорочка Мужская Eurotex Oxford Белая (1 Пачка = 6 шт Серия)",
+    title_en: "Eurotex Oxford Premium White Shirt (1 Pack = 6 pcs Wholesale)",
+    category: "shirts",
+    subCategory: "oxford",
+    price: 30,
+    oldPrice: 45,
+    priceUsd: 30,
+    pachkaPriceUsd: 30,
+    pachkaQty: 6,
+    unitPrice: 5.0,
+    rating: 4.9,
+    reviewsCount: 320,
+    badge_uz: "HIT PACHKA",
+    badgeType: "gold",
+    image: "/images/white_shirt.jpg",
+    sizes: [38, 39, 40, 41, 42, 43],
+    fabric_uz: "100% Misr Paxtasi (Egyptian Cotton)",
+    color_uz: "Qoradek Oq",
+    inStock: true,
+  },
+  {
+    id: "prod-6",
+    title_uz: "Eurotex Tabiiy Charm Klassik Belbog' / Remen (1 Pachka = 6 ta)",
+    title_ru: "Ремень Мужской Кожаный Eurotex (1 Пачка = 6 шт)",
+    title_en: "Eurotex Genuine Leather Belt (1 Pack = 6 pcs Wholesale)",
+    category: "accessories",
+    subCategory: "belts",
+    price: 25,
+    oldPrice: 35,
+    priceUsd: 25,
+    pachkaPriceUsd: 25,
+    pachkaQty: 6,
+    unitPrice: 4.1,
+    rating: 4.9,
+    reviewsCount: 412,
+    badge_uz: "100% CHARM",
+    badgeType: "gold",
+    image: "/images/leather_belt.jpg",
+    sizes: [110, 115, 120, 125, 130],
+    fabric_uz: "100% Tabiiy Sigir Charmi, Latun Toka",
+    color_uz: "Klassik Qora",
+    inStock: true,
+  },
+  {
+    id: "prod-4-b",
+    price: 140,
+    oldPrice: 180,
+    priceUsd: 140,
+    pachkaPriceUsd: 140,
+    pachkaQty: 6,
+    unitPrice: 23.3,
+    rating: 4.9,
+    reviewsCount: 64,
+    badge_uz: "YANGI PACHKA 2026",
+    badgeType: "gold",
+    image: "/images/navy_suit.jpg",
+    sizes: [46, 48, 50, 52, 54, 56],
     fabric_uz: "Super 130s Italiya Jun matosi",
     color_uz: "Flannel Navy Striped",
     inStock: true,
@@ -817,6 +881,8 @@ const DEFAULT_EUROTEX_PRODUCTS = [
     inStock: true,
   },
 ];
+
+let EUROTEX_PRODUCTS = [...DEFAULT_EUROTEX_PRODUCTS];
 
 // App State
 let state = {
@@ -4125,7 +4191,7 @@ function updateOrderStatusByAdmin(index, newStepStr) {
       body: JSON.stringify({ statusStep: step, status: labels[step] }),
     }).catch((e) => console.error("PUT /orders status error:", e));
 
-    renderCustomerOrders();
+    renderOrdersHistory();
     renderAdminOrders();
     updateAdminStats();
     showToast(
