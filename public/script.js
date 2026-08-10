@@ -2357,23 +2357,14 @@ function openDashboardView(tabName = "cart") {
 }
 
 function closeDashboardView() {
-  if (window.location.pathname.startsWith("/admin") && isUserAdmin()) {
-    const homeWrapper = document.getElementById("homePageWrapper");
-    const dashView = document.getElementById("dashboardPageView");
-    if (homeWrapper) homeWrapper.style.display = "none";
-    if (dashView) dashView.style.display = "block";
-    switchDashboardTab("admin");
-    return;
-  }
-
   const homeWrapper = document.getElementById("homePageWrapper");
   const dashView = document.getElementById("dashboardPageView");
   if (dashView) dashView.style.display = "none";
   if (homeWrapper) homeWrapper.style.display = "block";
   window.scrollTo({ top: 0, behavior: "smooth" });
-  // Only update URL if we were on a dashboard sub-route
-  const p = window.location.pathname;
-  if (p !== "/") history.pushState({}, document.title, "/");
+  if (window.location.pathname !== "/") {
+    history.pushState({}, document.title, "/");
+  }
 }
 
 function switchDashboardTab(tabName) {
