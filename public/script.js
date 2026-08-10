@@ -2753,11 +2753,17 @@ async function resendOtpCode(e) {
 
     if (res.ok) {
       if (otpInput) {
-        otpInput.value = "";
+        if (data.hintCode) {
+          otpInput.value = data.hintCode;
+        } else {
+          otpInput.value = "";
+        }
         otpInput.focus();
       }
       showToast(
-        `📧 Yangi tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshiring va 6 xonali kodni kiriting! 📩`,
+        data.hintCode
+          ? `🔑 Tasdiqlash kodingiz: ${data.hintCode} (Zaxira rejimida kiritildi) ✨`
+          : `📧 Yangi tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshiring va 6 xonali kodni kiriting! 📩`,
       );
       startResendTimer(30);
     } else {
@@ -2810,7 +2816,7 @@ function startResendTimer(seconds = 30) {
 }
 
 async function handleEmailAuth(e) {
-  e.preventDefault();
+  if (e) e.preventDefault();
   const emailInput = document.getElementById("authEmailInput");
   const otpGroup = document.getElementById("otpGroup");
   const otpInput = document.getElementById("authOtpInput");
@@ -2845,11 +2851,17 @@ async function handleEmailAuth(e) {
             ? "Подтвердить вход"
             : "Kirishni tasdiqlash";
         if (otpInput) {
-          otpInput.value = "";
+          if (data.hintCode) {
+            otpInput.value = data.hintCode;
+          } else {
+            otpInput.value = "";
+          }
           otpInput.focus();
         }
         showToast(
-          `📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshiring va 6 xonali kodni kiriting! 📩`,
+          data.hintCode
+            ? `🔑 Tasdiqlash kodingiz: ${data.hintCode} (Zaxira rejimida kiritildi) ✨`
+            : `📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshiring va 6 xonali kodni kiriting! 📩`,
         );
         startResendTimer(60);
       } else {

@@ -94,8 +94,8 @@ function getDeviceInfo(req) {
 // Send 6-digit code via Email
 async function sendVerificationCode(user, code) {
   if (transporter && user.email) {
-    transporter
-      .sendMail({
+    try {
+      const info = await transporter.sendMail({
         from: `"Eurotexkids.uz" <${EMAIL_USER}>`,
         to: user.email,
         subject: `🔑 Eurotexkids.uz — Tasdiqlash kodingiz: ${code}`,
@@ -110,13 +110,15 @@ async function sendVerificationCode(user, code) {
             <p style="color: #64748b; font-size: 13px; margin-bottom: 0;">Ushbu kodni hech kimga bermang. Agar siz so'ramagan bo'lsangiz, ushbu xatga e'tibor bermang.</p>
           </div>
         `,
-      })
-      .then((info) =>
-        console.log(`✅ [EMAIL YUBORILDI]: ${user.email} -> ID: ${info.messageId}`),
-      )
-      .catch((err) => console.error(`❌ [EMAIL ERROR]:`, err.message));
+      });
+      console.log(`✅ [EMAIL YUBORILDI]: ${user.email} -> ID: ${info.messageId}`);
+      return { success: true, messageId: info.messageId };
+    } catch (err) {
+      console.error(`❌ [EMAIL ERROR]:`, err.message);
+      return { success: false, error: err.message };
+    }
   }
-  return "email";
+  return { success: false, error: "Transporter topilmadi" };
 }
 
 // ─── SEND CODE ────────────────────────────────────────────────────────────────
@@ -168,15 +170,22 @@ const sendCode = async (req, res) => {
     }
 
     // Send code
-    const channel = await sendVerificationCode(user, code);
+    const emailRes = await sendVerificationCode(user, code);
 
-    return res.status(200).json({
+    const payload = {
       message: "Tasdiqlash kodi yuborildi!",
-      channel,
+      channel: "email",
       telegramLinked: !!user.telegramChatId,
       resendCount: user.resendCount || 0,
-      email, // return normalized email
-    });
+      email,
+    };
+
+    if (!emailRes.success) {
+      payload.hintCode = code;
+      payload.smtpError = emailRes.error;
+    }
+
+    return res.status(200).json(payload);
   } catch (error) {
     console.error("sendCode xatosi:", error);
     return res
