@@ -3242,6 +3242,7 @@ function handleGsiCredentialResponse(response) {
   }
 }
 window.handleGsiCredentialResponse = handleGsiCredentialResponse;
+window.handleGsiCredentialResponseImpl = handleGsiCredentialResponse;
 
 function initAutoGooglePrompt() {
   if (state.user) {

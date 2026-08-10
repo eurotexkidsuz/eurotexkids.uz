@@ -2228,7 +2228,7 @@
             id="emailLoginForm"
             class="auth-form-pane"
             style="display: none"
-            onsubmit="handleEmailAuth(event)"
+            onsubmit="handleEmailAuth(event); return false;"
           >
             <div class="form-group">
               <label for="authEmailInput"
@@ -3557,6 +3557,13 @@
     </div>
 
     <!-- Google One Tap Automatic Prompt Container -->
+    <script>
+      window.handleGsiCredentialResponse = function (res) {
+        if (typeof window.handleGsiCredentialResponseImpl === "function") {
+          window.handleGsiCredentialResponseImpl(res);
+        }
+      };
+    </script>
     <div
       id="g_id_onload"
       data-client_id="949327485964-pbdlffn30vuge0ert42rlpdnf82854ql.apps.googleusercontent.com"
@@ -3567,6 +3574,6 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=136.0.0" defer></script>
+    <script src="/script.js?v=137.0.0" defer></script>
   </body>
 </html>

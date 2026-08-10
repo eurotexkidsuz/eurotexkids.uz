@@ -89,8 +89,8 @@ function getDeviceInfo(req) {
 // Send 6-digit code via Email
 async function sendVerificationCode(user, code) {
   if (transporter && user.email) {
-    try {
-      const info = await transporter.sendMail({
+    transporter
+      .sendMail({
         from: `"Eurotexkids.uz" <${EMAIL_USER}>`,
         to: user.email,
         subject: `🔑 Eurotexkids.uz — Tasdiqlash kodingiz: ${code}`,
@@ -105,11 +105,11 @@ async function sendVerificationCode(user, code) {
             <p style="color: #64748b; font-size: 13px; margin-bottom: 0;">Ushbu kodni hech kimga bermang. Agar siz so'ramagan bo'lsangiz, ushbu xatga e'tibor bermang.</p>
           </div>
         `,
-      });
-      console.log(`✅ [EMAIL YUBORILDI]: ${user.email} -> ID: ${info.messageId}`);
-    } catch (err) {
-      console.error(`❌ [EMAIL ERROR]:`, err.message);
-    }
+      })
+      .then((info) =>
+        console.log(`✅ [EMAIL YUBORILDI]: ${user.email} -> ID: ${info.messageId}`),
+      )
+      .catch((err) => console.error(`❌ [EMAIL ERROR]:`, err.message));
   }
   return "email";
 }
