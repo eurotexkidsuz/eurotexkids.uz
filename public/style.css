@@ -1243,27 +1243,24 @@ html[data-theme="dark"] .main-header.scrolled {
   position: relative;
   width: 100%;
   height: auto;
-  min-height: 420px;
-  max-height: 750px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   background: #040812;
   border-radius: var(--radius-xl);
   overflow: hidden;
   padding: 0;
+  line-height: 0;
 }
 
 .slide-img {
   width: 100%;
-  height: 100%;
-  min-height: 420px;
+  height: auto;
   max-height: 750px;
-  object-fit: cover !important;
-  object-position: center top !important;
+  object-fit: contain !important;
+  object-position: center center !important;
   display: block;
   margin: 0 auto;
   border-radius: var(--radius-xl);
+  background: #040812;
 }
 
 .carousel-arrow {
@@ -4143,10 +4140,10 @@ body {
   }
 }
 
-/* Admin Hero Banner Edit Buttons */
+/* Admin Hero Banner Edit Buttons — hidden by default for non-admin users */
 .admin-slide-edit-btn,
-.admin-img-edit-btn {
-  display: none !important; /* Hidden by default for regular users */
+.admin-text-edit-btn {
+  display: none !important;
   align-items: center;
   justify-content: center;
   gap: 6px;
@@ -4244,8 +4241,15 @@ body {
 
 /* Reveal edit buttons ONLY when body has .is-admin class */
 body.is-admin .admin-slide-edit-btn,
+body.is-admin .admin-text-edit-btn {
+  display: inline-flex !important;
+}
+
 body.is-admin .admin-img-edit-btn {
   display: inline-flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
 }
 
 /* Google Account Selector Cards */
