@@ -3035,6 +3035,9 @@ html[data-theme="dark"] .main-header.scrolled {
     flex-direction: column;
     align-items: flex-start;
     gap: 14px;
+    border-radius: 10px !important;
+    border: 1px solid var(--border-color);
+    padding: 14px !important;
   }
 
   .cart-item-right-actions {
@@ -3909,6 +3912,7 @@ html[data-theme="dark"] .main-header.scrolled {
     align-items: flex-start;
     gap: 12px;
     padding: 12px;
+    border-radius: 10px !important;
   }
   .cart-item-right-actions {
     flex-direction: row;
