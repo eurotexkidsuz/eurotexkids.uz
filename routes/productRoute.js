@@ -43,29 +43,28 @@ async function ensureDbConnected() {
 
 // Get all products (merged from MongoDB and local file)
 router.get("/", async (req, res) => {
+  const fileProds = readLocalProducts();
   try {
-    await ensureDbConnected();
-    let dbProds = [];
-    try {
-      dbProds = await Product.find().sort({ createdAt: -1 });
-    } catch (dbErr) {
-      console.error("Product.find Error:", dbErr);
+    if (mongoose.connection && mongoose.connection.readyState === 1) {
+      const dbProds = await Promise.race([
+        Product.find().sort({ createdAt: -1 }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 1200))
+      ]);
+      if (Array.isArray(dbProds) && dbProds.length > 0) {
+        const map = new Map();
+        fileProds.forEach((p) => map.set(String(p.id || p.customId), p));
+        dbProds.forEach((p) => {
+          const obj = p.toObject ? p.toObject() : p;
+          map.set(String(obj.customId || obj.id || obj._id), obj);
+        });
+        const merged = Array.from(map.values());
+        return res.json({ success: true, products: merged });
+      }
     }
-    const fileProds = readLocalProducts();
-
-    const map = new Map();
-    fileProds.forEach((p) => map.set(String(p.id || p.customId), p));
-    dbProds.forEach((p) => {
-      const obj = p.toObject ? p.toObject() : p;
-      map.set(String(obj.customId || obj.id || obj._id), obj);
-    });
-
-    const merged = Array.from(map.values());
-    return res.json({ success: true, products: merged });
   } catch (err) {
-    const fileProds = readLocalProducts();
-    return res.json({ success: true, products: fileProds });
+    // Quiet fallback to local products on DB timeout or offline state
   }
+  return res.json({ success: true, products: fileProds });
 });
 
 // Add new product

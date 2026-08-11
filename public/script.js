@@ -4673,10 +4673,14 @@ async function syncProductsWithBackendAndStorage(isIntervalSync = false) {
   } catch (e) {}
 
   try {
-    const res = await fetch("/products");
-    if (res.ok) {
-      const data = await res.json();
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    const res = await fetch("/products", { signal: controller.signal }).catch(() => null);
+    clearTimeout(timeoutId);
+    if (res && res.ok) {
+      const data = await res.json().catch(() => null);
       if (
+        data &&
         data.success &&
         Array.isArray(data.products) &&
         data.products.length > 0
