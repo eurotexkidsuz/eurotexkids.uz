@@ -3870,6 +3870,50 @@ function updateThemeToggleUI() {
   if (label) label.textContent = isDark ? "Yorug' rejim" : "Tungi rejim";
 }
 
+function renderOrdersHistory() {
+  const container = document.getElementById("ordersListContainer");
+  if (!container) return;
+
+  if (!state.orders || state.orders.length === 0) {
+    state.orders = getDemoOrders();
+    localStorage.setItem("eurotex_orders", JSON.stringify(state.orders));
+  }
+
+  const myOrders = state.orders;
+
+  container.innerHTML = myOrders
+    .map(
+      (order) => `
+        <div class="checkout-card-box" style="margin-bottom: 16px; background: #ffffff; border: 1px solid var(--border-color); border-radius: 16px; padding: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:12px;">
+                <div>
+                    <strong style="font-size:16px; color:var(--color-navy);">Buyurtma #${order.id}</strong>
+                    <span style="font-size:13px; color:var(--text-muted); margin-left:8px;">Sana: ${order.date}</span>
+                </div>
+                <span class="uzum-sub-badge" style="background:#dcfce7; color:#166534; font-size:13px; font-weight:700; padding:4px 10px; border-radius:6px;">
+                    ${order.status || "Yetkazib berildi ✅"}
+                </span>
+            </div>
+            
+            <div style="font-size:13.5px; margin-bottom:10px; color:#334155;">
+                ${(order.items || []).map((item) => `<div>• <b>${item.title}</b> (${item.quantity}x) — O'lcham: ${item.size || "46"} / ${item.color || "To'q ko'k (Navy)"}</div>`).join("")}
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:12px; padding-top:10px; border-top:1px dashed var(--border-color); font-size:13px; color:#475569;">
+                <div>Manzil: <b>${order.address || "Toshkent sh., Chilonzor tumani, Lutfiy ko'chasi 14-uy"}</b></div>
+                <div>Jami: <strong style="font-size:16px; color:var(--color-navy);">${safeFormatMoney(order.total || 120)}</strong></div>
+            </div>
+            
+            <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+                <button type="button" onclick="downloadReceiptPdf('${order.id}')" class="btn btn-secondary btn-sm" style="font-weight:700; font-size:12.5px; border-radius:8px;">📄 PDF Kvitansiya</button>
+                <button type="button" onclick="switchDashboardTab('returns'); prefillReturnOrder('${order.id}');" class="btn btn-primary btn-sm" style="font-weight:700; font-size:12.5px; border-radius:8px; background: linear-gradient(135deg, #7000ff, #00f2fe);">🔄 Almashtirish / Qaytarish</button>
+            </div>
+        </div>
+      `
+    )
+    .join("");
+}
+
 // -----------------------------------------------------------------------------
 // FEATURE 19: PWA (Progressive Web App) System
 // -----------------------------------------------------------------------------
@@ -3949,82 +3993,6 @@ function getDemoOrders() {
       address: "Topshirish punkti: Chilonzor Lutfiy 14",
     },
   ];
-}
-
-function renderOrdersHistory() {
-  const container = document.getElementById("ordersListContainer");
-  if (!container) return;
-
-  const currentUserEmail = (state.user?.email || "").toLowerCase().trim();
-  const currentUserName = (state.user?.name || "").toLowerCase().trim();
-  const userFirst = currentUserName.split("@")[0].split(" ")[0];
-
-  let myOrders = [];
-  if (isUserAdmin()) {
-    // Admin sees all orders
-    myOrders = state.orders || [];
-  } else if (currentUserEmail) {
-    myOrders = (state.orders || []).filter((o) => {
-      const oEmail = (o.userEmail || "").toLowerCase().trim();
-      const rText = (o.recipient || "").toLowerCase().trim();
-      if (!oEmail || oEmail === "") {
-        // Legacy order without userEmail field -> show to logged in user so old orders never vanish
-        return true;
-      }
-      return (
-        oEmail === currentUserEmail ||
-        rText.includes(currentUserEmail) ||
-        (userFirst && rText.includes(userFirst))
-      );
-    });
-  } else {
-    // Guest user sees orders created in current browser session
-    myOrders = state.orders || [];
-  }
-
-  if (!myOrders || myOrders.length === 0) {
-    container.innerHTML = `
-      <div style="text-align:center; padding:40px 20px; color:var(--text-secondary);">
-        <div style="font-size:48px; margin-bottom:12px;">📦</div>
-        <h3 style="font-size:18px; margin-bottom:8px; color:var(--text-primary);">Hozircha sizda buyurtmalar yo'q</h3>
-        <p style="font-size:14px; margin-bottom:20px; color:var(--text-muted);">Erkaklar kostyum-shimlari va kiyimlari katalogimizdan xaridlarni amalga oshiring!</p>
-        <button type="button" class="btn btn-primary" onclick="closeDashboardView(true)">🛍️ Xarid qilishni boshlash</button>
-      </div>
-    `;
-    return;
-  }
-
-  container.innerHTML = myOrders
-    .map(
-      (order) => `
-        <div class="checkout-card-box" style="margin-bottom: 16px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:12px;">
-                <div>
-                    <strong style="font-size:16px; color:var(--color-navy);">Buyurtma #${order.id}</strong>
-                    <span style="font-size:13px; color:var(--text-muted); margin-left:8px;">Sana: ${order.date}</span>
-                </div>
-                <span class="uzum-sub-badge" style="background:${order.statusStep === 4 ? "#dcfce7" : "#fef08a"}; color:${order.statusStep === 4 ? "#166534" : "#854d0e"}; font-size:13px; font-weight:700;">
-                    ${order.status}
-                </span>
-            </div>
-            
-            <div style="font-size:13.5px; margin-bottom:10px;">
-                ${order.items.map((item) => `<div>• <b>${item.title}</b> (${item.quantity}x) — O'lcham: ${item.size} / ${item.color || "To'q ko'k"}</div>`).join("")}
-            </div>
-
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:12px; padding-top:10px; border-top:1px dashed var(--border-color); font-size:13px;">
-                <div>Manzil: <b>${order.address}</b></div>
-                <div>Jami: <strong style="font-size:16px; color:var(--color-navy);">${formatMoney(order.total)} so'm</strong></div>
-            </div>
-            
-            <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
-                <button type="button" class="btn btn-sm btn-outline" onclick="downloadOrderReceipt('${order.id}')">📄 PDF Kvitansiya</button>
-                <button type="button" class="btn btn-sm btn-primary" onclick="switchDashboardTab('returns')">🔄 Almashtirish / Qaytarish</button>
-            </div>
-        </div>
-    `,
-    )
-    .join("");
 }
 
 function downloadOrderReceipt(orderId) {
