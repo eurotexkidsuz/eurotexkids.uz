@@ -980,7 +980,8 @@
     },
 
     _mountGSI() {
-      if (this.initialized || !window.google?.accounts?.id) return;
+      if (this.initialized || window._gsiGlobalInitialized || !window.google?.accounts?.id) return;
+      window._gsiGlobalInitialized = true;
       try {
         window.google.accounts.id.initialize({
           client_id: this.clientId,
@@ -991,14 +992,7 @@
           context: "use",
           itp_support: true,
         });
-        if (!this._isUserLoggedIn()) {
-          window.google.accounts.id.prompt((notification) => {
-            if (notification && notification.isNotDisplayed()) {
-              console.info("[GoogleOneTap] Prompt suppressed");
-            }
-          });
-          this.initialized = true;
-        }
+        this.initialized = true;
       } catch (e) {
         console.warn("[GoogleOneTap] mount failed", e.message);
       }
@@ -1116,32 +1110,14 @@
     _listenerInstalled: false,
 
     init() {
-      this._installHistoryHook();
       window.addEventListener("popstate", () => this.handleURLRouting(true));
-      document.addEventListener("DOMContentLoaded", () => {
-        setTimeout(() => this.handleURLRouting(false), 100);
-      });
-      if (document.readyState !== "loading") {
-        setTimeout(() => this.handleURLRouting(false), 300);
+      if (document.readyState === "complete" || document.readyState === "interactive") {
+        setTimeout(() => this.handleURLRouting(false), 200);
+      } else {
+        document.addEventListener("DOMContentLoaded", () => {
+          setTimeout(() => this.handleURLRouting(false), 200);
+        });
       }
-    },
-
-    _installHistoryHook() {
-      if (this._listenerInstalled) return;
-      this._listenerInstalled = true;
-      const self = this;
-      const origPush = history.pushState;
-      const origReplace = history.replaceState;
-      history.pushState = function () {
-        const r = origPush.apply(this, arguments);
-        setTimeout(() => self.handleURLRouting(false), 0);
-        return r;
-      };
-      history.replaceState = function () {
-        const r = origReplace.apply(this, arguments);
-        setTimeout(() => self.handleURLRouting(false), 0);
-        return r;
-      };
     },
 
     _navPillsActivate(catValue) {
