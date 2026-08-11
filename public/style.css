@@ -6834,44 +6834,58 @@ body {
 }
 
 .admin-tab-row {
-  display: flex;
-  gap: 4px;
-  padding: 14px;
-  background: rgba(11, 19, 34, 0.8);
-  border-bottom: 1px solid rgba(51, 65, 85, 0.4);
-  flex-wrap: wrap;
+  display: flex !important;
+  gap: 12px !important;
+  padding: 14px 16px !important;
+  background: rgba(11, 19, 34, 0.95) !important;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.5) !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: none !important;
+  align-items: center !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.admin-tab-row::-webkit-scrollbar {
+  display: none !important;
 }
 
 .admin-nav-tab {
-  flex: 1;
-  min-width: 180px;
-  padding: 14px 18px;
-  background: transparent;
-  color: #94a3b8;
-  border: 1px solid transparent;
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: var(--transition);
-  white-space: nowrap;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: max-content !important;
+  max-width: none !important;
+  padding: 12px 22px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #94a3b8 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  font-weight: 700 !important;
+  font-size: 13.5px !important;
+  cursor: pointer !important;
+  border-radius: 12px !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  white-space: nowrap !important;
+  box-shadow: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
 }
 
 .admin-nav-tab:hover {
-  background: rgba(0, 242, 254, 0.06);
-  color: #cbd5e1;
+  background: rgba(0, 242, 254, 0.08) !important;
+  color: #ffffff !important;
+  border-color: rgba(0, 242, 254, 0.3) !important;
 }
 
 .admin-nav-tab.active {
-  background: linear-gradient(
-    135deg,
-    rgba(0, 242, 254, 0.14),
-    rgba(112, 0, 255, 0.14)
-  );
-  color: #00f2fe;
-  border-color: rgba(0, 242, 254, 0.35);
-  text-shadow: 0 0 8px rgba(0, 242, 254, 0.45);
-  box-shadow: inset 0 0 0 1px rgba(0, 242, 254, 0.1);
+  background: linear-gradient(135deg, #7000ff, #4c00b0) !important;
+  color: #ffffff !important;
+  border-color: rgba(112, 0, 255, 0.6) !important;
+  box-shadow: 0 4px 16px rgba(112, 0, 255, 0.4) !important;
+  text-shadow: none !important;
 }
 
 /* Admin Section Headings */
@@ -7640,13 +7654,12 @@ body {
   }
 
   .admin-tab-row {
-    padding: 10px;
+    padding: 10px 12px !important;
   }
 
   .admin-nav-tab {
-    min-width: 140px;
-    padding: 10px 12px;
-    font-size: 12px;
+    padding: 10px 16px !important;
+    font-size: 12.5px !important;
   }
 
   .admin-sec-header {
