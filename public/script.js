@@ -2692,15 +2692,25 @@ function openModal(modalId) {
     return;
   }
   modal.style.display = "flex";
+  modal.style.opacity = "1";
+  modal.style.visibility = "visible";
+  modal.style.pointerEvents = "auto";
   modal.style.zIndex = "999999";
   modal.classList.add("show");
+  modal.classList.add("active");
+  document.body.style.overflow = "hidden";
 }
 
 function closeModal(modalId) {
   const modal = document.getElementById(modalId);
   if (!modal) return;
   modal.classList.remove("show");
+  modal.classList.remove("active");
   modal.style.display = "none";
+  modal.style.opacity = "0";
+  modal.style.visibility = "hidden";
+  modal.style.pointerEvents = "none";
+  document.body.style.overflow = "";
 
   if (modalId === "addProductModal") {
     if (

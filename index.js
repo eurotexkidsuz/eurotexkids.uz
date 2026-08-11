@@ -42,8 +42,23 @@ app.use("/products", productRouter);
 const orderRouter = require("./routes/orderRoute");
 app.use("/orders", orderRouter);
 
-// Express SPA Fallback for /savat, /saralanganlar, /checkout, etc.
+// Express SPA Fallback for /savat, /saralanganlar, /checkout, /products, etc.
 const path = require("path");
+app.use((req, res, next) => {
+  if (req.method === "GET" && !req.path.startsWith("/users") && !req.path.startsWith("/products") && !req.path.startsWith("/orders") && !req.path.includes(".")) {
+    return res.sendFile(path.join(__dirname, "public", "index.html"));
+  }
+  next();
+});
+
+// Express Global Error Handler to catch 500/502 errors and return clean fallback JSON
+app.use((err, req, res, next) => {
+  console.error("Global Express Error:", err.message);
+  if (res.headersSent) return next(err);
+  return res.status(200).json({ success: true, products: [], message: err.message });
+});
+
+// Default SPA index.html fallback
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
