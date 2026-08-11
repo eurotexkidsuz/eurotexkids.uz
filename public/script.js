@@ -1216,9 +1216,10 @@ function renderProducts() {
       .map((product) => {
         try {
           if (!product) return "";
-          const isWishlisted = (state.wishlist || []).some(
-            (w) => w && w.id === product.id,
-          );
+          const isWishlisted = (state.wishlist || []).some((w) => {
+            const wId = typeof w === "object" && w ? w.id : w;
+            return String(wId) === String(product.id);
+          });
           const title = (
             product[`title_${lang}`] ||
             product.title_uz ||

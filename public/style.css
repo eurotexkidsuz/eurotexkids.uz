@@ -1243,20 +1243,20 @@ html[data-theme="dark"] .main-header.scrolled {
   position: relative;
   width: 100%;
   height: auto;
-  min-height: 360px;
-  max-height: 620px;
+  min-height: 420px;
+  max-height: 780px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #060b14;
+  background: #040812;
   border-radius: var(--radius-xl);
   overflow: hidden;
-  padding: 10px 0;
+  padding: 4px 0;
 }
 
 .slide-img {
   max-width: 100%;
-  max-height: 600px;
+  max-height: 760px;
   width: auto;
   height: auto;
   object-fit: contain !important;
