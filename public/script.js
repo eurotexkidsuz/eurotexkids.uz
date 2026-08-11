@@ -2736,6 +2736,18 @@ function closeModal(modalId) {
   }
 }
 
+// Global Freeze-Proof Modal Backdrop Click Listener
+document.addEventListener("click", function (e) {
+  if (e.target && e.target.classList.contains("modal-overlay")) {
+    const activeModals = document.querySelectorAll(
+      ".modal-overlay.show, .modal-overlay.active",
+    );
+    activeModals.forEach((m) => {
+      if (m && m.id) closeModal(m.id);
+    });
+  }
+});
+
 function renderWishlist() {
   const grid = document.getElementById("wishlistGrid");
   const popGrid = document.getElementById("wishlistPopGrid");

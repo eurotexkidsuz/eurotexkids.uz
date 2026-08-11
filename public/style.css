@@ -1851,12 +1851,24 @@ html[data-theme="dark"] .main-header.scrolled {
   white-space: nowrap;
 }
 
-/* Modals System */
+/* GPU Hardware Acceleration & Freeze-Proof Performance Engine */
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 .modal-overlay {
   position: fixed;
   inset: 0;
   background: rgba(11, 19, 34, 0.75) !important;
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   z-index: 999999 !important;
   display: none;
   align-items: center;
@@ -1864,8 +1876,10 @@ html[data-theme="dark"] .main-header.scrolled {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.25s ease, visibility 0.25s ease;
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 20px;
+  will-change: opacity, visibility;
+  transform: translateZ(0);
 }
 
 .modal-overlay.show,
@@ -1882,6 +1896,16 @@ html[data-theme="dark"] .main-header.scrolled {
   width: 100%;
   position: relative;
   max-height: 90vh;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+.product-card,
+.admin-img-edit-btn,
+.hero-carousel {
+  will-change: transform;
+  transform: translateZ(0);
+}
   overflow-y: auto;
   box-shadow: var(--shadow-lg);
   animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
