@@ -2025,17 +2025,19 @@ function openQuickView(productId) {
   const modal = document.getElementById("quickViewModal");
   const content = document.getElementById("quickViewContent");
 
+  const usdRate = state.usdRate || 12650;
   const priceUsdVal =
     product.priceUsd ||
-    Math.round(product.price / (state.usdRate || 12650)) ||
+    Math.round(product.price / usdRate) ||
     50;
-  const priceSomVal = formatMoneySom(product.price);
+  // Always compute UZS from USD * rate so "150 so'm" bug never happens
+  const priceSomRaw = priceUsdVal * usdRate;
   const oldPriceUsdVal = Math.round(priceUsdVal * 1.25);
-  const oldPriceSomVal = formatMoneySom(
-    product.oldPrice || product.price * 1.25,
-  );
+  const oldPriceSomRaw = oldPriceUsdVal * usdRate;
+  const priceSomVal = formatMoneySom(priceSomRaw);
+  const oldPriceSomVal = formatMoneySom(oldPriceSomRaw);
   const nasiyaUsdVal = Math.round(priceUsdVal / 12);
-  const nasiyaSomVal = formatMoneySom(Math.round(product.price / 12));
+  const nasiyaSomVal = formatMoneySom(Math.round(priceSomRaw / 12));
 
   const imgs =
     product.images && Array.isArray(product.images) && product.images.length > 0
