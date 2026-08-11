@@ -1712,34 +1712,41 @@ function filterWishlistProducts() {
 
 // Wishlist Toggling
 function toggleWishlist(productId) {
-  const product = EUROTEX_PRODUCTS.find((p) => p.id === productId);
-  if (!product) return;
+  const pool = (typeof getGlobalProductsPool === "function" ? getGlobalProductsPool() : EUROTEX_PRODUCTS);
+  const product = pool.find((p) => p && String(p.id) === String(productId));
 
-  const index = state.wishlist.findIndex((w) => w.id === productId);
-  const lang = state.currentLang;
+  const index = state.wishlist.findIndex((w) => {
+    const wId = (typeof w === "object" && w) ? w.id : w;
+    return String(wId) === String(productId);
+  });
+
+  const lang = state.currentLang || "uz";
   if (index > -1) {
     state.wishlist.splice(index, 1);
     showToast(
       lang === "ru"
-        ? "Удалено из избранного"
+        ? "💔 Удалено из избранного"
         : lang === "en"
-          ? "Removed from wishlist"
-          : "Saralanganlardan olib tashlandi",
+          ? "💔 Removed from wishlist"
+          : "💔 Saralanganlardan olib tashlandi",
+      "info"
     );
   } else {
-    state.wishlist.push(product);
+    state.wishlist.push(product || productId);
     showToast(
       lang === "ru"
-        ? "Добавлено в избранное ❤️"
+        ? "❤️ Добавлено в избранное!"
         : lang === "en"
-          ? "Added to wishlist ❤️"
-          : "Saralanganlarga qo'shildi ❤️",
+          ? "❤️ Added to wishlist!"
+          : "❤️ Saralanganlarga saqlandi!",
+      "success"
     );
   }
 
   localStorage.setItem("eurotex_wishlist", JSON.stringify(state.wishlist));
   updateWishlistUI();
-  renderProducts();
+  if (typeof renderWishlist === "function") renderWishlist();
+  if (typeof renderProducts === "function") renderProducts();
 }
 
 function updateWishlistUI() {
@@ -2680,31 +2687,26 @@ function openCheckoutModal() {
 function openModal(modalId) {
   const modal = document.getElementById(modalId);
   if (!modal) {
-    console.error(
-      `[Eurotex Error] Qidirilayotgan modal topilmadi: #${modalId}`,
-    );
+    console.error(`[Eurotex Error] Modal topilmadi: #${modalId}`);
     return;
   }
+  modal.style.display = "flex";
+  modal.style.zIndex = "999999";
   modal.classList.add("show");
 }
 
 function closeModal(modalId) {
   const modal = document.getElementById(modalId);
-  if (!modal) {
-    console.error(
-      `[Eurotex Error] Yopilishi kerak bo'lgan modal topilmadi: #${modalId}`,
-    );
-    return;
-  }
+  if (!modal) return;
   modal.classList.remove("show");
+  modal.style.display = "none";
 
-  // Restore clean URL when addProductModal or other modals are closed
   if (modalId === "addProductModal") {
     if (
       window.location.pathname.includes("/admin/addcart") ||
       window.location.pathname.includes("/addcart")
     ) {
-      history.pushState({}, document.title, "/admin");
+      history.pushState({}, document.title, "/admin/products");
     }
   } else {
     const restoreModals = ["quickViewModal", "authModal", "loginModal"];
