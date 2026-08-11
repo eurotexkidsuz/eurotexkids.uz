@@ -2785,7 +2785,6 @@ function renderWishlist() {
   if (grid) grid.innerHTML = htmlContent;
   if (popGrid) popGrid.innerHTML = htmlContent;
 }
-}
 
 function openSizeGuide() {
   openModal("sizeGuideModal");
