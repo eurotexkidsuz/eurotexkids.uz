@@ -4169,8 +4169,8 @@ function showAdminSection(sec, pushUrl = true) {
   if (pushUrl) {
     if (sec === "orders") updateURLRoute("/admin/orders");
     else if (sec === "products") updateURLRoute("/admin/products");
-    else if (sec === "returns") updateURLRoute("/admin/applications");
-    else if (sec === "settings") updateURLRoute("/admin/dollar");
+    else if (sec === "returns") updateURLRoute("/admin/returns");
+    else if (sec === "settings") updateURLRoute("/admin/settings");
   }
 }
 
