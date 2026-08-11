@@ -1243,24 +1243,26 @@ html[data-theme="dark"] .main-header.scrolled {
   position: relative;
   width: 100%;
   height: auto;
-  min-height: 480px;
-  max-height: 850px;
+  min-height: 380px;
+  max-height: 720px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #000000;
+  background: #060b14;
   border-radius: var(--radius-xl);
   overflow: hidden;
+  padding: 6px 0;
 }
 
 .slide-img {
-  width: 100%;
-  height: 100%;
-  min-height: 480px;
-  max-height: 850px;
-  object-fit: cover !important;
-  object-position: center top !important;
+  max-width: 100%;
+  max-height: 700px;
+  width: auto;
+  height: auto;
+  object-fit: contain !important;
+  object-position: center center;
   display: block;
+  margin: 0 auto;
   border-radius: var(--radius-xl);
 }
 
@@ -4143,32 +4145,47 @@ html[data-theme="dark"] .main-header.scrolled {
 
 .admin-img-edit-btn {
   position: absolute !important;
-  bottom: 36px !important;
-  right: 32px !important;
-  padding: 10px 22px !important;
-  font-size: 13.5px !important;
-  font-weight: 800 !important;
-  border-radius: 999px !important;
+  bottom: 24px !important;
+  right: 24px !important;
+  width: 52px !important;
+  height: 52px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
   z-index: 999 !important;
   background: linear-gradient(135deg, #7000ff 0%, #00f2fe 100%) !important;
   color: #ffffff !important;
-  border: 2px solid #ffffff !important;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7), 0 0 15px rgba(0, 242, 254, 0.5) !important;
+  border: 2.5px solid #ffffff !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6), 0 0 15px rgba(0, 242, 254, 0.6) !important;
   display: inline-flex !important;
   align-items: center !important;
-  gap: 8px !important;
-  white-space: nowrap !important;
+  justify-content: center !important;
   cursor: pointer !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+}
+
+.admin-img-edit-btn:hover {
+  transform: scale(1.1) rotate(90deg) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 242, 254, 0.8) !important;
+}
+
+.admin-img-edit-btn .img-btn-plus {
+  font-size: 24px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  display: block !important;
 }
 
 /* Mobile & Tablet Responsive Media Queries for '+' Buttons */
 @media (max-width: 768px) {
   .admin-img-edit-btn {
-    bottom: 28px !important;
-    right: 20px !important;
-    padding: 8px 16px !important;
-    font-size: 12.5px !important;
-    border-radius: 24px !important;
+    bottom: 18px !important;
+    right: 18px !important;
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  .admin-img-edit-btn .img-btn-plus {
+    font-size: 20px !important;
   }
 
   .admin-text-edit-btn {
@@ -4180,10 +4197,14 @@ html[data-theme="dark"] .main-header.scrolled {
 
 @media (max-width: 480px) {
   .admin-img-edit-btn {
-    bottom: 24px !important;
-    right: 16px !important;
-    padding: 6px 14px !important;
-    font-size: 11.5px !important;
+    bottom: 14px !important;
+    right: 14px !important;
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .admin-img-edit-btn .img-btn-plus {
+    font-size: 18px !important;
   }
 }
 
