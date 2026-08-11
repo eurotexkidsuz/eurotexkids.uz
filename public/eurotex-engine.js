@@ -1393,7 +1393,10 @@
     /* Deprecation safety hooks */
     window.runCheckoutAuthGate = runCheckoutAuthGate;
     window.EurotexCurrency = CurrencyEngine;
-    window.handleURLRouting = () => RoutingEngine.handleURLRouting(false);
+    /* Auto-render storefront products grid */
+    if (typeof window.renderProducts === "function") {
+      try { window.renderProducts(); } catch (e) {}
+    }
 
     console.log(
       "%c[EUROTEX ELITE ENGINE v2.0]",

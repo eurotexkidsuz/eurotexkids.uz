@@ -7583,29 +7583,18 @@ body {
   color: #fff;
 }
 
-/* IndexedDB status badge */
-.cache-status-indicator {
-  position: fixed;
-  bottom: 90px;
-  right: 20px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.35);
-  font-size: 11px;
-  font-weight: 700;
-  z-index: 900;
-  backdrop-filter: blur(8px);
-}
-
-.cache-status-indicator.offline {
-  background: rgba(251, 191, 36, 0.15);
-  color: #f59e0b;
-  border-color: rgba(251, 191, 36, 0.4);
+/* IndexedDB status badge - PERMANENTLY REMOVED */
+.cache-status-indicator,
+#eurotex-cache-badge {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
 }
 
 .cache-dot {
