@@ -2123,6 +2123,46 @@
         <div class="quick-view-grid" id="quickViewContent">
           <!-- Rendered by JS -->
         </div>
+    <!-- MODAL: Standalone Dedicated Pop-up Cart Modal -->
+    <div class="modal-overlay" id="cartPopModal">
+      <div class="modal-dialog modal-lg" style="max-width: 720px; border-radius: 24px; padding: 28px; background: #0b1322; color: #ffffff; border: 1px solid rgba(0, 242, 254, 0.25); box-shadow: 0 20px 60px rgba(0,0,0,0.6);">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 20px;">
+          <h2 style="margin: 0; font-size: 22px; font-weight: 800; color: #ffffff; display: flex; align-items: center; gap: 10px;">
+            🛒 Mening Savatim <span id="cartPopHeaderCount" style="font-size: 14px; background: rgba(0, 242, 254, 0.15); color: #00f2fe; padding: 4px 12px; border-radius: 999px; font-weight: 700;">0 ta mahsulot</span>
+          </h2>
+          <button class="modal-close" onclick="closeModal('cartPopModal')" style="position: static; font-size: 20px; width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.08); color: #fff; border: none; cursor: pointer;">✕</button>
+        </div>
+
+        <div id="cartPopItemsList" style="max-height: 420px; overflow-y: auto; padding-right: 6px; margin-bottom: 20px;">
+          <!-- Dynamically populated by updateCartUI() -->
+        </div>
+
+        <div style="padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+          <div>
+            <span style="font-size: 13px; color: #94a3b8; display: block;">Jami to'lov narxi:</span>
+            <strong id="cartPopTotal" style="font-size: 22px; color: #00f2fe; font-weight: 800;">$0 (0 so'm)</strong>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button type="button" onclick="clearCart()" style="padding: 12px 18px; background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s;">🗑️ Tozalash</button>
+            <button type="button" onclick="closeModal('cartPopModal'); openCheckoutModal();" style="padding: 12px 24px; background: linear-gradient(135deg, #7000ff, #00f2fe); color: #fff; border: none; border-radius: 12px; font-weight: 800; font-size: 15px; cursor: pointer; box-shadow: 0 4px 16px rgba(112,0,255,0.4); transition: all 0.2s;">Buyurtmani rasmiylashtirish ⚡</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: Standalone Dedicated Pop-up Wishlist Modal -->
+    <div class="modal-overlay" id="wishlistPopModal">
+      <div class="modal-dialog modal-lg" style="max-width: 840px; border-radius: 24px; padding: 28px; background: #0b1322; color: #ffffff; border: 1px solid rgba(255, 0, 128, 0.25); box-shadow: 0 20px 60px rgba(0,0,0,0.6);">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 20px;">
+          <h2 style="margin: 0; font-size: 22px; font-weight: 800; color: #ffffff; display: flex; align-items: center; gap: 10px;">
+            ❤️ Mening Saralanganlarim <span id="wishlistPopHeaderCount" style="font-size: 14px; background: rgba(255, 0, 128, 0.15); color: #ff0080; padding: 4px 12px; border-radius: 999px; font-weight: 700;">0 ta mahsulot</span>
+          </h2>
+          <button class="modal-close" onclick="closeModal('wishlistPopModal')" style="position: static; font-size: 20px; width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.08); color: #fff; border: none; cursor: pointer;">✕</button>
+        </div>
+
+        <div id="wishlistPopGrid" class="product-grid" style="max-height: 480px; overflow-y: auto; padding-right: 6px;">
+          <!-- Dynamically populated by renderWishlist() -->
+        </div>
       </div>
     </div>
 
@@ -3569,7 +3609,7 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=160.0.0" defer></script>
-    <script src="/eurotex-engine.js?v=2.7.0" defer></script>
+    <script src="/script.js?v=161.0.0" defer></script>
+    <script src="/eurotex-engine.js?v=2.8.0" defer></script>
   </body>
 </html>

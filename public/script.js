@@ -1906,6 +1906,50 @@ function updateCartUI() {
   if (nasiyaEst)
     nasiyaEst.innerHTML = `Eurotex Nasiya: Oyiga <b>${formatMoney(monthlyNasiya)}</b> (12 oy)`;
 
+  const cartPopHeaderCount = document.getElementById("cartPopHeaderCount");
+  const cartPopTotal = document.getElementById("cartPopTotal");
+  const cartPopItemsList = document.getElementById("cartPopItemsList");
+
+  if (cartPopHeaderCount) cartPopHeaderCount.textContent = `${totalCount} ta pachka`;
+  if (cartPopTotal) cartPopTotal.textContent = safeFormatMoney(finalTotal);
+
+  if (cartPopItemsList) {
+    if (state.cart.length === 0) {
+      cartPopItemsList.innerHTML = `
+        <div style="text-align:center; padding: 40px 10px; color: #94a3b8;">
+            <div style="font-size: 48px; margin-bottom: 12px;">🛒</div>
+            <h3 style="font-size: 18px; color: #ffffff; margin-bottom: 6px;">Savatingiz hozircha bo'sh</h3>
+            <p style="font-size: 14px;">Bosh sahifadagi mahsulotlardan birini tanlang va savatga qo'shing</p>
+        </div>
+      `;
+    } else {
+      cartPopItemsList.innerHTML = state.cart
+        .map(
+          (item, idx) => `
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; margin-bottom: 10px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <img src="${item.image}" style="width: 60px; height: 75px; object-fit: cover; border-radius: 10px;" alt="${item.title}">
+                <div>
+                  <div style="font-weight: 700; font-size: 14px; color: #ffffff; margin-bottom: 4px;">${item.title}</div>
+                  <div style="font-size: 12px; color: #94a3b8;">O'lcham: <b style="color: #00f2fe;">${item.size}</b> | Rangi: <b style="color: #00f2fe;">${item.color || "Klassik"}</b></div>
+                  <div style="font-size: 14px; font-weight: 800; color: #00f2fe; margin-top: 4px;">${safeFormatMoney(item.price * item.quantity)}</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="display: flex; align-items: center; background: rgba(255,255,255,0.08); border-radius: 8px; padding: 2px 6px;">
+                  <button type="button" onclick="updateCartQtyByIndex(${idx}, -1)" style="background: none; border: none; color: #fff; font-weight: 700; font-size: 16px; width: 24px; cursor: pointer;">–</button>
+                  <span style="font-weight: 800; font-size: 14px; color: #00f2fe; padding: 0 8px;">${item.quantity}</span>
+                  <button type="button" onclick="updateCartQtyByIndex(${idx}, 1)" style="background: none; border: none; color: #fff; font-weight: 700; font-size: 16px; width: 24px; cursor: pointer;">+</button>
+                </div>
+                <button type="button" onclick="removeCartItemByIndex(${idx})" style="background: rgba(239,68,68,0.2); border: none; color: #ef4444; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 14px;">🗑️</button>
+              </div>
+            </div>
+          `,
+        )
+        .join("");
+    }
+  }
+
   if (cartItemsList) {
     if (state.cart.length === 0) {
       cartItemsList.innerHTML = `
@@ -2621,15 +2665,17 @@ function updateCheckoutData() {
 }
 
 function openCartDrawer() {
-  openDashboardView("cart");
+  updateCartUI();
+  openModal("cartPopModal");
 }
 
 function closeCartDrawer() {
-  closeDashboardView();
+  closeModal("cartPopModal");
 }
 
 function openWishlistModal() {
-  openDashboardView("wishlist");
+  renderWishlist();
+  openModal("wishlistPopModal");
 }
 
 function openCheckoutModal() {
@@ -2691,62 +2737,54 @@ function closeModal(modalId) {
 
 function renderWishlist() {
   const grid = document.getElementById("wishlistGrid");
+  const popGrid = document.getElementById("wishlistPopGrid");
   const headerCount = document.getElementById("wishlistHeaderCount");
-  if (!grid) return;
+  const popHeaderCount = document.getElementById("wishlistPopHeaderCount");
 
-  if (headerCount)
-    headerCount.textContent = `${state.wishlist.length} ta mahsulot`;
+  const wishPool = (typeof getGlobalProductsPool === "function" ? getGlobalProductsPool() : EUROTEX_PRODUCTS);
+  const wishProds = (state.wishlist || [])
+    .map((idOrObj) => {
+      if (typeof idOrObj === "object" && idOrObj.id) return idOrObj;
+      return wishPool.find((p) => p && String(p.id) === String(idOrObj));
+    })
+    .filter(Boolean);
 
-  if (state.wishlist.length === 0) {
-    grid.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px;">
-                <div style="font-size: 48px; margin-bottom: 12px;">❤️</div>
-                <h3 style="font-size: 18px; color: var(--color-navy); margin-bottom: 6px;">Saralanganlar ro'yxati bo'sh</h3>
-                <p style="color: var(--text-secondary); font-size: 14px;">Yoqtirgan kiyimlaringizdagi yurakcha tugmasini bosib saqlab qo'ying</p>
-            </div>
-        `;
+  if (headerCount) headerCount.textContent = `${wishProds.length} ta mahsulot`;
+  if (popHeaderCount) popHeaderCount.textContent = `${wishProds.length} ta mahsulot`;
+
+  const emptyHtml = `
+    <div style="grid-column: 1/-1; text-align: center; padding: 50px 20px; color: #94a3b8;">
+        <div style="font-size: 48px; margin-bottom: 12px;">❤️</div>
+        <h3 style="font-size: 18px; color: #ffffff; margin-bottom: 6px;">Saralanganlar ro'yxati hozircha bo'sh</h3>
+        <p style="font-size: 14px;">Yoqtirgan kiyimlaringizdagi yurakcha tugmasini bosib saqlab qo'ying</p>
+    </div>
+  `;
+
+  if (wishProds.length === 0) {
+    if (grid) grid.innerHTML = emptyHtml;
+    if (popGrid) popGrid.innerHTML = emptyHtml;
     return;
   }
 
-  const lang = state.currentLang;
-  const dict = TRANSLATIONS[lang];
-
-  grid.innerHTML = state.wishlist
-    .map((product) => {
-      const title = product[`title_${lang}`] || product.title_uz;
-      const formattedPrice = formatMoney(product.price);
-      const formattedOldPrice = product.oldPrice
-        ? formatMoney(product.oldPrice)
-        : "";
-      const monthlyInstallment = formatMoney(product.nasiyaMonthly);
-
-      return `
-            <div class="product-card" data-id="${product.id}">
-                <div class="card-image-wrap" onclick="openQuickView('${product.id}')">
-                    <img src="${product.image}" alt="${title}" loading="lazy">
-                    <button type="button" class="wishlist-btn active" onclick="event.stopPropagation(); toggleWishlist('${product.id}'); renderWishlist();" title="Saralanganlardan olib tashlash" style="position: absolute; top: 10px; right: 10px; z-index: 5; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.12);">❤️</button>
-                </div>
-                <div class="card-body">
-                    <div class="card-price-row" style="margin-top: 0; margin-bottom: 6px;">
-                        <div class="price-group">
-                            <span class="current-price" style="font-size: 17px; font-weight: 800; color: var(--color-navy);">${formattedPrice} ${dict.currency}</span>
-                            ${product.oldPrice ? `<span class="old-price" style="font-size: 12px; text-decoration: line-through; color: #94a3b8;">${formattedOldPrice} ${dict.currency}</span>` : ""}
-                        </div>
-                    </div>
-                    <div class="card-nasiya-box" style="margin-bottom: 8px; background: #fef08a; color: #854d0e; font-weight: 700; font-size: 11px; padding: 3px 8px; border-radius: 4px; width: fit-content;">
-                        ${monthlyInstallment} ${dict.currency}/${dict.perMonth.toLowerCase()}
-                    </div>
-                    <h3 class="card-title" onclick="openQuickView('${product.id}')" style="margin-bottom: 4px; font-size: 13px; color: #334155; line-height: 1.3;">${title}</h3>
-                    <div class="card-rating" style="font-size: 12px; color: #64748b; margin-bottom: 12px;">
-                        <span>⭐ ${product.rating}</span>
-                        <span>(${product.reviewsCount} ${lang === "ru" ? "отзывов" : lang === "en" ? "reviews" : "sharhlar"})</span>
-                    </div>
-                    <button class="btn btn-primary btn-block btn-sm" onclick="openQuickView('${product.id}')" style="margin-top: auto; height: 40px; border-radius: 10px;">${dict.addToCart}</button>
-                </div>
-            </div>
-        `;
-    })
+  const htmlContent = wishProds
+    .map((product) => `
+      <div class="product-card" data-id="${product.id}" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden; padding: 12px;">
+          <div class="card-image-wrap" onclick="closeModal('wishlistPopModal'); openQuickView('${product.id}')" style="position: relative; cursor: pointer; border-radius: 12px; overflow: hidden;">
+              <img src="${product.image}" alt="${product.title_uz || product.title}" style="width: 100%; height: 180px; object-fit: cover;">
+              <button type="button" onclick="event.stopPropagation(); toggleWishlist('${product.id}'); renderWishlist();" style="position: absolute; top: 8px; right: 8px; z-index: 5; background: rgba(0,0,0,0.6); border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center;">❤️</button>
+          </div>
+          <div class="card-body" style="padding: 10px 0 0;">
+              <div style="font-weight: 700; font-size: 13px; color: #ffffff; line-height: 1.3; height: 34px; overflow: hidden;">${product.title_uz || product.title}</div>
+              <div style="font-size: 15px; font-weight: 800; color: #00f2fe; margin-top: 6px;">${safeFormatMoney(product.priceUsd || product.price)}</div>
+              <button type="button" onclick="addToCart('${product.id}'); closeModal('wishlistPopModal'); openCartDrawer();" style="margin-top: 10px; width: 100%; padding: 8px; background: linear-gradient(135deg, #7000ff, #00f2fe); color: #fff; border: none; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer;">Savatga qo'shish 🛒</button>
+          </div>
+      </div>
+    `)
     .join("");
+
+  if (grid) grid.innerHTML = htmlContent;
+  if (popGrid) popGrid.innerHTML = htmlContent;
+}
 }
 
 function openSizeGuide() {
