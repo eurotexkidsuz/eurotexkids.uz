@@ -4145,43 +4145,32 @@ html[data-theme="dark"] .main-header.scrolled {
 
 .admin-img-edit-btn {
   position: absolute !important;
-  bottom: 24px !important;
-  right: 24px !important;
-  padding: 10px 20px !important;
+  bottom: 36px !important;
+  right: 32px !important;
+  padding: 10px 22px !important;
   font-size: 13.5px !important;
+  font-weight: 800 !important;
   border-radius: 999px !important;
   z-index: 999 !important;
   background: linear-gradient(135deg, #7000ff 0%, #00f2fe 100%) !important;
   color: #ffffff !important;
-  border: 2px solid rgba(255, 255, 255, 0.7) !important;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6) !important;
+  border: 2px solid #ffffff !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7), 0 0 15px rgba(0, 242, 254, 0.5) !important;
   display: inline-flex !important;
   align-items: center !important;
-  gap: 6px !important;
+  gap: 8px !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
 }
 
 /* Mobile & Tablet Responsive Media Queries for '+' Buttons */
 @media (max-width: 768px) {
   .admin-img-edit-btn {
-    bottom: 20px !important;
+    bottom: 28px !important;
     right: 20px !important;
-    width: auto !important;
-    height: auto !important;
     padding: 8px 16px !important;
+    font-size: 12.5px !important;
     border-radius: 24px !important;
-    align-items: center !important;
-    justify-content: center !important;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6) !important;
-  }
-
-  .admin-img-edit-btn .img-btn-cam {
-    display: inline !important;
-    font-size: 14px !important;
-  }
-
-  .admin-img-edit-btn .img-btn-plus {
-    font-size: 14px !important;
-    font-weight: 900 !important;
   }
 
   .admin-text-edit-btn {
@@ -4193,14 +4182,10 @@ html[data-theme="dark"] .main-header.scrolled {
 
 @media (max-width: 480px) {
   .admin-img-edit-btn {
-    bottom: 16px !important;
+    bottom: 24px !important;
     right: 16px !important;
-    padding: 6px 12px !important;
+    padding: 6px 14px !important;
     font-size: 11.5px !important;
-  }
-
-  .admin-img-edit-btn .img-btn-plus {
-    font-size: 14px !important;
   }
 }
 
