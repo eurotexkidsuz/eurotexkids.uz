@@ -991,10 +991,12 @@ function closeAllModals() {
 function initPreloader() {
   const preloader = document.getElementById("preloader");
   if (preloader) {
+    preloader.style.transition = "opacity 0.3s ease, visibility 0.3s ease";
+    preloader.style.opacity = "0";
+    preloader.style.visibility = "hidden";
     setTimeout(() => {
-      preloader.style.opacity = "0";
-      preloader.style.visibility = "hidden";
-    }, 400);
+      preloader.style.display = "none";
+    }, 350);
   }
 }
 
@@ -2217,6 +2219,7 @@ function switchMobileNavTab(tab) {
     if (authBtn) authBtn.classList.add("active");
     if (state.user && (state.user.role === "admin" || isAdminEmail(state.user.email))) {
       openDashboardView("admin");
+      showAdminSection("products", true);
     } else {
       openAuthModal();
     }
@@ -2372,6 +2375,11 @@ function handleURLRouting() {
     }
 
     openDashboardView("admin");
+
+    if (raw === "/admin" || raw === "/admin/") {
+      showAdminSection("products", true);
+      return;
+    }
 
     if (
       raw === "/admin/addcart" ||
