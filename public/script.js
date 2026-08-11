@@ -5509,18 +5509,45 @@ function formatUsd(usdAmount) {
 }
 
 function showToast(message) {
-  const container = document.getElementById("toastContainer");
-  if (!container) return;
+  // Always move toastContainer to be the LAST child of body
+  // so it's never trapped inside a modal stacking context
+  let container = document.getElementById("toastContainer");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toastContainer";
+    container.className = "toast-container";
+  }
+  // Re-append to body to guarantee it's on top of all modals
+  document.body.appendChild(container);
+
+  // Force inline position as absolute guarantee (CSS may be overridden)
+  container.style.cssText = [
+    "position: fixed",
+    "bottom: 24px",
+    "right: 24px",
+    "left: auto",
+    "top: auto",
+    "transform: none",
+    "z-index: 2147483647",
+    "display: flex",
+    "flex-direction: column-reverse",
+    "align-items: flex-end",
+    "gap: 8px",
+    "pointer-events: none",
+    "max-width: 340px",
+  ].join(" !important;") + " !important;";
 
   const toast = document.createElement("div");
   toast.className = "toast";
+  toast.style.pointerEvents = "auto";
   toast.innerHTML = `<span>✨</span> <div>${message}</div>`;
   container.appendChild(toast);
 
   setTimeout(() => {
     toast.style.opacity = "0";
-    toast.style.transform = "translateX(100%)";
-    setTimeout(() => toast.remove(), 300);
+    toast.style.transform = "translateX(120%)";
+    toast.style.transition = "opacity 0.3s, transform 0.3s";
+    setTimeout(() => toast.remove(), 350);
   }, 3500);
 }
 

@@ -3436,18 +3436,19 @@ body {
 
 /* Toast Notifications */
 .toast-container {
-  position: fixed;
-  bottom: 28px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 2147483647;
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 24px !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+  z-index: 2147483647 !important;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: 8px;
   pointer-events: none;
-  width: max-content;
-  max-width: 90vw;
+  max-width: 340px;
 }
 
 .toast {
@@ -4013,17 +4014,17 @@ body {
 
   /* --- TOASTS --- */
   .toast-container {
-    left: 50%;
-    right: auto;
-    top: auto;
-    bottom: 20px;
-    transform: translateX(-50%);
-    z-index: 2147483647;
-    width: max-content;
-    max-width: 92vw;
+    right: 12px !important;
+    left: auto !important;
+    bottom: 70px !important;
+    top: auto !important;
+    transform: none !important;
+    z-index: 2147483647 !important;
+    max-width: calc(100vw - 24px);
+    align-items: flex-end;
   }
   .toast {
-    padding: 10px 16px;
+    padding: 10px 14px;
     font-size: 13px;
     min-width: unset;
     max-width: 100%;
