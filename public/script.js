@@ -2740,6 +2740,8 @@ function renderWishlist() {
     })
     .filter(Boolean);
 
+  const lang = state.currentLang || "uz";
+
   if (headerCount) headerCount.textContent = `${wishProds.length} ta mahsulot`;
   if (popHeaderCount) popHeaderCount.textContent = `${wishProds.length} ta mahsulot`;
 
@@ -2758,19 +2760,41 @@ function renderWishlist() {
   }
 
   const htmlContent = wishProds
-    .map((product) => `
-      <div class="product-card" data-id="${product.id}" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden; padding: 12px;">
-          <div class="card-image-wrap" onclick="closeModal('wishlistPopModal'); openQuickView('${product.id}')" style="position: relative; cursor: pointer; border-radius: 12px; overflow: hidden;">
-              <img src="${product.image}" alt="${product.title_uz || product.title}" style="width: 100%; height: 180px; object-fit: cover;">
-              <button type="button" onclick="event.stopPropagation(); toggleWishlist('${product.id}'); renderWishlist();" style="position: absolute; top: 8px; right: 8px; z-index: 5; background: rgba(0,0,0,0.6); border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center;">❤️</button>
-          </div>
-          <div class="card-body" style="padding: 10px 0 0;">
-              <div style="font-weight: 700; font-size: 13px; color: #ffffff; line-height: 1.3; height: 34px; overflow: hidden;">${product.title_uz || product.title}</div>
-              <div style="font-size: 15px; font-weight: 800; color: #00f2fe; margin-top: 6px;">${safeFormatMoney(product.priceUsd || product.price)}</div>
-              <button type="button" onclick="addToCart('${product.id}'); closeModal('wishlistPopModal'); openCartDrawer();" style="margin-top: 10px; width: 100%; padding: 8px; background: linear-gradient(135deg, #7000ff, #00f2fe); color: #fff; border: none; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer;">Savatga qo'shish 🛒</button>
-          </div>
-      </div>
-    `)
+    .map((product) => {
+      const title = (product[`title_${lang}`] || product.title_uz || product.title || "Eurotex Kostyum").toString();
+      const formattedPrice = safeFormatMoney(product.priceUsd || product.pachkaPriceUsd || product.price || 45);
+      const formattedOldPrice = product.oldPrice ? safeFormatMoney(product.oldPrice) : "";
+      const unitPriceStr = product.unitPrice ? ` ($${product.unitPrice}/ta)` : "";
+      const badgeText = (product[`badge_${lang}`] || product.badge_uz || "LUXURY PACHKA").toString();
+      const imgSrc = product.image || product.img || "/images/default-product.png";
+
+      return `
+        <div class="product-card" data-id="${product.id}">
+            <div class="card-image-wrap" onclick="closeModal('wishlistPopModal'); openQuickView('${product.id}')">
+                <img src="${imgSrc}" alt="${title}" loading="lazy" onerror="this.src='/images/default-product.png'">
+                <span class="card-badge-tag ${product.badgeType || "gold"}">${badgeText}</span>
+                <button class="wishlist-heart-btn active" onclick="event.stopPropagation(); toggleWishlist('${product.id}')" title="Wishlist">❤️</button>
+            </div>
+            <div class="card-body">
+                <div style="background:#fef08a; color:#854d0e; font-weight:800; font-size:11px; padding:3px 8px; border-radius:4px; margin-bottom:6px; display:inline-block;">
+                    📦 1 Pachka (${product.pachkaItems || 6} ta seriya)
+                </div>
+                <div class="card-price-row" style="margin-top: 0; margin-bottom: 6px;">
+                    <div class="price-group">
+                        <span class="current-price" style="font-size:15px; font-weight:800; color:var(--color-navy);">${formattedPrice} <small style="font-size:11px; font-weight:600; color:#059669;">/pachka${unitPriceStr}</small></span>
+                        ${product.oldPrice ? `<span class="old-price">${formattedOldPrice}</span>` : ""}
+                    </div>
+                </div>
+                <h3 class="card-title" onclick="closeModal('wishlistPopModal'); openQuickView('${product.id}')" style="margin-bottom: 4px; font-size: 13px; color: #334155; line-height: 1.3;">${title}</h3>
+                <div class="card-rating" style="font-size: 12px; color: #64748b; margin-bottom: 12px;">
+                    <span>⭐ ${product.rating || 4.9}</span>
+                    <span>(${product.reviewsCount || 186} sharhlar)</span>
+                </div>
+                <button type="button" onclick="addToCart('${product.id}'); closeModal('wishlistPopModal'); openCartDrawer();" class="btn btn-primary btn-block btn-sm" style="margin-top: auto; height: 40px; border-radius: 10px; font-weight: 800;">Savatga qo'shish 🛒</button>
+            </div>
+        </div>
+      `;
+    })
     .join("");
 
   if (grid) grid.innerHTML = htmlContent;
