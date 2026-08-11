@@ -21,7 +21,11 @@ async function connectToDB() {
     return;
   }
   try {
-    await connect(MONGO_URI, { serverSelectionTimeoutMS: 10000 });
+    await connect(MONGO_URI, {
+      serverSelectionTimeoutMS: 3000,
+      connectTimeoutMS: 3000,
+      socketTimeoutMS: 5000,
+    });
     console.log("✅ MongoDB ulandi!");
   } catch (error) {
     console.error("❌ MongoDB xatosi:", error.message);
@@ -45,7 +49,13 @@ app.use("/orders", orderRouter);
 // Express SPA Fallback for /savat, /saralanganlar, /checkout, /products, etc.
 const path = require("path");
 app.use((req, res, next) => {
-  if (req.method === "GET" && !req.path.startsWith("/users") && !req.path.startsWith("/products") && !req.path.startsWith("/orders") && !req.path.includes(".")) {
+  if (
+    req.method === "GET" &&
+    !req.path.startsWith("/users") &&
+    !req.path.startsWith("/products") &&
+    !req.path.startsWith("/orders") &&
+    !req.path.includes(".")
+  ) {
     return res.sendFile(path.join(__dirname, "public", "index.html"));
   }
   next();

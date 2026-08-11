@@ -5633,7 +5633,12 @@ async function loadCustomHeroSlides() {
 }
 
 function initSlideLiveSync() {
-  if (typeof EventSource !== "undefined") {
+  // SSE live sync — silent, no console spam on error
+  let sseRetries = 0;
+  const MAX_SSE_RETRIES = 2;
+
+  function connectSSE() {
+    if (typeof EventSource === "undefined" || sseRetries >= MAX_SSE_RETRIES) return;
     try {
       const evtSource = new EventSource("/users/slides/stream");
       evtSource.onmessage = function (event) {
@@ -5645,15 +5650,16 @@ function initSlideLiveSync() {
         } catch (e) {}
       };
       evtSource.onerror = function () {
-        // Close SSE connection on error to avoid repeated console error spam
-        try {
-          evtSource.close();
-        } catch (e) {}
+        sseRetries++;
+        try { evtSource.close(); } catch (e) {}
       };
-    } catch (err) {}
+    } catch (err) {
+      sseRetries = MAX_SSE_RETRIES; // disable further retries
+    }
   }
+  connectSSE();
 
-  // Backup background version polling every 10 seconds
+  // Silent background polling — stops after 3 consecutive fails
   let lastVersion = null;
   let failCount = 0;
   const pollInterval = setInterval(async () => {
@@ -5662,10 +5668,13 @@ function initSlideLiveSync() {
       return;
     }
     try {
-      const res = await fetch("/users/slides");
-      if (res.ok) {
+      const controller = new AbortController();
+      const tid = setTimeout(() => controller.abort(), 3000);
+      const res = await fetch("/users/slides", { signal: controller.signal }).catch(() => null);
+      clearTimeout(tid);
+      if (res && res.ok) {
         failCount = 0;
-        const data = await res.json();
+        const data = await res.json().catch(() => null);
         if (data && data.version && data.version !== lastVersion) {
           lastVersion = data.version;
           if (data.slides) {
@@ -5680,7 +5689,7 @@ function initSlideLiveSync() {
     } catch (e) {
       failCount++;
     }
-  }, 10000);
+  }, 20000);
 }
 
 function updateSlideImageInDOM(slideIndex, imgUrl) {

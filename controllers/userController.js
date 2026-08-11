@@ -1123,29 +1123,52 @@ const getSlides = async (req, res) => {
     if (!fs.existsSync(SLIDES_FILE)) {
       return res.status(200).json({ slides: {}, version: slideVersion });
     }
-    const data = fs.readFileSync(SLIDES_FILE, "utf8");
-    const slides = JSON.parse(data || "{}");
+    const raw = fs.readFileSync(SLIDES_FILE, "utf8") || "{}";
+    let slides = {};
+    try { slides = JSON.parse(raw); } catch(e) { slides = {}; }
     return res.status(200).json({ slides, version: slideVersion });
   } catch (err) {
-    return res
-      .status(500)
-      .json({ message: "Slides error", error: err.message });
+    // Always return 200 to prevent Nginx 502
+    return res.status(200).json({ slides: {}, version: slideVersion });
   }
 };
 
 const getSlidesStream = (req, res) => {
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache");
-  res.setHeader("Connection", "keep-alive");
-  res.flushHeaders();
+  try {
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache, no-transform");
+    res.setHeader("Connection", "keep-alive");
+    res.setHeader("X-Accel-Buffering", "no"); // Disable Nginx buffering!
+    res.flushHeaders();
 
-  const clientId = Date.now();
-  const newClient = { id: clientId, res };
-  sseClients.push(newClient);
+    // Send initial ping so connection is confirmed
+    res.write(": connected\n\n");
 
-  req.on("close", () => {
-    sseClients = sseClients.filter((c) => c.id !== clientId);
-  });
+    const clientId = Date.now();
+    const newClient = { id: clientId, res };
+    sseClients.push(newClient);
+
+    // Send heartbeat every 15s to prevent Nginx 502 on idle connections
+    const heartbeat = setInterval(() => {
+      try {
+        res.write(": heartbeat\n\n");
+      } catch (e) {
+        clearInterval(heartbeat);
+      }
+    }, 15000);
+
+    req.on("close", () => {
+      clearInterval(heartbeat);
+      sseClients = sseClients.filter((c) => c.id !== clientId);
+    });
+
+    req.on("error", () => {
+      clearInterval(heartbeat);
+      sseClients = sseClients.filter((c) => c.id !== clientId);
+    });
+  } catch (err) {
+    // Silently fail
+  }
 };
 
 const saveSlideImage = async (req, res) => {
