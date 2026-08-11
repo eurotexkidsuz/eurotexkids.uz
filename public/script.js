@@ -2163,8 +2163,7 @@ function switchMobileNavTab(tab) {
   } else if (tab === "wishlist") {
     const wishBtn = document.getElementById("mobileWishlistBtn");
     if (wishBtn) wishBtn.classList.add("active");
-    renderWishlist();
-    openModal("wishlistModal");
+    openWishlistModal();
   } else if (tab === "cart") {
     const cartBtn = document.getElementById("mobileCartBtn");
     if (cartBtn) cartBtn.classList.add("active");
