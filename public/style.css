@@ -1243,26 +1243,24 @@ html[data-theme="dark"] .main-header.scrolled {
   position: relative;
   width: 100%;
   height: auto;
-  min-height: 420px;
-  max-height: 780px;
+  min-height: 480px;
+  max-height: 850px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #040812;
+  background: #000000;
   border-radius: var(--radius-xl);
   overflow: hidden;
-  padding: 4px 0;
 }
 
 .slide-img {
-  max-width: 100%;
-  max-height: 760px;
-  width: auto;
-  height: auto;
-  object-fit: contain !important;
-  object-position: center center;
+  width: 100%;
+  height: 100%;
+  min-height: 480px;
+  max-height: 850px;
+  object-fit: cover !important;
+  object-position: center top !important;
   display: block;
-  margin: 0 auto;
   border-radius: var(--radius-xl);
 }
 
