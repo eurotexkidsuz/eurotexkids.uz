@@ -3437,14 +3437,17 @@ body {
 /* Toast Notifications */
 .toast-container {
   position: fixed;
-  top: 24px;
-  right: 24px;
-  bottom: auto;
-  z-index: 2147483647; /* Maximum z-index — always above modals */
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2147483647;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 10px;
   pointer-events: none;
+  width: max-content;
+  max-width: 90vw;
 }
 
 .toast {
@@ -4010,14 +4013,17 @@ body {
 
   /* --- TOASTS --- */
   .toast-container {
-    left: 12px;
-    right: 12px;
-    top: 16px;
-    bottom: auto;
+    left: 50%;
+    right: auto;
+    top: auto;
+    bottom: 20px;
+    transform: translateX(-50%);
     z-index: 2147483647;
+    width: max-content;
+    max-width: 92vw;
   }
   .toast {
-    padding: 10px 14px;
+    padding: 10px 16px;
     font-size: 13px;
     min-width: unset;
     max-width: 100%;
@@ -4150,8 +4156,7 @@ body {
   }
 }
 
-/* Admin Hero Banner Edit Buttons — hidden by default for non-admin users */
-.admin-slide-edit-btn,
+/* Admin Hero Banner Text/Edit Buttons — hidden by default for non-admin users */
 .admin-text-edit-btn {
   display: none !important;
   align-items: center;
@@ -4169,6 +4174,11 @@ body {
   backdrop-filter: blur(8px);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 100;
+}
+
+/* Admin slide-edit general (non-image) — hidden for non-admin */
+.admin-slide-edit-btn:not(.admin-img-edit-btn) {
+  display: none !important;
 }
 
 .admin-slide-edit-btn:hover {
