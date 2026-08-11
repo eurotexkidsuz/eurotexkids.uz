@@ -4173,7 +4173,7 @@ body {
 
 .admin-img-edit-btn {
   position: absolute !important;
-  bottom: 50px !important;
+  bottom: 100px !important;
   right: 30px !important;
   width: 54px !important;
   height: 54px !important;
@@ -4206,7 +4206,7 @@ body {
 /* Mobile & Tablet Responsive Media Queries for '+' Buttons */
 @media (max-width: 768px) {
   .admin-img-edit-btn {
-    bottom: 38px !important;
+    bottom: 75px !important;
     right: 20px !important;
     width: 46px !important;
     height: 46px !important;
@@ -4225,7 +4225,7 @@ body {
 
 @media (max-width: 480px) {
   .admin-img-edit-btn {
-    bottom: 32px !important;
+    bottom: 65px !important;
     right: 14px !important;
     width: 42px !important;
     height: 42px !important;
