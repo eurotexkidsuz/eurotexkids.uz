@@ -11,6 +11,22 @@ const ORDER_STATUS_STEPS = {
   4: { label: "Yetkazib berildi", color: "#10b981", icon: "✅" },
 };
 
+const FALLBACK_MONGO_URL = process.env.MONGO_URL;
+
+async function ensureDbConnected(res) {
+  if (mongoose.connection.readyState === 1) return true;
+  if (!FALLBACK_MONGO_URL) return false;
+  try {
+    await mongoose.connect(FALLBACK_MONGO_URL, {
+      serverSelectionTimeoutMS: 10000,
+    });
+    return true;
+  } catch (e) {
+    console.error("MongoDB Connection Error in orders route:", e.message);
+    return false;
+  }
+}
+
 function getClientIp(req) {
   return (
     req.headers["x-forwarded-for"] ||
@@ -25,12 +41,14 @@ function getClientIp(req) {
 
 router.get("/", async (req, res) => {
   try {
-    if (mongoose.connection.readyState !== 1) {
-      await mongoose.connect(
-        process.env.MONGO_URL ||
-          "mongodb+srv://eurotexkids7775_db_user:yro1XElCJariRjzw@eurotexkidsuz.ntrgl4x.mongodb.net/?appName=Eurotexkidsuz",
-        { serverSelectionTimeoutMS: 10000 },
-      );
+    const isConnected = await ensureDbConnected(res);
+    if (!isConnected) {
+      return res.status(200).json({
+        success: true,
+        count: 0,
+        orders: [],
+        statusSteps: ORDER_STATUS_STEPS,
+      });
     }
     const { email, status, limit = 200 } = req.query;
     const query = {};
@@ -60,12 +78,11 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    if (mongoose.connection.readyState !== 1) {
-      await mongoose.connect(
-        process.env.MONGO_URL ||
-          "mongodb+srv://eurotexkids7775_db_user:yro1XElCJariRjzw@eurotexkidsuz.ntrgl4x.mongodb.net/?appName=Eurotexkidsuz",
-        { serverSelectionTimeoutMS: 10000 },
-      );
+    const isConnected = await ensureDbConnected(res);
+    if (!isConnected) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Ma'lumotlar bazasi bilan aloqa yo'q" });
     }
     const { id } = req.params;
     const order = await Order.findOne({
@@ -85,12 +102,12 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    if (mongoose.connection.readyState !== 1) {
-      await mongoose.connect(
-        process.env.MONGO_URL ||
-          "mongodb+srv://eurotexkids7775_db_user:yro1XElCJariRjzw@eurotexkidsuz.ntrgl4x.mongodb.net/?appName=Eurotexkidsuz",
-        { serverSelectionTimeoutMS: 10000 },
-      );
+    const isConnected = await ensureDbConnected(res);
+    if (!isConnected) {
+      return res.status(503).json({
+        success: false,
+        message: "Ma'lumotlar bazasi bilan aloqa yo'q, keyinroq urinib ko'ring",
+      });
     }
 
     const {
@@ -197,12 +214,12 @@ router.post("/", async (req, res) => {
 
 router.put("/:id/status", async (req, res) => {
   try {
-    if (mongoose.connection.readyState !== 1) {
-      await mongoose.connect(
-        process.env.MONGO_URL ||
-          "mongodb+srv://eurotexkids7775_db_user:yro1XElCJariRjzw@eurotexkidsuz.ntrgl4x.mongodb.net/?appName=Eurotexkidsuz",
-        { serverSelectionTimeoutMS: 10000 },
-      );
+    const isConnected = await ensureDbConnected(res);
+    if (!isConnected) {
+      return res.status(503).json({
+        success: false,
+        message: "Ma'lumotlar bazasi bilan aloqa yo'q",
+      });
     }
     const { id } = req.params;
     const { statusStep, status, adminNotes } = req.body;
@@ -256,12 +273,12 @@ router.put("/:id/status", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   try {
-    if (mongoose.connection.readyState !== 1) {
-      await mongoose.connect(
-        process.env.MONGO_URL ||
-          "mongodb+srv://eurotexkids7775_db_user:yro1XElCJariRjzw@eurotexkidsuz.ntrgl4x.mongodb.net/?appName=Eurotexkidsuz",
-        { serverSelectionTimeoutMS: 10000 },
-      );
+    const isConnected = await ensureDbConnected(res);
+    if (!isConnected) {
+      return res.status(503).json({
+        success: false,
+        message: "Ma'lumotlar bazasi bilan aloqa yo'q",
+      });
     }
     const { id } = req.params;
     const queryConditions = [{ orderId: id }];
@@ -303,12 +320,12 @@ router.put("/:id", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
-    if (mongoose.connection.readyState !== 1) {
-      await mongoose.connect(
-        process.env.MONGO_URL ||
-          "mongodb+srv://eurotexkids7775_db_user:yro1XElCJariRjzw@eurotexkidsuz.ntrgl4x.mongodb.net/?appName=Eurotexkidsuz",
-        { serverSelectionTimeoutMS: 10000 },
-      );
+    const isConnected = await ensureDbConnected(res);
+    if (!isConnected) {
+      return res.status(503).json({
+        success: false,
+        message: "Ma'lumotlar bazasi bilan aloqa yo'q",
+      });
     }
     const { id } = req.params;
     const queryConditions = [{ orderId: id }];
@@ -329,12 +346,19 @@ router.delete("/:id", async (req, res) => {
 
 router.get("/stats/summary", async (req, res) => {
   try {
-    if (mongoose.connection.readyState !== 1) {
-      await mongoose.connect(
-        process.env.MONGO_URL ||
-          "mongodb+srv://eurotexkids7775_db_user:yro1XElCJariRjzw@eurotexkidsuz.ntrgl4x.mongodb.net/?appName=Eurotexkidsuz",
-        { serverSelectionTimeoutMS: 10000 },
-      );
+    const isConnected = await ensureDbConnected(res);
+    if (!isConnected) {
+      return res.json({
+        success: true,
+        summary: {
+          totalOrders: 0,
+          totalRevenueUsd: 0,
+          totalRevenueUzs: 0,
+          totalItems: 0,
+          byStatus: ORDER_STATUS_STEPS,
+          uniqueCustomers: 0,
+        },
+      });
     }
     const allOrders = await Order.find({});
     const summary = {

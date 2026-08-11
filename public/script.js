@@ -317,32 +317,6 @@ const TRANSLATIONS = {
     paymentStep3: "3. Payment Method",
     confirmOrderBtn: "Confirm Order ✅",
     applyPromoLink: "Apply / change promo code",
-    subAccessories: "Accessories",
-    sortLabel: "Sort by:",
-    sortPopular: "Popularity",
-    sortLow: "Price: Low to High",
-    sortHigh: "Price: High to Low",
-    sortDiscount: "By Discount",
-    sortRating: "By Rating",
-    tailoringTag: "EUROTEX BESPOKE & ATELIER",
-    tailoringTitle: "Custom Tailoring to Your Exact Measurements",
-    tailoringDesc:
-      "Standard sizes don't fit? Eurotex master tailors will craft an exclusive suit customized to your exact body measurements.",
-    tailoringBtn: "Book Custom Tailoring",
-    reviewsHeading: "Customer Reviews",
-    footerCustomers: "Customers",
-    footerCompany: "Company",
-    footerContact: "Contact & Support",
-    mHome: "Home",
-    mCatalog: "Catalog",
-    mWishlist: "Favorites",
-    mCart: "Cart",
-    mProfile: "Profile",
-    currency: "sum",
-    perMonth: "Per month",
-    addToCart: "Add to Cart 🛒",
-    sizeGuideTitle: "📐 Eurotex Suit & Trousers Size Guide",
-    authTitle: "Sign in to Eurotexkids.uz",
   },
 };
 
@@ -493,6 +467,12 @@ const DEFAULT_EUROTEX_PRODUCTS = [
   },
   {
     id: "prod-4-b",
+    title_uz:
+      "Eurotex Executive Double-Breasted Ikki Tomonli Kostyum (1 Pachka = 6 ta)",
+    title_ru: "Двубортный Костюм Eurotex Executive (1 Пачка = 6 шт)",
+    title_en: "Eurotex Executive Double-Breasted Suit (1 Pack = 6 pcs)",
+    category: "suits",
+    subCategory: "double",
     price: 140,
     oldPrice: 180,
     priceUsd: 140,
@@ -2631,7 +2611,7 @@ function switchDashboardTab(tabName) {
     updateURLRoute("/returns");
   } else if (tabName === "admin") {
     renderAdminPanel();
-    updateURLRoute("/admin");
+    showAdminSection("products", true);
   }
 
   updateDashboardCounts();

@@ -27,18 +27,17 @@ function writeLocalProducts(products) {
   }
 }
 
-const DEFAULT_MONGO_URL =
-  process.env.MONGO_URL ||
-  "mongodb+srv://eurotexkids7775_db_user:yro1XElCJariRjzw@eurotexkidsuz.ntrgl4x.mongodb.net/?appName=Eurotexkidsuz";
+const FALLBACK_MONGO_URL = process.env.MONGO_URL;
 
 async function ensureDbConnected() {
   if (mongoose.connection.readyState === 1) return;
+  if (!FALLBACK_MONGO_URL) return;
   try {
-    await mongoose.connect(DEFAULT_MONGO_URL, {
+    await mongoose.connect(FALLBACK_MONGO_URL, {
       serverSelectionTimeoutMS: 10000,
     });
   } catch (e) {
-    console.error("MongoDB Connection Error:", e);
+    console.error("MongoDB Connection Error in products route:", e.message);
   }
 }
 
