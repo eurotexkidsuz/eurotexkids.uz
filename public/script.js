@@ -2138,6 +2138,48 @@ function addCurrentQvToCart(productId) {
   closeModal("quickViewModal");
 }
 
+function switchMobileNavTab(tab) {
+  document.querySelectorAll(".mobile-bottom-nav .mobile-nav-item").forEach((item) => {
+    item.classList.remove("active");
+  });
+
+  if (tab === "home") {
+    const homeBtn = document.getElementById("mobileHomeBtn");
+    if (homeBtn) homeBtn.classList.add("active");
+    closeDashboardView();
+    closeAllModals();
+    state.currentCategory = "all";
+    state.activeSearchQuery = "";
+    renderProducts();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  } else if (tab === "catalog") {
+    const catBtn = document.getElementById("mobileCatalogBtn");
+    if (catBtn) catBtn.classList.add("active");
+    closeDashboardView();
+    closeAllModals();
+    const el = document.getElementById("products-section");
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+    renderProducts();
+  } else if (tab === "wishlist") {
+    const wishBtn = document.getElementById("mobileWishlistBtn");
+    if (wishBtn) wishBtn.classList.add("active");
+    renderWishlist();
+    openModal("wishlistModal");
+  } else if (tab === "cart") {
+    const cartBtn = document.getElementById("mobileCartBtn");
+    if (cartBtn) cartBtn.classList.add("active");
+    openCartDrawer();
+  } else if (tab === "profile") {
+    const authBtn = document.getElementById("mobileAuthBtn");
+    if (authBtn) authBtn.classList.add("active");
+    if (state.user && (state.user.role === "admin" || isAdminEmail(state.user.email))) {
+      openDashboardView("admin");
+    } else {
+      openAuthModal();
+    }
+  }
+}
+
 // URL ROUTING CONTROLLER (HTML5 History API — Full SPA Routing)
 // Supported routes:
 //   /             → Bosh sahifa

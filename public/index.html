@@ -2090,37 +2090,27 @@
 
     <!-- Mobile Bottom Navigation Bar -->
     <div class="mobile-bottom-nav">
-      <a href="/" class="mobile-nav-item active">
+      <a href="#" class="mobile-nav-item active" id="mobileHomeBtn" onclick="event.preventDefault(); switchMobileNavTab('home');">
         <span class="m-icon">🏠</span>
         <span class="m-label" data-i18n="mHome">Bosh sahifa</span>
       </a>
-      <a href="#" class="mobile-nav-item" id="mobileCatalogBtn">
+      <a href="#" class="mobile-nav-item" id="mobileCatalogBtn" onclick="event.preventDefault(); switchMobileNavTab('catalog');">
         <span class="m-icon">🔍</span>
         <span class="m-label" data-i18n="mCatalog">Katalog</span>
       </a>
-      <a href="#" class="mobile-nav-item" id="mobileWishlistBtn">
+      <a href="#" class="mobile-nav-item" id="mobileWishlistBtn" onclick="event.preventDefault(); switchMobileNavTab('wishlist');">
         <span class="m-icon">❤️</span>
         <span class="m-label" data-i18n="mWishlist">Saralangan</span>
         <span class="m-badge" id="mobileWishlistBadge">0</span>
       </a>
-      <a href="#" class="mobile-nav-item" id="mobileCartBtn">
+      <a href="#" class="mobile-nav-item" id="mobileCartBtn" onclick="event.preventDefault(); switchMobileNavTab('cart');">
         <span class="m-icon">🛒</span>
         <span class="m-label" data-i18n="mCart">Savat</span>
         <span class="m-badge" id="mobileCartBadge">0</span>
       </a>
-      <a
-        href="#"
-        class="mobile-nav-item"
-        id="mobileAuthBtn"
-        onclick="
-          event.preventDefault();
-          openAuthModal();
-        "
-      >
+      <a href="#" class="mobile-nav-item" id="mobileAuthBtn" onclick="event.preventDefault(); switchMobileNavTab('profile');">
         <span class="m-icon">👤</span>
-        <span class="m-label" id="mobileAuthLabel" data-i18n="mProfile"
-          >Profil</span
-        >
+        <span class="m-label" id="mobileAuthLabel" data-i18n="mProfile">Profil</span>
       </a>
     </div>
 
@@ -3579,7 +3569,7 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=156.0.0" defer></script>
-    <script src="/eurotex-engine.js?v=2.3.0" defer></script>
+    <script src="/script.js?v=157.0.0" defer></script>
+    <script src="/eurotex-engine.js?v=2.4.0" defer></script>
   </body>
 </html>
