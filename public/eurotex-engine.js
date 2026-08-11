@@ -985,8 +985,9 @@
         window.google.accounts.id.initialize({
           client_id: this.clientId,
           callback: (response) => this._handleCredential(response),
-          auto_select: true,
+          auto_select: false,
           cancel_on_tap_outside: false,
+          use_fedcm_for_prompt: false,
           context: "use",
           itp_support: true,
         });
@@ -1325,26 +1326,8 @@
   ------------------------------------------------------------------ */
   function mountCacheStatusBadge() {
     try {
-      if (document.getElementById("eurotex-cache-badge")) return;
-      const el = document.createElement("div");
-      el.id = "eurotex-cache-badge";
-      el.className =
-        "cache-status-indicator" + (navigator.onLine ? "" : " offline");
-      el.innerHTML =
-        '<span class="cache-dot"></span><span id="cacheStatusText">' +
-        (navigator.onLine ? "Online Cache" : "Offline Mode") +
-        "</span>";
-      document.body.appendChild(el);
-      window.addEventListener("online", () => {
-        el.classList.remove("offline");
-        const t = document.getElementById("cacheStatusText");
-        if (t) t.textContent = "Online Cache";
-      });
-      window.addEventListener("offline", () => {
-        el.classList.add("offline");
-        const t = document.getElementById("cacheStatusText");
-        if (t) t.textContent = "Offline Mode";
-      });
+      const el = document.getElementById("eurotex-cache-badge");
+      if (el) el.remove();
     } catch (e) {}
   }
 

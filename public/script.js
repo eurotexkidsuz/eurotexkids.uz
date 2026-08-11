@@ -1119,18 +1119,7 @@ function getGlobalProductsPool() {
 function getRotatingHomeProducts() {
   const pool = getGlobalProductsPool();
   if (!pool || pool.length === 0) return [];
-
-  const customProds = pool.filter(
-    (p) =>
-      p && (p.isCustom === true ||
-      String(p.id || "").startsWith("prod-") ||
-      (p.dbId && String(p.dbId).length > 0))
-  );
-  const standardProds = pool.filter(
-    (p) => p && !customProds.includes(p)
-  );
-
-  return [...customProds, ...standardProds];
+  return pool;
 }
 
 function safeFormatMoney(priceVal) {
