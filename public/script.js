@@ -1796,15 +1796,7 @@ function addToCart(
   localStorage.setItem("eurotex_cart", JSON.stringify(state.cart));
   updateCartUI();
   showToast(`"${title.slice(0, 25)}..." savatga qo'shildi 🛒`);
-  openDashboardView("cart");
-}
-
-function openCartDrawer() {
-  openDashboardView("cart");
-}
-
-function closeCartDrawer() {
-  closeDashboardView();
+  openCartDrawer();
 }
 
 function clearCart() {
@@ -5662,33 +5654,7 @@ async function loadCustomHeroSlides() {
 }
 
 function initSlideLiveSync() {
-  // SSE live sync — silent, no console spam on error
-  let sseRetries = 0;
-  const MAX_SSE_RETRIES = 2;
-
-  function connectSSE() {
-    if (typeof EventSource === "undefined" || sseRetries >= MAX_SSE_RETRIES) return;
-    try {
-      const evtSource = new EventSource("/users/slides/stream");
-      evtSource.onmessage = function (event) {
-        try {
-          const data = JSON.parse(event.data);
-          if (data && data.slideIndex !== undefined && data.imgData) {
-            updateSlideImageInDOM(data.slideIndex, data.imgData);
-          }
-        } catch (e) {}
-      };
-      evtSource.onerror = function () {
-        sseRetries++;
-        try { evtSource.close(); } catch (e) {}
-      };
-    } catch (err) {
-      sseRetries = MAX_SSE_RETRIES; // disable further retries
-    }
-  }
-  connectSSE();
-
-  // Silent background polling — stops after 3 consecutive fails
+  // Silent background polling — checks for slide updates every 15s
   let lastVersion = null;
   let failCount = 0;
   const pollInterval = setInterval(async () => {

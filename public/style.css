@@ -1243,24 +1243,27 @@ html[data-theme="dark"] .main-header.scrolled {
   position: relative;
   width: 100%;
   height: auto;
-  display: block;
+  min-height: 480px;
+  max-height: 850px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: #040812;
   border-radius: var(--radius-xl);
   overflow: hidden;
-  padding: 0;
-  line-height: 0;
+  padding: 12px 0;
 }
 
 .slide-img {
-  width: 100%;
+  max-width: 100%;
+  max-height: 830px;
+  width: auto;
   height: auto;
-  max-height: 750px;
   object-fit: contain !important;
-  object-position: center center !important;
+  object-position: center center;
   display: block;
   margin: 0 auto;
   border-radius: var(--radius-xl);
-  background: #040812;
 }
 
 .carousel-arrow {
@@ -1873,7 +1876,9 @@ body {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 20px;
   will-change: opacity, visibility;
   transform: translateZ(0);
@@ -1902,7 +1907,6 @@ body {
 .hero-carousel {
   will-change: transform;
   transform: translateZ(0);
-}
   overflow-y: auto;
   box-shadow: var(--shadow-lg);
   animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -3436,47 +3440,37 @@ body {
 
 /* Toast Notifications */
 .toast-container {
-  position: fixed !important;
-  bottom: 24px !important;
-  right: 24px !important;
-  left: auto !important;
-  top: auto !important;
-  transform: none !important;
-  z-index: 2147483647 !important;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 99999;
   display: flex;
-  flex-direction: column-reverse;
-  align-items: flex-end;
-  gap: 8px;
-  pointer-events: none;
-  max-width: 340px;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .toast {
-  background: #0d1a2e;
+  background: var(--color-navy);
   color: #ffffff;
   padding: 14px 20px;
-  border-radius: 14px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255,255,255,0.08);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
   font-size: 14px;
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 10px;
-  animation: toastIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: toastIn 0.3s ease-out;
   border-left: 4px solid var(--color-gold);
-  pointer-events: auto;
-  min-width: 220px;
-  max-width: 340px;
-  backdrop-filter: blur(12px);
 }
 
 @keyframes toastIn {
   from {
-    transform: translateX(120%) scale(0.92);
+    transform: translateX(100%);
     opacity: 0;
   }
   to {
-    transform: translateX(0) scale(1);
+    transform: translateX(0);
     opacity: 1;
   }
 }
@@ -4014,20 +4008,13 @@ body {
 
   /* --- TOASTS --- */
   .toast-container {
-    right: 12px !important;
-    left: auto !important;
-    bottom: 70px !important;
-    top: auto !important;
-    transform: none !important;
-    z-index: 2147483647 !important;
-    max-width: calc(100vw - 24px);
-    align-items: flex-end;
+    left: 12px;
+    right: 12px;
+    bottom: 80px;
   }
   .toast {
     padding: 10px 14px;
     font-size: 13px;
-    min-width: unset;
-    max-width: 100%;
   }
 
   /* --- MODALS --- */
@@ -4157,9 +4144,10 @@ body {
   }
 }
 
-/* Admin Hero Banner Text/Edit Buttons — hidden by default for non-admin users */
-.admin-text-edit-btn {
-  display: none !important;
+/* Admin Hero Banner Edit Buttons */
+.admin-slide-edit-btn,
+.admin-img-edit-btn {
+  display: none !important; /* Hidden by default for regular users */
   align-items: center;
   justify-content: center;
   gap: 6px;
@@ -4177,11 +4165,6 @@ body {
   z-index: 100;
 }
 
-/* Admin slide-edit general (non-image) — hidden for non-admin */
-.admin-slide-edit-btn:not(.admin-img-edit-btn) {
-  display: none !important;
-}
-
 .admin-slide-edit-btn:hover {
   background: linear-gradient(135deg, #851bff 0%, #6300df 100%);
   transform: translateY(-2px) scale(1.05);
@@ -4191,29 +4174,33 @@ body {
 
 .admin-img-edit-btn {
   position: absolute !important;
-  bottom: 45px !important;
+  bottom: 90px !important;
   right: 30px !important;
   width: 54px !important;
   height: 54px !important;
   padding: 0 !important;
   border-radius: 50% !important;
-  z-index: 999999 !important;
+  z-index: 999 !important;
   background: linear-gradient(135deg, #7000ff 0%, #00f2fe 100%) !important;
   color: #ffffff !important;
   border: 2.5px solid #ffffff !important;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 242, 254, 0.8) !important;
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.7),
+    0 0 15px rgba(0, 242, 254, 0.7) !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease !important;
 }
 
 .admin-img-edit-btn:hover {
   transform: scale(1.12) rotate(90deg) !important;
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.85), 0 0 25px rgba(0, 242, 254, 0.9) !important;
+  box-shadow:
+    0 12px 35px rgba(0, 0, 0, 0.85),
+    0 0 25px rgba(0, 242, 254, 0.9) !important;
 }
 
 .admin-img-edit-btn .img-btn-plus {
@@ -4226,7 +4213,7 @@ body {
 /* Mobile & Tablet Responsive Media Queries for '+' Buttons */
 @media (max-width: 768px) {
   .admin-img-edit-btn {
-    bottom: 35px !important;
+    bottom: 75px !important;
     right: 20px !important;
     width: 46px !important;
     height: 46px !important;
@@ -4245,7 +4232,7 @@ body {
 
 @media (max-width: 480px) {
   .admin-img-edit-btn {
-    bottom: 28px !important;
+    bottom: 65px !important;
     right: 14px !important;
     width: 42px !important;
     height: 42px !important;
@@ -4262,15 +4249,8 @@ body {
 
 /* Reveal edit buttons ONLY when body has .is-admin class */
 body.is-admin .admin-slide-edit-btn,
-body.is-admin .admin-text-edit-btn {
-  display: inline-flex !important;
-}
-
 body.is-admin .admin-img-edit-btn {
   display: inline-flex !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  pointer-events: auto !important;
 }
 
 /* Google Account Selector Cards */
