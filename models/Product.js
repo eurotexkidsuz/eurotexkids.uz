@@ -36,7 +36,7 @@ const productSchema = new mongoose.Schema(
       default: "gold",
       enum: ["gold", "red", "purple", "neon", "none"],
     },
-    image: { type: String, default: "/images/hero_banner.jpg" },
+    image: { type: String, default: "/images/navy_suit.jpg" },
     images: { type: Array, default: [] },
     sizes: { type: Array, default: [46, 48, 50, 52, 54, 56] },
     fabric_uz: { type: String, default: "Turkiya Premium Jun & Viskoza Blend" },

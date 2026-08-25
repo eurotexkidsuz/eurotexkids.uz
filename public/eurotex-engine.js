@@ -53,7 +53,7 @@
       badge_uz: "LUXURY PACHKA",
       badgeType: "gold",
       image: "/images/navy_suit.jpg",
-      images: ["/images/navy_suit.jpg", "/images/hero_banner.jpg"],
+      images: ["/images/navy_suit.jpg", "/images/black_tuxedo.jpg"],
       sizes: [46, 48, 50, 52, 54, 56],
       fabric_uz: "90% Italiya Jun (Virgin Wool), 10% Ipak. Viskoza astar",
       color_uz: "To'q Ko'k (Royal Navy)",

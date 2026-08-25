@@ -5312,7 +5312,7 @@ function handleAddNewProduct(e) {
     imagesArr = [picker.dataset.base64];
   }
   if (imagesArr.length === 0) {
-    imagesArr = ["/images/hero_banner.jpg"];
+    imagesArr = ["/images/navy_suit.jpg"];
   }
 
   // Collect sizes: checkboxes + custom tags
