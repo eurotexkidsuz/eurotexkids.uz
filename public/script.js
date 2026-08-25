@@ -2655,17 +2655,21 @@ function updateCheckoutData() {
 }
 
 function openCartDrawer() {
+  closeAllModals();
   updateCartUI();
-  openModal("cartPopModal");
+  openDashboardView("cart");
+  updateURLRoute("/cart");
 }
 
 function closeCartDrawer() {
-  closeModal("cartPopModal");
+  closeDashboardView();
 }
 
 function openWishlistModal() {
+  closeAllModals();
   renderWishlist();
-  openModal("wishlistPopModal");
+  openDashboardView("wishlist");
+  updateURLRoute("/wishlist");
 }
 
 function openCheckoutModal() {

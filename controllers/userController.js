@@ -1,3 +1,4 @@
+require("dotenv").config();
 const User = require("../models/UserWrapper");
 const dns = require("dns");
 const nodemailer = require("nodemailer");
@@ -29,17 +30,6 @@ function getGoogleOAuthClient(req) {
   if (!redirectUri) {
     redirectUri = "https://eurotexkids.uz/users/auth/google/callback";
   }
-
-  // Tekshiruv va loglar
-  if (!clientId) console.error("❌ [ERROR]: GOOGLE_CLIENT_ID topilmadi!");
-  if (!clientSecret)
-    console.error("❌ [ERROR]: GOOGLE_CLIENT_SECRET topilmadi yoki bo'sh!");
-
-  console.log("🔍 [OAUTH CONFIG]:", {
-    clientIdSnippet: clientId.slice(0, 10) + "...",
-    secretLength: clientSecret.length,
-    redirectUri: redirectUri,
-  });
 
   return new OAuth2Client(clientId, clientSecret, redirectUri);
 }
