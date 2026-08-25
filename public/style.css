@@ -1204,13 +1204,15 @@ html[data-theme="dark"] .main-header.scrolled {
 .carousel-container {
   position: relative;
   width: 100%;
-  min-height: 260px;
-  max-height: 560px;
-  height: 420px;
+  height: 600px;
+  min-height: 480px;
+  max-height: 720px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #090d16;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
 }
 
 .carousel-slide {
@@ -1225,8 +1227,8 @@ html[data-theme="dark"] .main-header.scrolled {
   opacity: 0;
   visibility: hidden;
   transition:
-    opacity 0.6s ease,
-    visibility 0.6s ease;
+    opacity 0.5s ease,
+    visibility 0.5s ease;
 }
 
 .carousel-slide.active {
@@ -1242,23 +1244,23 @@ html[data-theme="dark"] .main-header.scrolled {
 .slide-media {
   position: relative;
   width: 100%;
-  height: 520px;
-  min-height: 380px;
-  max-height: 620px;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0f172a;
+  background: #090d16;
   border-radius: var(--radius-xl);
   overflow: hidden;
-  padding: 6px 0;
+  padding: 10px 0;
 }
 
 .slide-img {
-  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
   height: 100%;
   object-fit: contain !important;
-  object-position: center center;
+  object-position: center center !important;
   display: block;
   margin: 0 auto;
   border-radius: var(--radius-xl);
@@ -4394,9 +4396,9 @@ body.is-admin .admin-img-edit-btn {
   }
 
   .carousel-container {
-    height: 240px !important;
-    min-height: 200px !important;
-    max-height: 320px !important;
+    height: 420px !important;
+    min-height: 320px !important;
+    max-height: 480px !important;
     border-radius: 12px !important;
   }
 
@@ -5322,8 +5324,8 @@ body {
   }
 
   .carousel-container {
-    height: 200px !important;
-    min-height: 180px !important;
+    height: 360px !important;
+    min-height: 280px !important;
     border-radius: 14px !important;
   }
 
