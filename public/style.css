@@ -1243,23 +1243,22 @@ html[data-theme="dark"] .main-header.scrolled {
   position: relative;
   width: 100%;
   height: auto;
-  min-height: 480px;
-  max-height: 850px;
+  min-height: 380px;
+  max-height: 650px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #040812;
+  background: transparent;
   border-radius: var(--radius-xl);
   overflow: hidden;
-  padding: 12px 0;
+  padding: 0;
 }
 
 .slide-img {
-  max-width: 100%;
-  max-height: 830px;
-  width: auto;
-  height: auto;
-  object-fit: contain !important;
+  width: 100%;
+  height: 100%;
+  max-height: 650px;
+  object-fit: cover !important;
   object-position: center center;
   display: block;
   margin: 0 auto;
@@ -3667,7 +3666,7 @@ body {
   .slide-img {
     width: 100%;
     height: 100%;
-    object-fit: contain !important;
+    object-fit: cover !important;
     object-position: center;
     border-radius: var(--radius-lg);
   }
@@ -4144,10 +4143,15 @@ body {
   }
 }
 
-/* Admin Hero Banner Edit Buttons */
+/* Admin Hero Banner Edit Buttons — strictly hidden for regular users */
 .admin-slide-edit-btn,
+.admin-text-edit-btn,
 .admin-img-edit-btn {
-  display: none !important; /* Hidden by default for regular users */
+  display: none !important; /* Strictly hidden for non-admin users */
+}
+
+.admin-slide-edit-btn,
+.admin-text-edit-btn {
   align-items: center;
   justify-content: center;
   gap: 6px;
@@ -4174,7 +4178,7 @@ body {
 
 .admin-img-edit-btn {
   position: absolute !important;
-  bottom: 90px !important;
+  bottom: 50px !important;
   right: 30px !important;
   width: 54px !important;
   height: 54px !important;
@@ -4187,7 +4191,6 @@ body {
   box-shadow:
     0 8px 30px rgba(0, 0, 0, 0.7),
     0 0 15px rgba(0, 242, 254, 0.7) !important;
-  display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
@@ -4213,7 +4216,7 @@ body {
 /* Mobile & Tablet Responsive Media Queries for '+' Buttons */
 @media (max-width: 768px) {
   .admin-img-edit-btn {
-    bottom: 75px !important;
+    bottom: 35px !important;
     right: 20px !important;
     width: 46px !important;
     height: 46px !important;
@@ -4232,7 +4235,7 @@ body {
 
 @media (max-width: 480px) {
   .admin-img-edit-btn {
-    bottom: 65px !important;
+    bottom: 25px !important;
     right: 14px !important;
     width: 42px !important;
     height: 42px !important;
@@ -4249,6 +4252,7 @@ body {
 
 /* Reveal edit buttons ONLY when body has .is-admin class */
 body.is-admin .admin-slide-edit-btn,
+body.is-admin .admin-text-edit-btn,
 body.is-admin .admin-img-edit-btn {
   display: inline-flex !important;
 }
