@@ -1842,14 +1842,66 @@ function updateCartQty(productId, size, color, change) {
   updateCartUI();
 }
 
-function updateCartQtyByIndex(index, change) {
+function updateCartTotalsOnly() {
+  const cartCount = document.getElementById("cartCount");
+  const mobileCartBadge = document.getElementById("mobileCartBadge");
+  const cartSubtotal = document.getElementById("cartSubtotal");
+  const cartTotal = document.getElementById("cartTotal");
+  const nasiyaEst = document.getElementById("nasiyaEst");
+  const cartHeaderCount = document.getElementById("cartHeaderCount");
+  const cartItemQty = document.getElementById("cartItemQty");
+  const dashCartCount = document.getElementById("dashCartCount");
+  const cartPopHeaderCount = document.getElementById("cartPopHeaderCount");
+  const cartPopTotal = document.getElementById("cartPopTotal");
+
+  const totalCount = state.cart.reduce((sum, i) => sum + i.quantity, 0);
+  const rawSubtotal = state.cart.reduce(
+    (sum, i) => sum + (i.priceUsd || i.price || 120) * i.quantity,
+    0,
+  );
+  const discountAmount = Math.round(rawSubtotal * (state.discountRate || 0));
+  const finalTotal = rawSubtotal - discountAmount;
+  const monthlyNasiya = Math.round(finalTotal / 12);
+
+  if (cartCount) cartCount.textContent = totalCount;
+  if (mobileCartBadge) mobileCartBadge.textContent = totalCount;
+  if (dashCartCount) dashCartCount.textContent = totalCount;
+  if (cartHeaderCount) cartHeaderCount.textContent = `${totalCount} ta mahsulot`;
+  if (cartItemQty) cartItemQty.textContent = totalCount;
+  if (cartPopHeaderCount) cartPopHeaderCount.textContent = `${totalCount} ta mahsulot`;
+  if (cartSubtotal) cartSubtotal.textContent = formatMoney(rawSubtotal);
+  if (cartTotal) cartTotal.textContent = formatMoney(finalTotal);
+  if (cartPopTotal) cartPopTotal.textContent = safeFormatMoney(finalTotal);
+  if (nasiyaEst)
+    nasiyaEst.innerHTML = `Eurotex Nasiya: Oyiga <b>${formatMoney(monthlyNasiya)}</b> (12 oy)`;
+}
+
+function updateCartQtyByIndex(index, change, ev) {
+  if (ev) {
+    ev.preventDefault();
+    ev.stopPropagation();
+  }
   if (index >= 0 && index < state.cart.length) {
     state.cart[index].quantity += change;
     if (state.cart[index].quantity <= 0) {
       state.cart.splice(index, 1);
+      localStorage.setItem("eurotex_cart", JSON.stringify(state.cart));
+      updateCartUI(); // full re-render when item is completely removed
+      return;
     }
     localStorage.setItem("eurotex_cart", JSON.stringify(state.cart));
-    updateCartUI();
+
+    // Smooth in-place DOM updates (ZERO page reload, ZERO layout jump!)
+    const qtySpan = document.getElementById(`cartItemQtyVal_${index}`);
+    if (qtySpan) {
+      qtySpan.textContent = state.cart[index].quantity;
+    }
+    const popQtySpan = document.getElementById(`cartPopQtyVal_${index}`);
+    if (popQtySpan) {
+      popQtySpan.textContent = state.cart[index].quantity;
+    }
+
+    updateCartTotalsOnly();
   }
 }
 
@@ -1857,39 +1909,10 @@ function updateCartUI() {
   const lang = state.currentLang;
   const dict = TRANSLATIONS[lang];
 
-  const cartCount = document.getElementById("cartCount");
-  const mobileCartBadge = document.getElementById("mobileCartBadge");
-  const cartItemsList = document.getElementById("cartItemsList");
-  const cartSubtotal = document.getElementById("cartSubtotal");
-  const cartTotal = document.getElementById("cartTotal");
-  const nasiyaEst = document.getElementById("nasiyaEst");
-  const cartHeaderCount = document.getElementById("cartHeaderCount");
-  const cartItemQty = document.getElementById("cartItemQty");
+  updateCartTotalsOnly();
 
-  const totalCount = state.cart.reduce((sum, i) => sum + i.quantity, 0);
-  const rawSubtotal = state.cart.reduce(
-    (sum, i) => sum + i.price * i.quantity,
-    0,
-  );
-  const discountAmount = Math.round(rawSubtotal * state.discountRate);
-  const finalTotal = rawSubtotal - discountAmount;
-  const monthlyNasiya = Math.round(finalTotal / 12);
-
-  if (cartCount) cartCount.textContent = totalCount;
-  if (mobileCartBadge) mobileCartBadge.textContent = totalCount;
-  if (cartHeaderCount) cartHeaderCount.textContent = `${totalCount} ta pachka`;
-  if (cartItemQty) cartItemQty.textContent = totalCount;
-  if (cartSubtotal) cartSubtotal.textContent = formatMoney(rawSubtotal);
-  if (cartTotal) cartTotal.textContent = formatMoney(finalTotal);
-  if (nasiyaEst)
-    nasiyaEst.innerHTML = `Eurotex Nasiya: Oyiga <b>${formatMoney(monthlyNasiya)}</b> (12 oy)`;
-
-  const cartPopHeaderCount = document.getElementById("cartPopHeaderCount");
-  const cartPopTotal = document.getElementById("cartPopTotal");
   const cartPopItemsList = document.getElementById("cartPopItemsList");
-
-  if (cartPopHeaderCount) cartPopHeaderCount.textContent = `${totalCount} ta pachka`;
-  if (cartPopTotal) cartPopTotal.textContent = safeFormatMoney(finalTotal);
+  const cartItemsList = document.getElementById("cartItemsList");
 
   if (cartPopItemsList) {
     if (state.cart.length === 0) {
@@ -1915,9 +1938,9 @@ function updateCartUI() {
               </div>
               <div style="display: flex; align-items: center; gap: 8px;">
                 <div style="display: flex; align-items: center; background: rgba(255,255,255,0.08); border-radius: 8px; padding: 2px 6px;">
-                  <button type="button" onclick="updateCartQtyByIndex(${idx}, -1)" style="background: none; border: none; color: #fff; font-weight: 700; font-size: 16px; width: 24px; cursor: pointer;">–</button>
-                  <span style="font-weight: 800; font-size: 14px; color: #00f2fe; padding: 0 8px;">${item.quantity}</span>
-                  <button type="button" onclick="updateCartQtyByIndex(${idx}, 1)" style="background: none; border: none; color: #fff; font-weight: 700; font-size: 16px; width: 24px; cursor: pointer;">+</button>
+                  <button type="button" onclick="updateCartQtyByIndex(${idx}, -1, event)" style="background: none; border: none; color: #fff; font-weight: 700; font-size: 16px; width: 24px; cursor: pointer;">–</button>
+                  <span id="cartPopQtyVal_${idx}" style="font-weight: 800; font-size: 14px; color: #00f2fe; padding: 0 8px;">${item.quantity}</span>
+                  <button type="button" onclick="updateCartQtyByIndex(${idx}, 1, event)" style="background: none; border: none; color: #fff; font-weight: 700; font-size: 16px; width: 24px; cursor: pointer;">+</button>
                 </div>
                 <button type="button" onclick="removeCartItemByIndex(${idx})" style="background: rgba(239,68,68,0.2); border: none; color: #ef4444; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 14px;">🗑️</button>
               </div>
@@ -1981,9 +2004,9 @@ function updateCartUI() {
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.06);">
                       <span style="font-size: 12px; font-weight: 700; color: #64748b;">Soni:</span>
                       <div style="display: flex; align-items: center; background: #f1f5f9; border-radius: 8px; padding: 2px 6px; gap: 6px;">
-                        <button type="button" onclick="updateCartQtyByIndex(${idx}, -1)" style="background: none; border: none; font-size: 16px; font-weight: 700; color: #0f172a; width: 22px; cursor: pointer;">–</button>
-                        <span style="font-size: 14px; font-weight: 800; color: #7000ff; min-width: 18px; text-align: center;">${item.quantity}</span>
-                        <button type="button" onclick="updateCartQtyByIndex(${idx}, 1)" style="background: none; border: none; font-size: 16px; font-weight: 700; color: #0f172a; width: 22px; cursor: pointer;">+</button>
+                        <button type="button" onclick="updateCartQtyByIndex(${idx}, -1, event)" style="background: none; border: none; font-size: 16px; font-weight: 700; color: #0f172a; width: 22px; cursor: pointer;">–</button>
+                        <span id="cartItemQtyVal_${idx}" style="font-size: 14px; font-weight: 800; color: #7000ff; min-width: 18px; text-align: center;">${item.quantity}</span>
+                        <button type="button" onclick="updateCartQtyByIndex(${idx}, 1, event)" style="background: none; border: none; font-size: 16px; font-weight: 700; color: #0f172a; width: 22px; cursor: pointer;">+</button>
                       </div>
                     </div>
                     <button type="button" onclick="openCheckoutModal()" class="btn btn-primary btn-block" style="margin-top: 6px; height: 42px; border-radius: 10px; font-weight: 800; font-size: 14px; background: linear-gradient(135deg, #7000ff, #00f2fe); border: none; color: #fff; cursor: pointer; box-shadow: 0 4px 14px rgba(112,0,255,0.3);">
