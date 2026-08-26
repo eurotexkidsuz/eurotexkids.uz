@@ -3663,10 +3663,10 @@ function handleOrderSubmit(e) {
   const name = document.getElementById("custName").value || "Xaridor";
   const phone =
     document.getElementById("custPhone").value || "+998 (90) 555-77-75";
-  const addrSelect = document.getElementById("custAddress");
-  const addrText = addrSelect
-    ? addrSelect.options[addrSelect.selectedIndex].text
-    : "Toshkent";
+  const addrInput = document.getElementById("custAddress");
+  const addrText = addrInput && addrInput.value && addrInput.value.trim()
+    ? addrInput.value.trim()
+    : (addrInput && addrInput.options ? addrInput.options[addrInput.selectedIndex]?.text : "Toshkent sh., Markaz");
 
   const rawSubtotal = state.cart.reduce(
     (sum, i) => sum + i.price * i.quantity,
