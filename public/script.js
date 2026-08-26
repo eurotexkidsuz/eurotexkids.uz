@@ -1263,10 +1263,10 @@ function renderProducts() {
                     <div style="background:#fef08a; color:#854d0e; font-weight:800; font-size:11px; padding:3px 8px; border-radius:4px; margin-bottom:6px; display:inline-block;">
                         📦 1 Pachka (${product.pachkaItems || 6} ta seriya)
                     </div>
-                    <div class="card-price-row" style="margin-top: 0; margin-bottom: 4px;">
-                        <div class="price-group">
-                            <span class="current-price" style="font-size:15px; font-weight:800; color:var(--color-navy);">${formattedPrice} <small style="font-size:11px; font-weight:600; color:#059669;">/pachka</small></span>
-                            <span class="old-price" style="font-size:12px; color:#94a3b8; text-decoration: line-through; margin-left: 4px;">${formattedOldPrice}</span>
+                    <div class="card-price-row" style="margin-top: 0; margin-bottom: 4px; white-space: nowrap !important;">
+                        <div class="price-group" style="display: flex; flex-direction: column; gap: 2px; white-space: nowrap !important;">
+                            <span class="current-price" style="font-size:14px; font-weight:800; color:var(--color-navy); white-space: nowrap !important; display: inline-block;">${formattedPrice} <small style="font-size:11px; font-weight:600; color:#059669; white-space: nowrap !important;">/pachka</small></span>
+                            <span class="old-price" style="font-size:11px; color:#94a3b8; text-decoration: line-through; white-space: nowrap !important; display: inline-block;">${formattedOldPrice}</span>
                         </div>
                     </div>
                     <h3 class="card-title" onclick="openQuickView('${product.id || "prod-1"}')" style="margin-bottom: 4px;">${title}</h3>
@@ -1991,10 +1991,10 @@ function updateCartUI() {
                     <div style="background:#fef08a; color:#854d0e; font-weight:800; font-size:11px; padding:4px 8px; border-radius:6px; display:inline-block; width: fit-content;">
                       📦 1 Pachka (${item.pachkaItems || 6} ta seriya)
                     </div>
-                    <div class="card-price-row" style="margin: 0;">
-                      <div class="price-group">
-                        <span class="current-price" style="font-size:16px; font-weight:800; color:#0f172a;">${formattedPrice} <small style="font-size:11px; font-weight:600; color:#059669;">/pachka</small></span>
-                        <span class="old-price" style="font-size:12px; color:#94a3b8; text-decoration: line-through; margin-left: 4px;">${formattedOldPrice}</span>
+                    <div class="card-price-row" style="margin: 0; white-space: nowrap !important;">
+                      <div class="price-group" style="display: flex; flex-direction: column; gap: 2px; white-space: nowrap !important;">
+                        <span class="current-price" style="font-size:14px; font-weight:800; color:#0f172a; white-space: nowrap !important; display: inline-block;">${formattedPrice} <small style="font-size:11px; font-weight:600; color:#059669; white-space: nowrap !important;">/pachka</small></span>
+                        <span class="old-price" style="font-size:11px; color:#94a3b8; text-decoration: line-through; white-space: nowrap !important; display: inline-block;">${formattedOldPrice}</span>
                       </div>
                     </div>
                     <h3 class="card-title" style="font-size: 13px; font-weight: 700; color: #1e293b; margin: 0; line-height: 1.3;">${item.title}</h3>
@@ -2867,10 +2867,10 @@ function renderWishlist() {
                 <div style="background:#fef08a; color:#854d0e; font-weight:800; font-size:11px; padding:4px 8px; border-radius:6px; display:inline-block; width: fit-content;">
                     📦 1 Pachka (${product.pachkaItems || 6} ta seriya)
                 </div>
-                <div class="card-price-row" style="margin: 0;">
-                    <div class="price-group">
-                        <span class="current-price" style="font-size:16px; font-weight:800; color:#0f172a;">${formattedPrice} <small style="font-size:11px; font-weight:600; color:#059669;">/pachka</small></span>
-                        <span class="old-price" style="font-size:12px; color:#94a3b8; text-decoration: line-through; margin-left: 4px;">${formattedOldPrice}</span>
+                <div class="card-price-row" style="margin: 0; white-space: nowrap !important;">
+                    <div class="price-group" style="display: flex; flex-direction: column; gap: 2px; white-space: nowrap !important;">
+                        <span class="current-price" style="font-size:14px; font-weight:800; color:#0f172a; white-space: nowrap !important; display: inline-block;">${formattedPrice} <small style="font-size:11px; font-weight:600; color:#059669; white-space: nowrap !important;">/pachka</small></span>
+                        <span class="old-price" style="font-size:11px; color:#94a3b8; text-decoration: line-through; white-space: nowrap !important; display: inline-block;">${formattedOldPrice}</span>
                     </div>
                 </div>
                 <h3 class="card-title" onclick="closeModal('wishlistPopModal'); openQuickView('${product.id}')" style="font-size: 13px; font-weight: 700; color: #1e293b; margin: 0; line-height: 1.3; cursor: pointer;">${title}</h3>

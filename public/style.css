@@ -1621,26 +1621,39 @@ html[data-theme="dark"] .main-header.scrolled {
 .card-price-row {
   margin-top: auto;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  white-space: nowrap !important;
 }
 
 .price-group {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  white-space: nowrap !important;
 }
 
 .old-price {
-  font-size: 12px;
+  font-size: 11px;
   text-decoration: line-through;
   color: var(--text-muted);
+  white-space: nowrap !important;
+  display: inline-block;
+  line-height: 1.2;
 }
 
 .current-price {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 800;
   color: var(--color-navy);
+  white-space: nowrap !important;
+  display: inline-block;
+  line-height: 1.2;
 }
 
 .quick-add-btn {
