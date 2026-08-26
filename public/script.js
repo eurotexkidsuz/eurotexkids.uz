@@ -1231,29 +1231,28 @@ function renderProducts() {
             product.badge_uz ||
             "ULGURJI PACHKA"
           ).toString();
-          const formattedPrice = safeFormatMoney(
-            product.priceUsd || product.pachkaPriceUsd || product.price || 45,
-          );
-          const formattedOldPrice = product.oldPrice
-            ? safeFormatMoney(product.oldPrice)
-            : "";
-          const monthlyInstallment = safeFormatMoney(
-            product.nasiyaMonthly ||
-              Math.round((product.priceUsd || product.price || 45) / 6),
-          );
-
-          const unitPriceStr = product.unitPrice
-            ? ` ($${product.unitPrice}/ta)`
-            : "";
-          const perMonthText = (dict?.perMonth || "oyiga").toLowerCase();
+          const usdRate = state.usdRate || 12650;
+          const priceUsd =
+            product.priceUsd ||
+            product.pachkaPriceUsd ||
+            (product.price > 5000
+              ? Math.round(product.price / usdRate)
+              : product.price) ||
+            120;
+          const priceSom = priceUsd * usdRate;
+          const oldPriceUsd = product.oldPrice || Math.round(priceUsd * 1.25);
+          const oldPriceSom = oldPriceUsd * usdRate;
+          const formattedPrice = `$${priceUsd} (${formatMoneySom(priceSom)} so'm)`;
+          const formattedOldPrice = `$${oldPriceUsd} (${formatMoneySom(oldPriceSom)} so'm)`;
+          const badgeType = product.badgeType || "gold";
           const imgSrc =
-            product.image || product.img || "/images/default-product.png";
+            product.image || product.img || "/images/navy_suit.jpg";
 
           return `
             <div class="product-card" data-id="${product.id || "prod-1"}">
                 <div class="card-image-wrap" onclick="openQuickView('${product.id || "prod-1"}')">
-                    <img src="${imgSrc}" alt="${title}" loading="lazy" onerror="this.src='/images/default-product.png'">
-                    ${badgeText ? `<span class="card-badge-tag ${product.badgeType || "gold"}">${badgeText}</span>` : ""}
+                    <img src="${imgSrc}" alt="${title}" loading="lazy" onerror="this.src='/images/navy_suit.jpg'">
+                    ${badgeText ? `<span class="card-badge-tag ${badgeType}">${badgeText}</span>` : ""}
                     <button class="wishlist-heart-btn ${isWishlisted ? "active" : ""}" 
                             onclick="event.stopPropagation(); toggleWishlist('${product.id || "prod-1"}')" 
                             title="Wishlist">
@@ -1264,23 +1263,20 @@ function renderProducts() {
                     <div style="background:#fef08a; color:#854d0e; font-weight:800; font-size:11px; padding:3px 8px; border-radius:4px; margin-bottom:6px; display:inline-block;">
                         📦 1 Pachka (${product.pachkaItems || 6} ta seriya)
                     </div>
-                    <div class="card-price-row" style="margin-top: 0; margin-bottom: 6px;">
+                    <div class="card-price-row" style="margin-top: 0; margin-bottom: 4px;">
                         <div class="price-group">
-                            <span class="current-price" style="font-size:15px; font-weight:800; color:var(--color-navy);">${formattedPrice} <small style="font-size:11px; font-weight:600; color:#059669;">/pachka${unitPriceStr}</small></span>
-                            ${product.oldPrice ? `<span class="old-price">${formattedOldPrice}</span>` : ""}
+                            <span class="current-price" style="font-size:15px; font-weight:800; color:var(--color-navy);">${formattedPrice} <small style="font-size:11px; font-weight:600; color:#059669;">/pachka</small></span>
+                            <span class="old-price" style="font-size:12px; color:#94a3b8; text-decoration: line-through; margin-left: 4px;">${formattedOldPrice}</span>
                         </div>
-                        <button class="quick-add-btn" onclick="openQuickView('${product.id || "prod-1"}')" title="Savatga qo'shish">
-                            🛒
-                        </button>
-                    </div>
-                    <div class="card-nasiya-box" style="margin-bottom: 8px;">
-                        Eurotex Nasiya: ${monthlyInstallment}/${perMonthText}
                     </div>
                     <h3 class="card-title" onclick="openQuickView('${product.id || "prod-1"}')" style="margin-bottom: 4px;">${title}</h3>
-                    <div class="card-rating">
-                        <span>⭐ ${product.rating || 5.0}</span>
-                        <span>(${product.reviewsCount || 12} ${lang === "ru" ? "отзывов" : lang === "en" ? "reviews" : "sharhlar"})</span>
+                    <div class="card-rating" style="margin-bottom: 8px;">
+                        <span>⭐ ${product.rating || 4.9}</span>
+                        <span>(${product.reviewsCount || 186} sharhlar)</span>
                     </div>
+                    <button type="button" onclick="addToCart('${product.id || "prod-1"}'); openCartDrawer();" class="btn btn-primary btn-block" style="margin-top: auto; height: 42px; border-radius: 12px; font-weight: 800; font-size: 14px; background: #7000ff; color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(112,0,255,0.25);">
+                        Savatga qo'shish 🛒
+                    </button>
                 </div>
             </div>
         `;
@@ -2809,36 +2805,59 @@ function renderWishlist() {
 
   const htmlContent = wishProds
     .map((product) => {
-      const title = (product[`title_${lang}`] || product.title_uz || product.title || "Eurotex Kostyum").toString();
-      const formattedPrice = safeFormatMoney(product.priceUsd || product.pachkaPriceUsd || product.price || 45);
-      const formattedOldPrice = product.oldPrice ? safeFormatMoney(product.oldPrice) : "";
-      const unitPriceStr = product.unitPrice ? ` ($${product.unitPrice}/ta)` : "";
-      const badgeText = (product[`badge_${lang}`] || product.badge_uz || "LUXURY PACHKA").toString();
-      const imgSrc = product.image || product.img || "/images/default-product.png";
+      const title = (
+        product[`title_${lang}`] ||
+        product.title_uz ||
+        product.title ||
+        "Eurotex Kostyum"
+      ).toString();
+      const usdRate = state.usdRate || 12650;
+      const priceUsd =
+        product.priceUsd ||
+        product.pachkaPriceUsd ||
+        (product.price > 5000
+          ? Math.round(product.price / usdRate)
+          : product.price) ||
+        120;
+      const priceSom = priceUsd * usdRate;
+      const oldPriceUsd = product.oldPrice || Math.round(priceUsd * 1.25);
+      const oldPriceSom = oldPriceUsd * usdRate;
+      const formattedPrice = `$${priceUsd} (${formatMoneySom(priceSom)} so'm)`;
+      const formattedOldPrice = `$${oldPriceUsd} (${formatMoneySom(oldPriceSom)} so'm)`;
+      const badgeText = (
+        product[`badge_${lang}`] ||
+        product.badge_uz ||
+        "LUXURY PACHKA"
+      ).toString();
+      const badgeType = product.badgeType || "gold";
+      const imgSrc =
+        product.image || product.img || "/images/navy_suit.jpg";
 
       return `
-        <div class="product-card" data-id="${product.id}">
-            <div class="card-image-wrap" onclick="closeModal('wishlistPopModal'); openQuickView('${product.id}')">
-                <img src="${imgSrc}" alt="${title}" loading="lazy" onerror="this.src='/images/default-product.png'">
-                <span class="card-badge-tag ${product.badgeType || "gold"}">${badgeText}</span>
-                <button class="wishlist-heart-btn active" onclick="event.stopPropagation(); toggleWishlist('${product.id}')" title="Wishlist">❤️</button>
+        <div class="product-card" data-id="${product.id}" style="background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 4px 20px rgba(0,0,0,0.06); display: flex; flex-direction: column;">
+            <div class="card-image-wrap" onclick="closeModal('wishlistPopModal'); openQuickView('${product.id}')" style="position: relative; width: 100%; padding-top: 125%; background: #0f172a; overflow: hidden; cursor: pointer;">
+                <img src="${imgSrc}" alt="${title}" loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center; background: #0f172a;" onerror="this.src='/images/navy_suit.jpg'">
+                <span class="card-badge-tag ${badgeType}" style="position: absolute; top: 10px; left: 10px; z-index: 2;">${badgeText}</span>
+                <button class="wishlist-heart-btn active" onclick="event.stopPropagation(); toggleWishlist('${product.id}')" title="Wishlist" style="position: absolute; top: 10px; right: 10px; z-index: 3; background: rgba(255,255,255,0.95); border: none; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">❤️</button>
             </div>
-            <div class="card-body">
-                <div style="background:#fef08a; color:#854d0e; font-weight:800; font-size:11px; padding:3px 8px; border-radius:4px; margin-bottom:6px; display:inline-block;">
+            <div class="card-body" style="padding: 14px; display: flex; flex-direction: column; flex: 1; gap: 8px;">
+                <div style="background:#fef08a; color:#854d0e; font-weight:800; font-size:11px; padding:4px 8px; border-radius:6px; display:inline-block; width: fit-content;">
                     📦 1 Pachka (${product.pachkaItems || 6} ta seriya)
                 </div>
-                <div class="card-price-row" style="margin-top: 0; margin-bottom: 6px;">
+                <div class="card-price-row" style="margin: 0;">
                     <div class="price-group">
-                        <span class="current-price" style="font-size:15px; font-weight:800; color:var(--color-navy);">${formattedPrice} <small style="font-size:11px; font-weight:600; color:#059669;">/pachka${unitPriceStr}</small></span>
-                        ${product.oldPrice ? `<span class="old-price">${formattedOldPrice}</span>` : ""}
+                        <span class="current-price" style="font-size:16px; font-weight:800; color:#0f172a;">${formattedPrice} <small style="font-size:11px; font-weight:600; color:#059669;">/pachka</small></span>
+                        <span class="old-price" style="font-size:12px; color:#94a3b8; text-decoration: line-through; margin-left: 4px;">${formattedOldPrice}</span>
                     </div>
                 </div>
-                <h3 class="card-title" onclick="closeModal('wishlistPopModal'); openQuickView('${product.id}')" style="margin-bottom: 4px; font-size: 13px; color: #334155; line-height: 1.3;">${title}</h3>
-                <div class="card-rating" style="font-size: 12px; color: #64748b; margin-bottom: 12px;">
-                    <span>⭐ ${product.rating || 4.9}</span>
-                    <span>(${product.reviewsCount || 186} sharhlar)</span>
+                <h3 class="card-title" onclick="closeModal('wishlistPopModal'); openQuickView('${product.id}')" style="font-size: 13px; font-weight: 700; color: #1e293b; margin: 0; line-height: 1.3; cursor: pointer;">${title}</h3>
+                <div class="card-rating" style="font-size: 12px; color: #64748b; display: flex; align-items: center; gap: 4px;">
+                    <span style="color: #f59e0b;">⭐</span>
+                    <span>${product.rating || 4.9} (${product.reviewsCount || 186} sharhlar)</span>
                 </div>
-                <button type="button" onclick="addToCart('${product.id}'); closeModal('wishlistPopModal'); openCartDrawer();" class="btn btn-primary btn-block btn-sm" style="margin-top: auto; height: 40px; border-radius: 10px; font-weight: 800;">Savatga qo'shish 🛒</button>
+                <button type="button" onclick="addToCart('${product.id}'); openCartDrawer();" class="btn btn-primary btn-block" style="margin-top: auto; height: 42px; border-radius: 12px; font-weight: 800; font-size: 14px; background: #7000ff; color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(112,0,255,0.25);">
+                    Savatga qo'shish 🛒
+                </button>
             </div>
         </div>
       `;
