@@ -3245,31 +3245,6 @@ function resetAuthForm() {
   otpStep = false;
 }
 
-function loginWithSpecificEmail(rawEmail) {
-  if (!rawEmail) return;
-  const cleanEmail = normalizeUserEmail(rawEmail);
-  const isAdmin = isAdminEmail(cleanEmail);
-  state.user = {
-    email: cleanEmail,
-    name: isAdmin ? "Eurotex Rasmiy Admin" : cleanEmail.split("@")[0],
-    role: isAdmin ? "admin" : "user",
-    rememberToken: "google_direct_auth_" + Date.now(),
-  };
-  localStorage.setItem("eurotex_user", JSON.stringify(state.user));
-  updateUserAuthUI();
-  resetAuthForm();
-  closeAllModals();
-
-  if (isAdmin) {
-    showToast(
-      "👑 Admin sifatida muvaffaqiyatli kirdingiz! Master Admin Panel faollashtirildi. ⚡",
-    );
-    openDashboardView("admin");
-  } else {
-    showToast(`Xush kelibsiz, ${state.user.name}! Google orqali muvaffaqiyatli kirdingiz! ✅`);
-  }
-}
-
 function handleGoogleFormSubmit(e) {
   if (e) e.preventDefault();
   const gEmailInput = document.getElementById("googleEmailInput");
