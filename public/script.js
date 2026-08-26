@@ -3114,7 +3114,12 @@ async function handleEmailAuth(e) {
         body: JSON.stringify({ email }),
       });
 
-      const data = await res.json();
+      let data = {};
+      try {
+        data = await res.json();
+      } catch (parseErr) {
+        data = { message: "Serverdan kutilmagan javob qaytdi." };
+      }
       submitBtn.disabled = false;
 
       if (res.ok) {
@@ -3149,7 +3154,9 @@ async function handleEmailAuth(e) {
       otpGroup.style.display = "block";
       submitBtn.disabled = false;
       submitBtn.textContent = "Kirishni tasdiqlash";
-      showToast(`OTP kod pochtangizga yuborildi!`);
+      showToast(
+        "📧 Tasdiqlash kodi pochtangizga yuborildi! Gmail'ingizni tekshirib 6 xonali kodni kiriting! 📩",
+      );
       startResendTimer(60);
     }
   } else {
@@ -5532,7 +5539,56 @@ function formatUsd(usdAmount) {
   return `$${numUsd.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")}`;
 }
 
+function toUzbekError(msg) {
+  if (!msg || typeof msg !== "string") return msg || "Kutilmagan holat yuz berdi. Iltimos, qayta urinib ko'ring.";
+  const lower = msg.toLowerCase();
+  
+  if (
+    lower.includes("failed to respond") ||
+    lower.includes("application failed") ||
+    lower.includes("502") ||
+    lower.includes("504") ||
+    lower.includes("503") ||
+    lower.includes("bad gateway") ||
+    lower.includes("gateway timeout")
+  ) {
+    return "⚠️ Server bilan vaqtincha aloqa sekinlashdi. Iltimos, bir ozdan so'ng qayta urinib ko'ring yoki Google orqali kiring.";
+  }
+  if (
+    lower.includes("failed to fetch") ||
+    lower.includes("networkerror") ||
+    lower.includes("network error") ||
+    lower.includes("connection refused")
+  ) {
+    return "📡 Internet aloqasi vaqtincha uzildi. Iltimos, internetingizni tekshirib qayta urinib ko'ring.";
+  }
+  if (
+    lower.includes("unauthorized") ||
+    lower.includes("401") ||
+    lower.includes("invalid token") ||
+    lower.includes("token expired")
+  ) {
+    return "🔒 Kirish sessiyangiz yakunlandi. Iltimos, qaytadan tizimga kiring.";
+  }
+  if (lower.includes("user not found") || lower.includes("foydalanuvchi topilmadi")) {
+    return "🔍 Ushbu elektron pochta bo'yicha ma'lumot topilmadi. Ro'yxatdan o'tish uchun 'Email Kod bilan' tugmasini bosing.";
+  }
+  if (lower.includes("invalid password") || lower.includes("wrong password")) {
+    return "❌ Kiritilgan parol noto'g'ri. Iltimos, parolni tekshirib qaytadan urinib ko'ring.";
+  }
+  if (lower.includes("invalid code") || lower.includes("wrong code") || lower.includes("noto'g'ri kod")) {
+    return "❌ Tasdiqlash kodi noto'g'ri kiritildi. Iltimos, pochtangizga kelgan 6 xonali kodni tekshiring.";
+  }
+  if (lower.includes("internal server error") || lower.includes("500")) {
+    return "⚠️ Serverda vaqtincha texnik xatolik yuz berdi. Iltimos, 1 daqiqadan so'ng qayta urinib ko'ring.";
+  }
+  return msg;
+}
+
 function showToast(message) {
+  // Always translate any technical English messages to professional Uzbek
+  const displayMsg = toUzbekError(message);
+
   // Always move toastContainer to be the LAST child of body
   // so it's never trapped inside a modal stacking context
   let container = document.getElementById("toastContainer");
@@ -5564,7 +5620,7 @@ function showToast(message) {
   const toast = document.createElement("div");
   toast.className = "toast";
   toast.style.pointerEvents = "auto";
-  toast.innerHTML = `<span>✨</span> <div>${message}</div>`;
+  toast.innerHTML = `<span>✨</span> <div>${displayMsg}</div>`;
   container.appendChild(toast);
 
   setTimeout(() => {
