@@ -1935,43 +1935,71 @@ function updateCartUI() {
   if (cartItemsList) {
     if (state.cart.length === 0) {
       cartItemsList.innerHTML = `
-                <div style="text-align:center; padding: 50px 10px;">
-                    <div style="font-size: 48px; margin-bottom: 12px;">🛒</div>
-                    <h3 style="font-size: 18px; color: var(--color-navy); margin-bottom: 6px;">${lang === "ru" ? "Корзина пуста" : lang === "en" ? "Cart is empty" : "Savatingiz hozircha bo'sh"}</h3>
-                    <p style="color: var(--text-secondary); font-size: 14px;">Bosh sahifadagi mahsulotlardan birini tanlang va savatga qo'shing</p>
-                </div>
-            `;
+        <div style="text-align:center; padding: 50px 10px;">
+            <div style="font-size: 48px; margin-bottom: 12px;">🛒</div>
+            <h3 style="font-size: 18px; color: var(--color-navy); margin-bottom: 6px;">${lang === "ru" ? "Корзина пуста" : lang === "en" ? "Cart is empty" : "Savatingiz hozircha bo'sh"}</h3>
+            <p style="color: var(--text-secondary); font-size: 14px;">Bosh sahifadagi mahsulotlardan birini tanlang va savatga qo'shing</p>
+        </div>
+      `;
     } else {
-      cartItemsList.innerHTML = state.cart
-        .map(
-          (item, idx) => `
-                <div class="cart-item-card" data-id="${item.id}">
-                    <div class="cart-item-main">
-                        <input type="checkbox" class="cart-item-check" checked>
-                        <img src="${item.image}" class="cart-item-img" alt="${item.title}">
-                        <div class="cart-item-info">
-                            <span class="seller-tag">Sotuvchi: Eurotex Direct</span>
-                            <div class="cart-item-title">${item.title}</div>
-                            <div class="cart-item-meta">
-                                O'lcham: <b>${item.size}</b> | Rangi: <b>${item.color || "To'q ko'k (Navy)"}</b>
-                            </div>
-                            <div class="cart-item-price-row" style="margin-top: 6px;">
-                                <strong style="color: var(--color-navy); font-size: 16px;">${formatMoney(item.price * item.quantity)} ${dict.currency}</strong>
-                            </div>
-                        </div>
+      cartItemsList.innerHTML = `
+        <div class="cart-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px;">
+          ${state.cart
+            .map((item, idx) => {
+              const usdRate = state.usdRate || 12650;
+              const priceUsd =
+                item.priceUsd ||
+                (item.price > 5000
+                  ? Math.round(item.price / usdRate)
+                  : item.price) ||
+                120;
+              const priceSom = priceUsd * usdRate;
+              const oldPriceUsd = Math.round(priceUsd * 1.25);
+              const oldPriceSom = oldPriceUsd * usdRate;
+              const formattedPrice = `$${priceUsd} (${formatMoneySom(priceSom)} so'm)`;
+              const formattedOldPrice = `$${oldPriceUsd} (${formatMoneySom(oldPriceSom)} so'm)`;
+              const badgeType = item.badgeType || "gold";
+              const badgeText = item.badge_uz || "LUXURY PACHKA";
+
+              return `
+                <div class="product-card cart-product-card" data-id="${item.id}" style="background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 4px 20px rgba(0,0,0,0.06); display: flex; flex-direction: column;">
+                  <div class="card-image-wrap" style="position: relative; width: 100%; padding-top: 125%; background: #0f172a; overflow: hidden;">
+                    <img src="${item.image}" alt="${item.title}" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center; background: #0f172a;" onerror="this.src='/images/navy_suit.jpg'">
+                    <span class="card-badge-tag ${badgeType}" style="position: absolute; top: 10px; left: 10px; z-index: 2;">${badgeText}</span>
+                    <button type="button" onclick="removeCartItemByIndex(${idx})" title="Savatdan o'chirish" style="position: absolute; top: 10px; right: 10px; z-index: 3; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); font-size: 14px;">🗑️</button>
+                  </div>
+                  <div class="card-body" style="padding: 14px; display: flex; flex-direction: column; flex: 1; gap: 8px;">
+                    <div style="background:#fef08a; color:#854d0e; font-weight:800; font-size:11px; padding:4px 8px; border-radius:6px; display:inline-block; width: fit-content;">
+                      📦 1 Pachka (${item.pachkaItems || 6} ta seriya)
                     </div>
-                    <div class="cart-item-right-actions">
-                        <button type="button" class="cart-remove-btn" onclick="removeCartItemByIndex(${idx})" title="Yo'q qilish">🗑️ Yo'q qilish</button>
-                        <div class="qty-controls">
-                            <button type="button" class="qty-btn minus" onclick="updateCartQtyByIndex(${idx}, -1)" title="Kamaytirish">–</button>
-                            <span class="qty-num">${item.quantity}</span>
-                            <button type="button" class="qty-btn plus" onclick="updateCartQtyByIndex(${idx}, 1)" title="O'shirish">+</button>
-                        </div>
+                    <div class="card-price-row" style="margin: 0;">
+                      <div class="price-group">
+                        <span class="current-price" style="font-size:16px; font-weight:800; color:#0f172a;">${formattedPrice} <small style="font-size:11px; font-weight:600; color:#059669;">/pachka</small></span>
+                        <span class="old-price" style="font-size:12px; color:#94a3b8; text-decoration: line-through; margin-left: 4px;">${formattedOldPrice}</span>
+                      </div>
                     </div>
+                    <h3 class="card-title" style="font-size: 13px; font-weight: 700; color: #1e293b; margin: 0; line-height: 1.3;">${item.title}</h3>
+                    <div style="font-size: 12px; color: #64748b;">
+                      O'lcham: <b style="color: #7000ff;">${item.size}</b> | Rangi: <b style="color: #7000ff;">${item.color || "Klassik"}</b>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.06);">
+                      <span style="font-size: 12px; font-weight: 700; color: #64748b;">Soni:</span>
+                      <div style="display: flex; align-items: center; background: #f1f5f9; border-radius: 8px; padding: 2px 6px; gap: 6px;">
+                        <button type="button" onclick="updateCartQtyByIndex(${idx}, -1)" style="background: none; border: none; font-size: 16px; font-weight: 700; color: #0f172a; width: 22px; cursor: pointer;">–</button>
+                        <span style="font-size: 14px; font-weight: 800; color: #7000ff; min-width: 18px; text-align: center;">${item.quantity}</span>
+                        <button type="button" onclick="updateCartQtyByIndex(${idx}, 1)" style="background: none; border: none; font-size: 16px; font-weight: 700; color: #0f172a; width: 22px; cursor: pointer;">+</button>
+                      </div>
+                    </div>
+                    <button type="button" onclick="openCheckoutModal()" class="btn btn-primary btn-block" style="margin-top: 6px; height: 42px; border-radius: 10px; font-weight: 800; font-size: 14px; background: linear-gradient(135deg, #7000ff, #00f2fe); border: none; color: #fff; cursor: pointer; box-shadow: 0 4px 14px rgba(112,0,255,0.3);">
+                      Buyurtma berish ⚡
+                    </button>
+                  </div>
                 </div>
-            `,
-        )
-        .join("");
+              `;
+            })
+            .join("")}
+        </div>
+      `;
     }
   }
 }
