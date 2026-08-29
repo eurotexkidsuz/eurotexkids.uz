@@ -3033,27 +3033,19 @@ let otpStep = false;
 let resendTimerInterval = null;
 
 function setupOtpInputRestrictions() {
-  const otpInput = document.getElementById("authOtpInput");
-  if (!otpInput) return;
+  const hiddenInput = document.getElementById("authOtpInput");
+  const pinDigits = document.querySelectorAll(".otp-pin-digit");
 
-  otpInput.addEventListener("input", (e) => {
-    e.target.value = e.target.value.replace(/[^0-9]/g, "").slice(0, 6);
-    const submitBtn = document.getElementById("authSubmitBtn");
-    if (e.target.value.length === 6 && otpStep && submitBtn && !submitBtn.disabled) {
-      const form = document.getElementById("emailLoginForm");
-      if (form) {
-        const submitEvent = new Event("submit", { cancelable: true, bubbles: true });
-        form.dispatchEvent(submitEvent);
-      }
-    }
-  });
+  function updateHiddenValueAndCheckSubmit() {
+    let fullCode = "";
+    pinDigits.forEach((box) => {
+      fullCode += (box.value || "").trim();
+      if (box.value) box.classList.add("filled");
+      else box.classList.remove("filled");
+    });
+    if (hiddenInput) hiddenInput.value = fullCode;
 
-  otpInput.addEventListener("paste", (e) => {
-    e.preventDefault();
-    const paste = (e.clipboardData || window.clipboardData).getData("text");
-    const numbersOnly = paste.replace(/[^0-9]/g, "").slice(0, 6);
-    e.target.value = numbersOnly;
-    if (numbersOnly.length === 6 && otpStep) {
+    if (fullCode.length === 6 && otpStep) {
       const submitBtn = document.getElementById("authSubmitBtn");
       if (submitBtn && !submitBtn.disabled) {
         const form = document.getElementById("emailLoginForm");
@@ -3063,14 +3055,47 @@ function setupOtpInputRestrictions() {
         }
       }
     }
-  });
+  }
 
-  otpInput.addEventListener("keydown", (e) => {
-    const allowedKeys = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Enter"];
-    if (allowedKeys.includes(e.key)) return;
-    if (e.key.length === 1 && !/[0-9]/.test(e.key)) {
+  pinDigits.forEach((input, index) => {
+    input.addEventListener("input", (e) => {
+      const val = e.target.value.replace(/[^0-9]/g, "");
+      e.target.value = val ? val[val.length - 1] : "";
+      if (e.target.value) {
+        e.target.classList.add("filled");
+        if (index < pinDigits.length - 1) {
+          pinDigits[index + 1].focus();
+        }
+      } else {
+        e.target.classList.remove("filled");
+      }
+      updateHiddenValueAndCheckSubmit();
+    });
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Backspace" && !e.target.value && index > 0) {
+        pinDigits[index - 1].focus();
+        pinDigits[index - 1].value = "";
+        pinDigits[index - 1].classList.remove("filled");
+        updateHiddenValueAndCheckSubmit();
+      }
+    });
+
+    input.addEventListener("paste", (e) => {
       e.preventDefault();
-    }
+      const pasted = (e.clipboardData || window.clipboardData).getData("text") || "";
+      const digits = pasted.replace(/[^0-9]/g, "").slice(0, 6).split("");
+      if (!digits.length) return;
+      digits.forEach((d, i) => {
+        if (pinDigits[i]) {
+          pinDigits[i].value = d;
+          pinDigits[i].classList.add("filled");
+        }
+      });
+      const nextIndex = Math.min(digits.length, 5);
+      if (pinDigits[nextIndex]) pinDigits[nextIndex].focus();
+      updateHiddenValueAndCheckSubmit();
+    });
   });
 }
 
@@ -3322,6 +3347,13 @@ function resetAuthForm() {
 
   if (mainEmailInput) mainEmailInput.value = "";
   if (otpInput) otpInput.value = "";
+  const pinDigits = document.querySelectorAll(".otp-pin-digit");
+  if (pinDigits) {
+    pinDigits.forEach((box) => {
+      box.value = "";
+      box.classList.remove("filled");
+    });
+  }
   if (otpGroup) otpGroup.style.display = "none";
   if (hintBadge) {
     hintBadge.style.display = "none";

@@ -8510,6 +8510,67 @@ img {
   white-space: nowrap;
 }
 
+.otp-pin-boxes {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0 16px;
+}
+
+.otp-pin-digit {
+  width: 48px;
+  height: 56px;
+  background: var(--bg-surface, #ffffff);
+  border: 2px solid var(--border-color-dark, #cbd5e1);
+  border-radius: 12px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-navy, #1e293b);
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  font-family: 'Inter', 'Outfit', monospace;
+  caret-color: var(--color-uzum-purple, #7000ff);
+}
+
+.otp-pin-digit:focus {
+  border-color: var(--color-uzum-purple, #7000ff);
+  box-shadow: 0 0 0 4px rgba(112, 0, 255, 0.14);
+  background: #ffffff;
+  transform: translateY(-2px);
+}
+
+.otp-pin-digit.filled {
+  border-color: #7000ff;
+  background: rgba(112, 0, 255, 0.04);
+}
+
+html[data-theme="dark"] .otp-pin-digit {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .otp-pin-digit:focus {
+  background: #0f172a;
+  border-color: #a855f7;
+  box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.2);
+}
+
+@media (max-width: 480px) {
+  .otp-pin-boxes {
+    gap: 6px;
+  }
+  .otp-pin-digit {
+    width: 42px;
+    height: 50px;
+    font-size: 20px;
+    border-radius: 10px;
+  }
+}
+
 .otp-clean-input {
   width: 100%;
   padding: 16px 18px;

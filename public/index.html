@@ -2315,19 +2315,18 @@
                   font-size: 15px;
                 "
               ></div>
-              <label for="authOtpInput" class="otp-input-label">
-                <span class="otp-label-text">📧 Emailingizga yuborilgan 6 xonali kod:</span>
+              <label class="otp-input-label">
+                <span class="otp-label-text">Emailingizga yuborilgan kodni kiriting:</span>
               </label>
-              <input
-                type="text"
-                id="authOtpInput"
-                class="otp-clean-input"
-                placeholder="• • • • • •"
-                inputmode="numeric"
-                pattern="[0-9]*"
-                autocomplete="one-time-code"
-                maxlength="6"
-              />
+              <div class="otp-pin-boxes" id="otpPinBoxesContainer">
+                <input type="text" class="otp-pin-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" data-index="0" />
+                <input type="text" class="otp-pin-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" data-index="1" />
+                <input type="text" class="otp-pin-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" data-index="2" />
+                <input type="text" class="otp-pin-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" data-index="3" />
+                <input type="text" class="otp-pin-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" data-index="4" />
+                <input type="text" class="otp-pin-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" data-index="5" />
+              </div>
+              <input type="hidden" id="authOtpInput" value="" />
               <div class="otp-resend-row">
                 <span
                   id="resendTimerLabel"
@@ -3620,7 +3619,7 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=236.0.0" defer></script>
-    <script src="/eurotex-engine.js?v=10.3.0" defer></script>
+    <script src="/script.js?v=237.0.0" defer></script>
+    <script src="/eurotex-engine.js?v=10.4.0" defer></script>
   </body>
 </html>
