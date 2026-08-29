@@ -87,24 +87,18 @@ async function sendVerificationCode(user, code) {
 
   const targetEmail = user.email.toLowerCase().trim();
   const mailOptions = {
-    from: `"Eurotexkids.uz" <${EMAIL_USER}>`,
+    from: `"Eurotexkids" <${EMAIL_USER}>`,
     to: targetEmail,
-    subject: `Eurotexkids.uz Tasdiqlash Kodi: ${code}`,
+    subject: `Eurotexkids Tasdiqlash Kodi: ${code}`,
     text: `Eurotexkids.uz tizimiga kirish uchun tasdiqlash kodingiz: ${code}`,
-    priority: "high",
-    headers: {
-      "X-Priority": "1",
-      "X-MSMail-Priority": "High",
-      Importance: "high",
-    },
     html: `
-      <div style="font-family: Arial, sans-serif; padding: 24px; background-color: #f8fafc; border-radius: 12px; max-width: 500px; margin: 0 auto; border: 1px solid #e2e8f0;">
-        <h2 style="color: #4f46e5; margin-top: 0; font-size: 22px;">Eurotexkids.uz Kirish Kodi</h2>
-        <p style="color: #334155; font-size: 15px;">Salom! Sizning 6 xonali tasdiqlash kodingiz:</p>
+      <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; max-width: 480px; margin: 0 auto;">
+        <h2 style="color: #4f46e5; margin-top: 0;">Eurotexkids Kirish Kodi</h2>
+        <p style="font-size: 15px; color: #334155;">Salom! Sizning 6 xonali tasdiqlash kodingiz:</p>
         <div style="text-align: center; margin: 20px 0;">
-          <span style="background: #4f46e5; color: #ffffff; padding: 14px 28px; border-radius: 10px; font-size: 32px; font-weight: 800; letter-spacing: 6px; display: inline-block;">${code}</span>
+          <span style="background: #4f46e5; color: #ffffff; padding: 12px 24px; border-radius: 8px; font-size: 28px; font-weight: bold; letter-spacing: 4px; display: inline-block;">${code}</span>
         </div>
-        <p style="color: #64748b; font-size: 13px; margin-bottom: 0;">Ushbu kodni hech kimga bermang. Agar siz so'ramagan bo'lsangiz, ushbu xatga e'tibor bermang.</p>
+        <p style="font-size: 13px; color: #64748b;">Ushbu kodni hech kimga bermang.</p>
       </div>
     `,
   };
