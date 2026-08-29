@@ -45,11 +45,9 @@ async function ensureDbConnected() {
 router.get("/", async (req, res) => {
   const fileProds = readLocalProducts();
   try {
+    await ensureDbConnected();
     if (mongoose.connection && mongoose.connection.readyState === 1) {
-      const dbProds = await Promise.race([
-        Product.find().sort({ createdAt: -1 }),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 1200))
-      ]);
+      const dbProds = await Product.find().sort({ createdAt: -1 }).maxTimeMS(8000);
       if (Array.isArray(dbProds) && dbProds.length > 0) {
         const map = new Map();
         fileProds.forEach((p) => map.set(String(p.id || p.customId), p));
@@ -62,7 +60,7 @@ router.get("/", async (req, res) => {
       }
     }
   } catch (err) {
-    // Quiet fallback to local products on DB timeout or offline state
+    console.warn("MongoDB GET /products notice:", err.message);
   }
   return res.json({ success: true, products: fileProds });
 });

@@ -5003,8 +5003,8 @@ async function syncProductsWithBackendAndStorage(isIntervalSync = false) {
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000);
-    const res = await fetch("/products", { signal: controller.signal }).catch(() => null);
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    const res = await fetch("/products?_t=" + Date.now(), { signal: controller.signal }).catch(() => null);
     clearTimeout(timeoutId);
     if (res && res.ok) {
       const data = await res.json().catch(() => null);
@@ -5015,9 +5015,9 @@ async function syncProductsWithBackendAndStorage(isIntervalSync = false) {
         data.products.length > 0
       ) {
         const dbProds = data.products.map((p) => ({
-          id: p.customId || String(p._id),
+          id: p.customId || String(p._id || p.id),
           dbId: p._id,
-          isCustom: true, // Mark as custom so it pins to top of home grid
+          isCustom: true,
           title_uz: p.title_uz,
           title_ru: p.title_ru || p.title_uz,
           title_en: p.title_en || p.title_uz,
@@ -5042,68 +5042,33 @@ async function syncProductsWithBackendAndStorage(isIntervalSync = false) {
           reviewsCount: p.reviewsCount || 12,
         }));
 
-        const map = new Map();
-        // 1. Seed base default products first so product catalog never empties
-        DEFAULT_EUROTEX_PRODUCTS.forEach((p) => map.set(String(p.id), p));
-        // 2. Overlay DB products from MongoDB Atlas
+        const customProds = [];
+        const defaultMap = new Map();
+        DEFAULT_EUROTEX_PRODUCTS.forEach((p) => defaultMap.set(String(p.id), { ...p }));
+
         dbProds.forEach((p) => {
-          const baseItem = map.get(String(p.id)) || {};
-          map.set(String(p.id), { ...baseItem, ...p });
-        });
-        // 3. Overlay local EUROTEX_PRODUCTS so admin edits win & persist
-        (EUROTEX_PRODUCTS || []).forEach((p) => {
-          if (p && p.id) {
-            const dbItem = map.get(String(p.id)) || {};
-            map.set(String(p.id), { ...dbItem, ...p });
+          const strId = String(p.id);
+          if (defaultMap.has(strId)) {
+            defaultMap.set(strId, { ...defaultMap.get(strId), ...p });
+          } else {
+            customProds.push({ ...p, isCustom: true });
           }
         });
 
-        EUROTEX_PRODUCTS = Array.from(map.values());
+        // Newly added Custom products ALWAYS go to the very top of the catalog!
+        EUROTEX_PRODUCTS = [...customProds, ...Array.from(defaultMap.values())];
+        window.EUROTEX_PRODUCTS = EUROTEX_PRODUCTS;
         EurotexIDB.set("eurotex_custom_products", EUROTEX_PRODUCTS);
         try {
           localStorage.removeItem("eurotex_custom_products");
         } catch (err) {}
-
-        // Auto-upload any un-synced local custom products to MongoDB Atlas
-        const dbCustomIds = new Set(dbProds.map((p) => String(p.id)));
-        EUROTEX_PRODUCTS.forEach((p) => {
-          if (p.isCustom && !dbCustomIds.has(String(p.id)) && !p._syncing) {
-            p._syncing = true;
-            fetch("/products", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                customId: String(p.id),
-                title_uz: p.title_uz,
-                title_ru: p.title_ru || p.title_uz,
-                category: p.category,
-                priceUsd: p.priceUsd,
-                pachkaPriceUsd: p.pachkaPriceUsd,
-                pachkaQty: p.pachkaQty,
-                price: p.price,
-                oldPrice: p.oldPrice,
-                image: p.image,
-                images: p.images || [p.image],
-                sizes: p.sizes,
-                fabric_uz: p.fabric_uz,
-                inStock: true,
-              }),
-            })
-              .then(() => {
-                delete p._syncing;
-              })
-              .catch(() => {
-                delete p._syncing;
-              });
-          }
-        });
       }
     }
   } catch (err) {
     console.log("Using cached products:", err);
   }
 
-  // Smart Re-render: ONLY re-render if product data actually changed AND admin is not typing!
+  // Smart Re-render: re-render both home catalog and admin table
   const newHash = EUROTEX_PRODUCTS.map(
     (p) => `${p.id}:${p.title_uz}:${p.price}:${p.category}`,
   ).join("|");
