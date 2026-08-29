@@ -4985,16 +4985,17 @@ async function syncProductsWithBackendAndStorage(isIntervalSync = false) {
     return;
   }
 
-  // Pre-load from IndexedDB immediately so custom products show instantly on refresh!
+  // Pre-load from IndexedDB and LocalStorage immediately so custom products show instantly on refresh!
   try {
-    const cachedProds = await EurotexIDB.get("eurotex_custom_products");
+    let cachedProds = await EurotexIDB.get("eurotex_custom_products");
+    if (!cachedProds || !Array.isArray(cachedProds) || cachedProds.length === 0) {
+      const localStr = localStorage.getItem("eurotex_custom_products");
+      if (localStr) cachedProds = JSON.parse(localStr);
+    }
     if (Array.isArray(cachedProds) && cachedProds.length > 0) {
-      const map = new Map();
-      cachedProds.forEach((p) => map.set(String(p.id), p));
-      (EUROTEX_PRODUCTS || []).forEach((p) => {
-        if (!map.has(String(p.id))) map.set(String(p.id), p);
-      });
-      EUROTEX_PRODUCTS = Array.from(map.values());
+      EUROTEX_PRODUCTS = cachedProds;
+      window.EUROTEX_PRODUCTS = EUROTEX_PRODUCTS;
+      renderProducts();
     }
   } catch (e) {}
 
@@ -5649,6 +5650,10 @@ function handleAddNewProduct(e) {
   }
   window.EUROTEX_PRODUCTS.unshift(newProd);
   EUROTEX_PRODUCTS = window.EUROTEX_PRODUCTS;
+  EurotexIDB.set("eurotex_custom_products", EUROTEX_PRODUCTS);
+  try {
+    localStorage.setItem("eurotex_custom_products", JSON.stringify(EUROTEX_PRODUCTS));
+  } catch (e) {}
   notifyProductChange();
 
   // Reset filters & refresh products view immediately
@@ -5664,7 +5669,7 @@ function handleAddNewProduct(e) {
     body: JSON.stringify({
       customId: String(newProd.id),
       title_uz: newProd.title_uz,
-      title_ru: newProd.title_ru,
+      title_ru: newProd.title_ru || newProd.title_uz,
       category: newProd.category,
       priceUsd: newProd.priceUsd,
       pachkaPriceUsd: newProd.pachkaPriceUsd,

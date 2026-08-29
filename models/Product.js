@@ -9,14 +9,6 @@ const productSchema = new mongoose.Schema(
     category: {
       type: String,
       default: "suits",
-      enum: [
-        "suits",
-        "trousers",
-        "blazers",
-        "tuxedos",
-        "shirts",
-        "accessories",
-      ],
       index: true,
     },
     subCategory: { type: String, default: "slim", index: true },
@@ -34,7 +26,6 @@ const productSchema = new mongoose.Schema(
     badgeType: {
       type: String,
       default: "gold",
-      enum: ["gold", "red", "purple", "neon", "none"],
     },
     image: { type: String, default: "/images/navy_suit.jpg" },
     images: { type: Array, default: [] },
