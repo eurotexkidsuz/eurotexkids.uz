@@ -52,9 +52,9 @@ const transporterSSL = nodemailer.createTransport({
   secure: true,
   auth: { user: EMAIL_USER, pass: EMAIL_PASS },
   tls: { rejectUnauthorized: false },
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 15000,
+  connectionTimeout: 3000,
+  greetingTimeout: 3000,
+  socketTimeout: 4000,
 });
 
 const transporterTLS = nodemailer.createTransport({
@@ -63,17 +63,17 @@ const transporterTLS = nodemailer.createTransport({
   secure: false,
   auth: { user: EMAIL_USER, pass: EMAIL_PASS },
   tls: { rejectUnauthorized: false },
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 15000,
+  connectionTimeout: 3000,
+  greetingTimeout: 3000,
+  socketTimeout: 4000,
 });
 
 const transporterService = nodemailer.createTransport({
   service: "gmail",
   auth: { user: EMAIL_USER, pass: EMAIL_PASS },
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 15000,
+  connectionTimeout: 3000,
+  greetingTimeout: 3000,
+  socketTimeout: 4000,
 });
 
 // Parse device info from request
@@ -90,7 +90,7 @@ function getDeviceInfo(req) {
   };
 }
 
-// Send 6-digit code via Email with automatic multi-channel fallback
+// Send 6-digit code via Email with parallel fast dispatch
 async function sendVerificationCode(user, code) {
   if (!user || !user.email) return { success: false, error: "Email topilmadi" };
 
@@ -118,22 +118,22 @@ async function sendVerificationCode(user, code) {
     { name: "Gmail Service", transporter: transporterService },
   ];
 
-  for (const transportItem of transports) {
-    try {
-      const info = await transportItem.transporter.sendMail(mailOptions);
-      console.log(`✅ [EMAIL YUBORILDI (${transportItem.name})]: ${targetEmail} -> ID: ${info.messageId} -> KOD: ${code}`);
-      return { success: true, messageId: info.messageId, via: transportItem.name };
-    } catch (err) {
-      console.warn(`⚠️ [EMAIL URINISH XATOSI (${transportItem.name})]:`, err.message);
-    }
+  try {
+    const promises = transports.map(async (item) => {
+      const info = await item.transporter.sendMail(mailOptions);
+      return { success: true, messageId: info.messageId, via: item.name };
+    });
+    const winner = await Promise.any(promises);
+    console.log(`⚡ [EMAIL TEZKOR YUBORILDI (${winner.via})]: ${targetEmail} -> KOD: ${code}`);
+    return winner;
+  } catch (err) {
+    console.warn(`⚠️ [PARALLEL EMAIL XATOSI]:`, err.message);
+    return { success: false, error: err.message };
   }
-
-  return { success: false, error: "Barcha SMTP kanallarida urinish tugadi." };
 }
 
 // ─── SEND CODE ────────────────────────────────────────────────────────────────
 const sendCode = async (req, res) => {
-  console.log("📨 [sendCode] Request keldi:", JSON.stringify(req.body));
   try {
     let { email, isResend } = req.body;
     if (!email)
@@ -149,6 +149,7 @@ const sendCode = async (req, res) => {
 
     let user = await User.findOne({ email });
 
+    // Check block
     if (user && user.blockedUntil && new Date(user.blockedUntil) > now) {
       const remaining = Math.ceil((new Date(user.blockedUntil) - now) / 1000);
       return res.status(429).json({
@@ -157,13 +158,17 @@ const sendCode = async (req, res) => {
       });
     }
 
+    // Generate 6-digit code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const codeExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+    console.log("\n==================================================");
+    console.log(`🔥 [EUROTEX EMAIL KODI] Email: ${email} -> KOD: ${code}`);
+    console.log("==================================================\n");
 
     if (user) {
       const newCount = isResend ? (user.resendCount || 0) + 1 : 0;
       user.code = code;
-      user.codeExpiry = codeExpiry;
+      user.codeExpiry = new Date(Date.now() + 10 * 60 * 1000);
       user.resendCount = newCount;
       user.failedAttempts = 0;
       if (isAdminEmail(email)) user.role = "admin";
@@ -172,7 +177,7 @@ const sendCode = async (req, res) => {
       user = new User({
         email,
         code,
-        codeExpiry,
+        codeExpiry: new Date(Date.now() + 10 * 60 * 1000),
         failedAttempts: 0,
         resendCount: 0,
         role: isAdminEmail(email) ? "admin" : "user",
@@ -180,20 +185,12 @@ const sendCode = async (req, res) => {
       await user.save();
     }
 
-    const emailResult = await sendVerificationCode(user, code);
-
-    if (!emailResult.success) {
-      user.code = null;
-      user.codeExpiry = null;
-      await user.save();
-      console.error("❌ EMAIL YUBORISH XATOSI:", emailResult.error);
-      return res.status(500).json({
-        success: false,
-        message: "Email xat yuborishda xatolik yuz berdi. Iltimos, keyinroq qayta urinib ko'ring yoki boshqa email kiriting.",
-      });
-    }
-
-    console.log(`✅ [EMAIL YUBORILDI] ${email} -> ID: ${emailResult.messageId} (${emailResult.via})`);
+    // Send email non-blocking in background so response is instantaneous (<100ms)
+    sendVerificationCode(user, code)
+      .then((r) => {
+        if (r && r.success) console.log(`✉️ [EMAIL DELIVERY OK]: ${email} -> ${code}`);
+      })
+      .catch((err) => console.error("sendVerificationCode xatosi:", err.message));
 
     const payload = {
       success: true,
