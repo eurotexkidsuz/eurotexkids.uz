@@ -90,8 +90,14 @@ async function sendVerificationCode(user, code) {
       const info = await transporter.sendMail({
         from: `"Eurotexkids.uz" <${EMAIL_USER}>`,
         to: targetEmail,
-        subject: `🔑 Eurotexkids.uz — Tasdiqlash kodingiz: ${code}`,
+        subject: `Eurotexkids.uz Tasdiqlash Kodi: ${code}`,
         text: `Eurotexkids.uz tizimiga kirish uchun tasdiqlash kodingiz: ${code}`,
+        priority: "high",
+        headers: {
+          "X-Priority": "1",
+          "X-MSMail-Priority": "High",
+          Importance: "high",
+        },
         html: `
           <div style="font-family: Arial, sans-serif; padding: 24px; background-color: #f8fafc; border-radius: 12px; max-width: 500px; margin: 0 auto; border: 1px solid #e2e8f0;">
             <h2 style="color: #4f46e5; margin-top: 0; font-size: 22px;">Eurotexkids.uz Kirish Kodi</h2>
