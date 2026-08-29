@@ -2277,64 +2277,87 @@
               return false;
             "
           >
-            <div class="form-group">
-              <label for="authEmailInput"
-                >Email manzilingiz (yoki pochta nomi):</label
+            <!-- STEP 1: EMAIL ENTRY -->
+            <div id="authStepEmail" class="auth-step-container">
+              <div class="form-group">
+                <label for="authEmailInput" class="auth-label-main">Email manzilingiz:</label>
+                <input
+                  type="text"
+                  id="authEmailInput"
+                  class="auth-email-input"
+                  placeholder="example@gmail.com"
+                  autocomplete="email"
+                  required
+                />
+              </div>
+
+              <div id="authErrorBox" class="auth-error-box" style="display: none;">
+                <span class="auth-error-icon">⚠️</span>
+                <span id="authErrorText" class="auth-error-text"></span>
+              </div>
+
+              <button
+                type="submit"
+                class="btn btn-primary btn-block auth-submit-btn"
+                id="authSubmitBtn"
               >
-              <input
-                type="text"
-                id="authEmailInput"
-                class="auth-email-input"
-                placeholder="example@gmail.com"
-                autocomplete="email"
-                required
-              />
+                Davom etish (Kod olish) ➔
+              </button>
             </div>
 
-            <div
-              id="authErrorBox"
-              class="auth-error-box"
-            >
-              <span class="auth-error-icon">⚠️</span>
-              <span id="authErrorText" class="auth-error-text"></span>
-            </div>
+            <!-- STEP 2: TELEGRAM-STYLE 6-DIGIT CODE ENTRY -->
+            <div id="authStepCode" class="auth-step-container" style="display: none;">
+              <div class="auth-step2-header">
+                <button type="button" class="btn-auth-back" onclick="goToAuthStepEmail()" title="Emailni o'zgartirish">
+                  ←
+                </button>
+                <div class="auth-step2-email-wrap">
+                  <span id="authSentEmailDisplay" class="auth-sent-email-badge"></span>
+                  <button type="button" class="btn-auth-edit-email" onclick="goToAuthStepEmail()">O'zgartirish ✏️</button>
+                </div>
+              </div>
 
-            <div class="form-group" id="otpGroup" style="display: none">
+              <p class="auth-step2-desc">Tasdiqlash kodi emailingizga yuborildi.</p>
+
               <label class="otp-input-label">
-                <span class="otp-label-text">Emailingizga yuborilgan kodni kiriting:</span>
+                <span class="otp-label-text">Kodni kiriting:</span>
               </label>
-              <div class="otp-pin-boxes" id="otpPinBoxesContainer">
-                <input type="text" class="otp-pin-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" data-index="0" />
-                <input type="text" class="otp-pin-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" data-index="1" />
-                <input type="text" class="otp-pin-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" data-index="2" />
-                <input type="text" class="otp-pin-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" data-index="3" />
-                <input type="text" class="otp-pin-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" data-index="4" />
-                <input type="text" class="otp-pin-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" data-index="5" />
+
+              <div class="otp-pin-boxes telegram-style" id="otpPinBoxesContainer">
+                <input type="text" class="otp-pin-digit tg-pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" data-index="0" />
+                <input type="text" class="otp-pin-digit tg-pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" data-index="1" />
+                <input type="text" class="otp-pin-digit tg-pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" data-index="2" />
+                <input type="text" class="otp-pin-digit tg-pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" data-index="3" />
+                <input type="text" class="otp-pin-digit tg-pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" data-index="4" />
+                <input type="text" class="otp-pin-digit tg-pin-box" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" data-index="5" />
               </div>
               <input type="hidden" id="authOtpInput" value="" />
+
+              <div id="authErrorBoxStep2" class="auth-error-box" style="display: none;">
+                <span class="auth-error-icon">⚠️</span>
+                <span id="authErrorTextStep2" class="auth-error-text"></span>
+              </div>
+
               <div class="otp-resend-row">
-                <span
-                  id="resendTimerLabel"
-                  class="resend-timer-label"
-                ></span>
+                <span id="resendTimerLabel" class="resend-timer-label"></span>
                 <button
                   type="button"
                   id="resendOtpBtn"
                   class="resend-clean-btn"
                   onclick="resendOtpCode(event)"
                 >
-                  🔄 Kodni qayta yuborish
+                  🔄 Qayta yuborish
                 </button>
               </div>
-            </div>
 
-            <button
-              type="submit"
-              class="btn btn-primary btn-block auth-submit-btn"
-              id="authSubmitBtn"
-            >
-              Kod yuborish
-            </button>
+              <button
+                type="submit"
+                class="btn btn-primary btn-block auth-submit-btn"
+                id="authVerifySubmitBtn"
+              >
+                Kirishni tasdiqlash ⚡
+              </button>
+            </div>
           </form>
 
           <div class="auth-footer-note">
@@ -3604,7 +3627,7 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=238.0.0" defer></script>
-    <script src="/eurotex-engine.js?v=10.5.0" defer></script>
+    <script src="/script.js?v=239.0.0" defer></script>
+    <script src="/eurotex-engine.js?v=10.6.0" defer></script>
   </body>
 </html>

@@ -8510,6 +8510,90 @@ img {
   white-space: nowrap;
 }
 
+/* Telegram-Style 2-Step Authentication Layout */
+.auth-step-container {
+  width: 100%;
+  animation: fadeInStep 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeInStep {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-step2-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: var(--bg-surface-secondary, #f8fafc);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 12px;
+}
+
+.btn-auth-back {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--color-navy, #1e293b);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.btn-auth-back:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--color-uzum-purple, #7000ff);
+}
+
+.auth-step2-email-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  gap: 8px;
+}
+
+.auth-sent-email-badge {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-navy, #1e293b);
+  word-break: break-all;
+}
+
+.btn-auth-edit-email {
+  background: none;
+  border: none;
+  color: var(--color-uzum-purple, #7000ff);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.btn-auth-edit-email:hover {
+  text-decoration: underline;
+}
+
+.auth-step2-desc {
+  font-size: 13.5px;
+  color: var(--text-muted, #64748b);
+  margin: 0 0 16px;
+  text-align: center;
+}
+
 .otp-pin-boxes {
   display: flex;
   justify-content: center;
@@ -8536,8 +8620,8 @@ img {
 }
 
 .otp-pin-digit:focus {
-  border-color: var(--color-uzum-purple, #7000ff);
-  box-shadow: 0 0 0 4px rgba(112, 0, 255, 0.14);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.18);
   background: #ffffff;
   transform: translateY(-2px);
 }
@@ -8555,8 +8639,8 @@ html[data-theme="dark"] .otp-pin-digit {
 
 html[data-theme="dark"] .otp-pin-digit:focus {
   background: #0f172a;
-  border-color: #a855f7;
-  box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.2);
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.25);
 }
 
 @media (max-width: 480px) {

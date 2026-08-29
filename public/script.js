@@ -3032,22 +3032,87 @@ function normalizeUserEmail(input) {
 let otpStep = false;
 let resendTimerInterval = null;
 
+function goToAuthStepEmail() {
+  otpStep = false;
+  const stepEmail = document.getElementById("authStepEmail");
+  const stepCode = document.getElementById("authStepCode");
+  const emailInput = document.getElementById("authEmailInput");
+  const submitBtn = document.getElementById("authSubmitBtn");
+
+  if (stepEmail) stepEmail.style.display = "block";
+  if (stepCode) stepCode.style.display = "none";
+  if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Davom etish (Kod olish) ➔";
+  }
+
+  clearAuthError();
+  const pinDigits = document.querySelectorAll(".otp-pin-digit");
+  if (pinDigits) {
+    pinDigits.forEach((box) => {
+      box.value = "";
+      box.classList.remove("filled");
+    });
+  }
+  const hiddenInput = document.getElementById("authOtpInput");
+  if (hiddenInput) hiddenInput.value = "";
+
+  if (emailInput) {
+    setTimeout(() => emailInput.focus(), 50);
+  }
+}
+
+function goToAuthStepCode(email) {
+  otpStep = true;
+  const stepEmail = document.getElementById("authStepEmail");
+  const stepCode = document.getElementById("authStepCode");
+  const sentDisplay = document.getElementById("authSentEmailDisplay");
+  const pinDigits = document.querySelectorAll(".otp-pin-digit");
+  const hiddenInput = document.getElementById("authOtpInput");
+
+  if (stepEmail) stepEmail.style.display = "none";
+  if (stepCode) stepCode.style.display = "block";
+  if (sentDisplay) sentDisplay.textContent = email;
+
+  clearAuthError();
+  if (pinDigits) {
+    pinDigits.forEach((box) => {
+      box.value = "";
+      box.classList.remove("filled");
+    });
+    if (pinDigits[0]) {
+      setTimeout(() => pinDigits[0].focus(), 100);
+    }
+  }
+  if (hiddenInput) hiddenInput.value = "";
+
+  startResendTimer(60);
+}
+
 function setupOtpInputRestrictions() {
   const hiddenInput = document.getElementById("authOtpInput");
   const pinDigits = document.querySelectorAll(".otp-pin-digit");
 
-  function updateHiddenValueAndCheckSubmit() {
-    let fullCode = "";
+  function getCombinedPinValue() {
+    let full = "";
     pinDigits.forEach((box) => {
-      fullCode += (box.value || "").trim();
+      full += (box.value || "").trim();
+    });
+    return full;
+  }
+
+  function updateHiddenValueAndCheckSubmit() {
+    const fullCode = getCombinedPinValue();
+    if (hiddenInput) hiddenInput.value = fullCode;
+
+    pinDigits.forEach((box) => {
       if (box.value) box.classList.add("filled");
       else box.classList.remove("filled");
     });
-    if (hiddenInput) hiddenInput.value = fullCode;
 
     if (fullCode.length === 6 && otpStep) {
-      const submitBtn = document.getElementById("authSubmitBtn");
-      if (submitBtn && !submitBtn.disabled) {
+      const verifyBtn = document.getElementById("authVerifySubmitBtn");
+      if (verifyBtn && !verifyBtn.disabled) {
         const form = document.getElementById("emailLoginForm");
         if (form) {
           const submitEvent = new Event("submit", { cancelable: true, bubbles: true });
@@ -3058,6 +3123,7 @@ function setupOtpInputRestrictions() {
   }
 
   pinDigits.forEach((input, index) => {
+    // Single digit input and auto-advance
     input.addEventListener("input", (e) => {
       const val = e.target.value.replace(/[^0-9]/g, "");
       e.target.value = val ? val[val.length - 1] : "";
@@ -3065,6 +3131,7 @@ function setupOtpInputRestrictions() {
         e.target.classList.add("filled");
         if (index < pinDigits.length - 1) {
           pinDigits[index + 1].focus();
+          pinDigits[index + 1].select();
         }
       } else {
         e.target.classList.remove("filled");
@@ -3072,40 +3139,62 @@ function setupOtpInputRestrictions() {
       updateHiddenValueAndCheckSubmit();
     });
 
+    // Keyboard navigation: Backspace, Left, Right
     input.addEventListener("keydown", (e) => {
-      if (e.key === "Backspace" && !e.target.value && index > 0) {
+      if (e.key === "Backspace") {
+        if (!e.target.value && index > 0) {
+          e.preventDefault();
+          pinDigits[index - 1].value = "";
+          pinDigits[index - 1].classList.remove("filled");
+          pinDigits[index - 1].focus();
+          updateHiddenValueAndCheckSubmit();
+        }
+      } else if (e.key === "ArrowLeft" && index > 0) {
+        e.preventDefault();
         pinDigits[index - 1].focus();
-        pinDigits[index - 1].value = "";
-        pinDigits[index - 1].classList.remove("filled");
-        updateHiddenValueAndCheckSubmit();
+      } else if (e.key === "ArrowRight" && index < pinDigits.length - 1) {
+        e.preventDefault();
+        pinDigits[index + 1].focus();
       }
     });
 
+    // Paste handling anywhere across the 6 boxes
     input.addEventListener("paste", (e) => {
       e.preventDefault();
       const pasted = (e.clipboardData || window.clipboardData).getData("text") || "";
       const digits = pasted.replace(/[^0-9]/g, "").slice(0, 6).split("");
       if (!digits.length) return;
+
       digits.forEach((d, i) => {
         if (pinDigits[i]) {
           pinDigits[i].value = d;
           pinDigits[i].classList.add("filled");
         }
       });
+
       const nextIndex = Math.min(digits.length, 5);
-      if (pinDigits[nextIndex]) pinDigits[nextIndex].focus();
+      if (pinDigits[nextIndex]) {
+        pinDigits[nextIndex].focus();
+      }
       updateHiddenValueAndCheckSubmit();
     });
   });
 }
 
 function showAuthError(message) {
-  const errorBox = document.getElementById("authErrorBox");
-  const errorText = document.getElementById("authErrorText");
-  if (!errorBox) return;
-  if (errorText) errorText.textContent = message || "";
-  else errorBox.textContent = message || "";
-  errorBox.style.display = message ? "flex" : "none";
+  const errorBox1 = document.getElementById("authErrorBox");
+  const errorText1 = document.getElementById("authErrorText");
+  const errorBox2 = document.getElementById("authErrorBoxStep2");
+  const errorText2 = document.getElementById("authErrorTextStep2");
+
+  if (errorBox1 && errorText1) {
+    errorText1.textContent = message || "";
+    errorBox1.style.display = message && !otpStep ? "flex" : "none";
+  }
+  if (errorBox2 && errorText2) {
+    errorText2.textContent = message || "";
+    errorBox2.style.display = message && otpStep ? "flex" : "none";
+  }
 }
 
 function clearAuthError() {
@@ -3115,9 +3204,7 @@ function clearAuthError() {
 async function resendOtpCode(e) {
   if (e) e.preventDefault();
   const emailInput = document.getElementById("authEmailInput");
-  const otpInput = document.getElementById("authOtpInput");
   const resendBtn = document.getElementById("resendOtpBtn");
-  const timerLabel = document.getElementById("resendTimerLabel");
 
   clearAuthError();
 
@@ -3144,10 +3231,17 @@ async function resendOtpCode(e) {
     const data = await res.json();
 
     if (res.ok && data.success !== false) {
-      if (otpInput) {
-        otpInput.value = "";
-        otpInput.focus();
+      const pinDigits = document.querySelectorAll(".otp-pin-digit");
+      if (pinDigits) {
+        pinDigits.forEach((box) => {
+          box.value = "";
+          box.classList.remove("filled");
+        });
+        if (pinDigits[0]) pinDigits[0].focus();
       }
+      const hiddenInput = document.getElementById("authOtpInput");
+      if (hiddenInput) hiddenInput.value = "";
+
       clearAuthError();
       showToast(`📧 Yangi tasdiqlash kodi ${email} pochtangizga yuborildi! Pochtangizni tekshiring! 📩`);
       startResendTimer(30);
@@ -3189,7 +3283,7 @@ function startResendTimer(seconds = 30) {
         resendBtn.style.pointerEvents = "auto";
         resendBtn.style.opacity = "1";
         resendBtn.style.cursor = "pointer";
-        resendBtn.textContent = "🔄 Kodni qayta yuborish";
+        resendBtn.textContent = "🔄 Qayta yuborish";
       }
     } else {
       if (timerLabel) timerLabel.textContent = `Qayta yuborish: ${timeLeft}s`;
@@ -3204,9 +3298,9 @@ async function handleEmailAuth(e) {
   clearAuthError();
 
   const emailInput = document.getElementById("authEmailInput");
-  const otpGroup = document.getElementById("otpGroup");
-  const otpInput = document.getElementById("authOtpInput");
   const submitBtn = document.getElementById("authSubmitBtn");
+  const verifyBtn = document.getElementById("authVerifySubmitBtn");
+  const hiddenInput = document.getElementById("authOtpInput");
 
   if (!emailInput || !emailInput.value.trim()) {
     showAuthError("Iltimos, elektron pochtangizni kiriting!");
@@ -3217,8 +3311,10 @@ async function handleEmailAuth(e) {
   const email = normalizeUserEmail(emailInput.value);
 
   if (!otpStep) {
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Kod yuborilmoqda... ⏳";
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Kod yuborilmoqda... ⏳";
+    }
 
     try {
       const res = await fetch("/users/send-code", {
@@ -3234,46 +3330,39 @@ async function handleEmailAuth(e) {
         data = { success: false, message: "Serverdan kutilmagan javob qaytdi." };
       }
 
-      submitBtn.disabled = false;
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Davom etish (Kod olish) ➔";
+      }
 
       if (res.ok && data.success !== false) {
-        otpStep = true;
-        otpGroup.style.display = "block";
-        submitBtn.textContent = "Kirishni tasdiqlash ⚡";
-        clearAuthError();
-        if (otpInput) {
-          otpInput.value = "";
-          otpInput.focus();
-        }
+        goToAuthStepCode(email);
         showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Kodni kiriting! 📩`);
-        startResendTimer(60);
       } else {
-        otpStep = false;
-        otpGroup.style.display = "none";
-        submitBtn.textContent = "Kod yuborish";
+        goToAuthStepEmail();
         showAuthError(data.message || "❌ Kod yuborishda xatolik yuz berdi. Boshqa email kiriting yoki keyinroq qayta urinib ko'ring.");
         showToast(data.message || "❌ Kod yuborishda xatolik!", "error");
       }
     } catch (err) {
       console.error("send-code API xatosi:", err);
-      otpStep = false;
-      otpGroup.style.display = "none";
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Kod yuborish";
+      goToAuthStepEmail();
       showAuthError("❌ Tarmoq xatosi. Iltimos, internet aloqangizni tekshiring va qayta urinib ko'ring.");
       showToast("❌ Tarmoq xatosi. Internetni tekshiring!", "error");
     }
   } else {
-    const codeVal = otpInput ? otpInput.value.trim() : "";
+    const codeVal = hiddenInput ? hiddenInput.value.trim() : "";
     if (!codeVal || codeVal.length !== 6) {
       showAuthError("Iltimos, 6 xonali to'liq tasdiqlash kodini kiriting!");
       showToast("Iltimos, 6 xonali kodingizni kiriting!");
-      if (otpInput) otpInput.focus();
+      const pinDigits = document.querySelectorAll(".otp-pin-digit");
+      if (pinDigits && pinDigits[0]) pinDigits[0].focus();
       return;
     }
 
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Tekshirilmoqda... ⏳";
+    if (verifyBtn) {
+      verifyBtn.disabled = true;
+      verifyBtn.textContent = "Tekshirilmoqda... ⏳";
+    }
 
     try {
       const res = await fetch("/users/verify-code", {
@@ -3283,7 +3372,10 @@ async function handleEmailAuth(e) {
       });
 
       const data = await res.json();
-      submitBtn.disabled = false;
+      if (verifyBtn) {
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = "Kirishni tasdiqlash ⚡";
+      }
 
       if (res.ok) {
         const isAdmin = data.role === "admin" || isAdminEmail(email);
@@ -3307,48 +3399,32 @@ async function handleEmailAuth(e) {
       } else {
         showAuthError(data.message || "❌ Noto'g'ri kod kiritildi! Pochtadagi 6 xonali kodni tekshiring.");
         showToast(data.message || "❌ Noto'g'ri kod kiritildi!", "error");
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Kirishni tasdiqlash ⚡";
-        if (otpInput) {
-          otpInput.value = "";
-          otpInput.focus();
+        const pinDigits = document.querySelectorAll(".otp-pin-digit");
+        if (pinDigits) {
+          pinDigits.forEach((box) => {
+            box.value = "";
+            box.classList.remove("filled");
+          });
+          if (pinDigits[0]) pinDigits[0].focus();
         }
+        if (hiddenInput) hiddenInput.value = "";
       }
     } catch (err) {
       console.error("verify-code API xatosi:", err);
       showAuthError("❌ Tarmoq xatosi. Iltimos, internet aloqangizni tekshiring.");
       showToast("❌ Tarmoq xatosi. Internetni tekshiring!", "error");
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Kirishni tasdiqlash ⚡";
+      if (verifyBtn) {
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = "Kirishni tasdiqlash ⚡";
+      }
     }
   }
 }
 
 function resetAuthForm() {
+  goToAuthStepEmail();
   const mainEmailInput = document.getElementById("authEmailInput");
-  const otpInput = document.getElementById("authOtpInput");
-  const otpGroup =
-    document.getElementById("otpGroup") ||
-    document.getElementById("authOtpGroup");
-  const submitBtn = document.getElementById("authSubmitBtn");
-
-  clearAuthError();
-
   if (mainEmailInput) mainEmailInput.value = "";
-  if (otpInput) otpInput.value = "";
-  const pinDigits = document.querySelectorAll(".otp-pin-digit");
-  if (pinDigits) {
-    pinDigits.forEach((box) => {
-      box.value = "";
-      box.classList.remove("filled");
-    });
-  }
-  if (otpGroup) otpGroup.style.display = "none";
-  if (submitBtn) {
-    submitBtn.disabled = false;
-    submitBtn.textContent = "Kod yuborish";
-  }
-  otpStep = false;
   clearInterval(resendTimerInterval);
   const timerLabel = document.getElementById("resendTimerLabel");
   if (timerLabel) timerLabel.textContent = "";
@@ -3356,7 +3432,7 @@ function resetAuthForm() {
   if (resendBtn) {
     resendBtn.style.pointerEvents = "auto";
     resendBtn.style.opacity = "1";
-    resendBtn.textContent = "🔄 Kodni qayta yuborish";
+    resendBtn.textContent = "🔄 Qayta yuborish";
   }
 }
 
