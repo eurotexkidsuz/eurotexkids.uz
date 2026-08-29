@@ -90,26 +90,91 @@ function getDeviceInfo(req) {
   };
 }
 
-// Send 6-digit code via Email with parallel fast dispatch
+// Send 6-digit code via Email with HTTPS REST API (Resend/Brevo) & SMTP Multi-Channel Fallback
 async function sendVerificationCode(user, code) {
   if (!user || !user.email) return { success: false, error: "Email topilmadi" };
 
   const targetEmail = user.email.toLowerCase().trim();
+  const subject = `Eurotexkids Tasdiqlash Kodi: ${code}`;
+  const text = `Eurotexkids.uz tizimiga kirish uchun tasdiqlash kodingiz: ${code}`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; max-width: 480px; margin: 0 auto;">
+      <h2 style="color: #4f46e5; margin-top: 0;">Eurotexkids Kirish Kodi</h2>
+      <p style="font-size: 15px; color: #334155;">Salom! Sizning 6 xonali tasdiqlash kodingiz:</p>
+      <div style="text-align: center; margin: 20px 0;">
+        <span style="background: #4f46e5; color: #ffffff; padding: 12px 24px; border-radius: 8px; font-size: 28px; font-weight: bold; letter-spacing: 4px; display: inline-block;">${code}</span>
+      </div>
+      <p style="font-size: 13px; color: #64748b;">Ushbu kodni hech kimga bermang.</p>
+    </div>
+  `;
+
+  // 1. Resend HTTPS REST API (Port 443 — NEVER blocked on any cloud server)
+  const resendApiKey = (process.env.RESEND_API_KEY || "").trim();
+  if (resendApiKey) {
+    try {
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${resendApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: process.env.RESEND_FROM || "Eurotexkids <onboarding@resend.dev>",
+          to: [targetEmail],
+          subject: subject,
+          html: html,
+          text: text,
+        }),
+      });
+      const resData = await response.json();
+      if (response.ok) {
+        console.log(`🚀 [RESEND API EMAIL YUBORILDI]: ${targetEmail} -> ID: ${resData.id} -> KOD: ${code}`);
+        return { success: true, messageId: resData.id, via: "Resend HTTPS API" };
+      } else {
+        console.warn(`⚠️ [RESEND API ERROR]:`, resData);
+      }
+    } catch (apiErr) {
+      console.warn(`⚠️ [RESEND FETCH ERROR]:`, apiErr.message);
+    }
+  }
+
+  // 2. Brevo (Sendinblue) HTTPS REST API (Port 443)
+  const brevoApiKey = (process.env.BREVO_API_KEY || "").trim();
+  if (brevoApiKey) {
+    try {
+      const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: {
+          "api-key": brevoApiKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sender: { name: "Eurotexkids", email: process.env.BREVO_FROM || EMAIL_USER },
+          to: [{ email: targetEmail }],
+          subject: subject,
+          htmlContent: html,
+          textContent: text,
+        }),
+      });
+      const resData = await response.json();
+      if (response.ok) {
+        console.log(`🚀 [BREVO API EMAIL YUBORILDI]: ${targetEmail} -> ID: ${resData.messageId} -> KOD: ${code}`);
+        return { success: true, messageId: resData.messageId, via: "Brevo HTTPS API" };
+      } else {
+        console.warn(`⚠️ [BREVO API ERROR]:`, resData);
+      }
+    } catch (apiErr) {
+      console.warn(`⚠️ [BREVO FETCH ERROR]:`, apiErr.message);
+    }
+  }
+
+  // 3. SMTP Parallel Transports Fallback
   const mailOptions = {
     from: `"Eurotexkids" <${EMAIL_USER}>`,
     to: targetEmail,
-    subject: `Eurotexkids Tasdiqlash Kodi: ${code}`,
-    text: `Eurotexkids.uz tizimiga kirish uchun tasdiqlash kodingiz: ${code}`,
-    html: `
-      <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; max-width: 480px; margin: 0 auto;">
-        <h2 style="color: #4f46e5; margin-top: 0;">Eurotexkids Kirish Kodi</h2>
-        <p style="font-size: 15px; color: #334155;">Salom! Sizning 6 xonali tasdiqlash kodingiz:</p>
-        <div style="text-align: center; margin: 20px 0;">
-          <span style="background: #4f46e5; color: #ffffff; padding: 12px 24px; border-radius: 8px; font-size: 28px; font-weight: bold; letter-spacing: 4px; display: inline-block;">${code}</span>
-        </div>
-        <p style="font-size: 13px; color: #64748b;">Ushbu kodni hech kimga bermang.</p>
-      </div>
-    `,
+    subject: subject,
+    text: text,
+    html: html,
   };
 
   const transports = [
@@ -124,10 +189,10 @@ async function sendVerificationCode(user, code) {
       return { success: true, messageId: info.messageId, via: item.name };
     });
     const winner = await Promise.any(promises);
-    console.log(`⚡ [EMAIL TEZKOR YUBORILDI (${winner.via})]: ${targetEmail} -> KOD: ${code}`);
+    console.log(`⚡ [SMTP TEZKOR YUBORILDI (${winner.via})]: ${targetEmail} -> KOD: ${code}`);
     return winner;
   } catch (err) {
-    console.warn(`⚠️ [PARALLEL EMAIL XATOSI]:`, err.message);
+    console.warn(`⚠️ [SMTP EMAIL XATOSI]:`, err.message);
     return { success: false, error: err.message };
   }
 }
