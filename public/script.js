@@ -3065,11 +3065,6 @@ async function resendOtpCode(e) {
         otpInput.value = "";
         otpInput.focus();
       }
-      const hintBadge = document.getElementById("otpCodeHintBadge");
-      if (hintBadge && data.hintCode) {
-        hintBadge.style.display = "block";
-        hintBadge.innerHTML = `🔑 Tasdiqlash kodingiz: <span style="font-size: 19px; color: #4338ca; font-weight: 900;">${data.hintCode}</span>`;
-      }
       showToast(
         `📧 Yangi tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshirib 6 xonali kodni kiriting! 📩`,
       );
@@ -3087,13 +3082,8 @@ async function resendOtpCode(e) {
       otpInput.value = "";
       otpInput.focus();
     }
-    const hintBadge = document.getElementById("otpCodeHintBadge");
-    if (hintBadge) {
-      hintBadge.style.display = "block";
-      hintBadge.innerHTML = `🔑 Tasdiqlash kodingiz: <span style="font-size: 19px; color: #4338ca; font-weight: 900;">777777</span>`;
-    }
     showToast(
-      `📧 Yangi tasdiqlash kodi ${email} pochtasiga qayta yuborildi! (Zaxira kodi: 777777) 📩`,
+      `📧 Yangi tasdiqlash kodi ${email} pochtasiga qayta yuborildi! Gmail'ingizni tekshiring! 📩`,
     );
     startResendTimer(30);
   }
@@ -3164,19 +3154,12 @@ async function handleEmailAuth(e) {
       otpStep = true;
       otpGroup.style.display = "block";
       submitBtn.textContent = "Kirishni tasdiqlash ⚡";
-
-      const hintBadge = document.getElementById("otpCodeHintBadge");
-      const activeCode = data.hintCode || (res.ok && data.code ? data.code : "777777");
-      if (hintBadge) {
-        hintBadge.style.display = "block";
-        hintBadge.innerHTML = `🔑 Tasdiqlash kodingiz: <span style="font-size: 19px; color: #4338ca; font-weight: 900;">${activeCode}</span>`;
-      }
       if (otpInput) {
-        otpInput.value = activeCode;
+        otpInput.value = "";
         otpInput.focus();
       }
 
-      showToast(`🔑 Tasdiqlash kodingiz: ${activeCode} (Kiritildi) ✅`);
+      showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshirib 6 xonali kodni kiriting! 📩`);
       startResendTimer(60);
     } catch (err) {
       console.error("send-code API xatosi:", err);
@@ -3184,16 +3167,11 @@ async function handleEmailAuth(e) {
       otpGroup.style.display = "block";
       submitBtn.disabled = false;
       submitBtn.textContent = "Kirishni tasdiqlash ⚡";
-      const hintBadge = document.getElementById("otpCodeHintBadge");
-      if (hintBadge) {
-        hintBadge.style.display = "block";
-        hintBadge.innerHTML = `🔑 Tasdiqlash kodingiz: <span style="font-size: 19px; color: #4338ca; font-weight: 900;">777777</span>`;
-      }
       if (otpInput) {
-        otpInput.value = "777777";
+        otpInput.value = "";
         otpInput.focus();
       }
-      showToast(`🔑 Tasdiqlash kodingiz: 777777 (Kiritildi) ✅`);
+      showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshirib 6 xonali kodni kiriting! 📩`);
       startResendTimer(60);
     }
   } else {

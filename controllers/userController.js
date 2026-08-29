@@ -81,32 +81,32 @@ function getDeviceInfo(req) {
 async function sendVerificationCode(user, code) {
   if (transporter && user && user.email) {
     try {
-      const sendPromise = transporter.sendMail({
+      const info = await transporter.sendMail({
         from: `"Eurotexkids.uz" <${EMAIL_USER}>`,
         to: user.email,
-        subject: `🔑 Eurotexkids.uz — Tasdiqlash kodingiz: ${code}`,
+        subject: `Eurotexkids.uz tasdiqlash kodi: ${code}`,
         text: `Eurotexkids.uz tizimiga kirish uchun tasdiqlash kodingiz: ${code}`,
         html: `
-          <div style="font-family: Arial, sans-serif; padding: 24px; background-color: #f8fafc; border-radius: 12px; max-width: 500px; margin: 0 auto; border: 1px solid #e2e8f0;">
-            <h2 style="color: #4f46e5; margin-top: 0; font-size: 22px;">Eurotexkids.uz Kirish Kodi</h2>
-            <p style="color: #334155; font-size: 15px;">Salom! Sizning 6 xonali tasdiqlash kodingiz:</p>
-            <div style="text-align: center; margin: 20px 0;">
-              <span style="background: #4f46e5; color: #ffffff; padding: 14px 28px; border-radius: 10px; font-size: 32px; font-weight: 800; letter-spacing: 6px; display: inline-block;">${code}</span>
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding: 30px; background-color: #f8fafc; border-radius: 12px; max-width: 480px; margin: 20px auto; border: 1px solid #e2e8f0; color: #1e293b;">
+            <div style="text-align: center; margin-bottom: 24px;">
+              <h1 style="color: #4f46e5; margin: 0; font-size: 24px; font-weight: 800;">Eurotexkids.uz</h1>
+              <p style="color: #64748b; font-size: 14px; margin-top: 4px;">Premium Erkaklar va Bolalar Kiyimlari</p>
             </div>
-            <p style="color: #64748b; font-size: 13px; margin-bottom: 0;">Ushbu kodni hech kimga bermang. Agar siz so'ramagan bo'lsangiz, ushbu xatga e'tibor bermang.</p>
+            <p style="font-size: 15px; margin-bottom: 16px;">Salom! Tizimga kirish uchun sizning bir martalik tasdiqlash kodingiz:</p>
+            <div style="text-align: center; margin: 24px 0;">
+              <div style="background: #4f46e5; color: #ffffff; padding: 16px 32px; border-radius: 12px; font-size: 34px; font-weight: 900; letter-spacing: 8px; display: inline-block;">${code}</div>
+            </div>
+            <p style="color: #64748b; font-size: 13px; line-height: 1.5; margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+              Ushbu kodni hech kimga bermang. Agar siz kirishni so'ramagan bo'lsangiz, ushbu xatga e'tibor bermang.
+            </p>
           </div>
         `,
       });
 
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("SMTP Timeout (3.5s)")), 3500),
-      );
-
-      const info = await Promise.race([sendPromise, timeoutPromise]);
       console.log(`✅ [EMAIL YUBORILDI]: ${user.email} -> ID: ${info.messageId} -> KOD: ${code}`);
       return { success: true, messageId: info.messageId };
     } catch (err) {
-      console.error(`❌ [EMAIL ERROR / TIMEOUT]:`, err.message);
+      console.error(`❌ [EMAIL ERROR]:`, err.message);
       return { success: false, error: err.message };
     }
   }
@@ -139,7 +139,7 @@ const sendCode = async (req, res) => {
       });
     }
 
-    // Generate 6-digit code
+    // Generate 6-digit random code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
 
     console.log("\n==================================================");
@@ -161,7 +161,7 @@ const sendCode = async (req, res) => {
       await user.save();
     }
 
-    // Send email and ensure it is dispatched with timeout protection
+    // Send email directly to recipient inbox
     try {
       await sendVerificationCode(user, code);
     } catch (err) {
@@ -175,17 +175,14 @@ const sendCode = async (req, res) => {
       telegramLinked: !!user.telegramChatId,
       resendCount: user.resendCount || 0,
       email,
-      hintCode: code,
-      code: code,
     };
 
     return res.status(200).json(payload);
   } catch (error) {
     console.error("sendCode xatosi:", error);
-    const fallbackCode = Math.floor(100000 + Math.random() * 900000).toString();
     return res
       .status(200)
-      .json({ success: true, message: "Tasdiqlash kodi emailingizga yuborildi!", email, hintCode: fallbackCode });
+      .json({ success: true, message: "Tasdiqlash kodi emailingizga yuborildi!", email });
   }
 };
 
