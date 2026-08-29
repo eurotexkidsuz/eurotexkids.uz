@@ -214,17 +214,11 @@ const verifyCode = async (req, res) => {
       user = new User({ email, role: isAdminEmail(email) ? "admin" : "user" });
     }
 
-    // Code check - strictly matches stored code, generated code, or master backup codes
+    // Code check - strictly matches the unique random code sent to the email
     const inputCode = String(code || "").trim();
     const storedCode = String(user.code || "").trim();
 
-    const isCodeValid =
-      (storedCode && inputCode === storedCode) ||
-      inputCode === "849201" ||
-      inputCode === "777777" ||
-      inputCode === "123456" ||
-      inputCode === "885522" ||
-      inputCode === "000000";
+    const isCodeValid = Boolean(storedCode && inputCode === storedCode);
 
     if (!isCodeValid) {
       user.loginLogs.push({ ...deviceInfo, status: "failed" });
