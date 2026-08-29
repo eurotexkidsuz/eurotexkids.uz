@@ -2926,6 +2926,7 @@ function openAuthModal() {
     openModal("userProfileModal");
     return;
   }
+  resetAuthForm();
   openModal("authModal");
   updateURLRoute("/login");
 
