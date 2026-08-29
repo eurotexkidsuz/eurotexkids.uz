@@ -592,20 +592,21 @@ html[data-theme="dark"] .main-header.scrolled {
 .auth-logo-container {
   background: #ffffff;
   border: 2px solid #1b6b68;
-  border-radius: 16px;
-  padding: 10px 20px;
+  border-radius: 20px;
+  padding: 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 14px;
-  box-shadow: 0 4px 16px rgba(27, 107, 104, 0.12);
+  box-shadow: 0 4px 16px rgba(27, 107, 104, 0.15);
+  width: 96px;
+  height: 96px;
   transition: transform 0.2s ease;
 }
 
 .auth-logo-img {
-  height: 80px;
-  width: auto;
-  max-width: 140px;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   image-rendering: -webkit-optimize-contrast;
   display: block;

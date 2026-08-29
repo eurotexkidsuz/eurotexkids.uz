@@ -1,0 +1,16 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="100%" height="100%">
+  <defs>
+    <linearGradient id="tealLionGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1b6b68"/>
+      <stop offset="100%" stop-color="#114b48"/>
+    </linearGradient>
+  </defs>
+  <!-- Shield Shape Background -->
+  <path d="M45 10 H195 V125 C195 190 120 220 120 220 C120 220 45 190 45 125 Z" fill="url(#tealLionGrad)"/>
+  <!-- Lion Silhouette Cutout inside Shield -->
+  <path d="M120 25 C145 25 170 38 178 55 C166 58 154 55 145 50 C162 63 175 80 170 102 C160 85 145 80 132 80 C150 98 150 120 138 137 C128 120 120 115 112 115 C120 132 116 153 95 166 C100 148 95 140 87 135 C83 148 70 156 58 152 C66 140 66 127 62 118 C54 123 50 132 50 140 C48 110 62 85 83 68 C75 70 67 75 61 81 C71 60 92 38 120 25 Z" fill="#ffffff"/>
+  <!-- Lion Eye Detail -->
+  <circle cx="145" cy="66" r="5.5" fill="#1b6b68"/>
+  <!-- Typography: EUROTEX -->
+  <text x="120" y="228" font-family="'Outfit', 'Inter', sans-serif" font-weight="900" font-size="28" fill="#1b6b68" text-anchor="middle" letter-spacing="3">EUROTEX</text>
+</svg>
