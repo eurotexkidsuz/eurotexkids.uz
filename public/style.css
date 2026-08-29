@@ -8530,6 +8530,56 @@ img {
   animation: fadeInStep 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.auth-step-code-pane {
+  display: none;
+}
+
+.google-auth-pane {
+  display: none;
+  text-align: center;
+  padding: 24px 0;
+}
+
+.btn-google-signin {
+  width: 100%;
+  padding: 14px;
+  background: var(--bg-surface, #ffffff);
+  color: var(--color-navy, #1e293b);
+  border: 1.5px solid var(--border-color, #cbd5e1);
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.btn-google-signin:hover {
+  background: var(--bg-surface-secondary, #f8fafc);
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.tab-icon {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.btn-icon-right {
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.resend-icon {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
 @keyframes fadeInStep {
   from {
     opacity: 0;
@@ -8555,14 +8605,16 @@ img {
 .btn-auth-back {
   background: transparent;
   border: none;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: bold;
   color: var(--color-navy, #1e293b);
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 6px 8px;
   border-radius: 8px;
   transition: all 0.2s ease;
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-auth-back:hover {
