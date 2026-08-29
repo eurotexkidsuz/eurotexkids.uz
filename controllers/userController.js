@@ -95,17 +95,56 @@ async function sendVerificationCode(user, code) {
   if (!user || !user.email) return { success: false, error: "Email topilmadi" };
 
   const targetEmail = user.email.toLowerCase().trim();
+  const userName = (user.name || user.firstName || targetEmail.split("@")[0] || "Foydalanuvchi").trim();
   const subject = `Eurotexkids Tasdiqlash Kodi: ${code}`;
-  const text = `Eurotexkids.uz tizimiga kirish uchun tasdiqlash kodingiz: ${code}`;
+  const text = `Hurmatli ${userName},\n\nSizning tasdiqlash kodingiz: ${code}. Undan tizimga kirish uchun foydalaning.\n\nAgar siz ushbu so'rovni yubormagan bo'lsangiz, shunchaki ushbu xabarga e'tibor bermang.\n\nHurmat bilan,\nEurotex Kids Jamoasi\nhttps://eurotexkids.uz`;
+  
   const html = `
-    <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; max-width: 480px; margin: 0 auto;">
-      <h2 style="color: #4f46e5; margin-top: 0;">Eurotexkids Kirish Kodi</h2>
-      <p style="font-size: 15px; color: #334155;">Salom! Sizning 6 xonali tasdiqlash kodingiz:</p>
-      <div style="text-align: center; margin: 20px 0;">
-        <span style="background: #4f46e5; color: #ffffff; padding: 12px 24px; border-radius: 8px; font-size: 28px; font-weight: bold; letter-spacing: 4px; display: inline-block;">${code}</span>
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; }
+        .container { max-width: 500px; margin: 24px auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+        .header { background: #4f46e5; padding: 22px 28px; text-align: center; }
+        .header h1 { margin: 0; color: #ffffff; font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+        .content { padding: 28px 28px 20px; }
+        .greeting { font-size: 16px; font-weight: 600; color: #0f172a; margin-bottom: 16px; }
+        .message { font-size: 15px; line-height: 1.6; color: #334155; margin-bottom: 20px; }
+        .code-box { text-align: center; margin: 24px 0; padding: 18px; background: #f8fafc; border-radius: 10px; border: 1.5px dashed #cbd5e1; }
+        .code-text { font-size: 32px; font-weight: 800; color: #4338ca; letter-spacing: 6px; font-family: monospace, sans-serif; display: inline-block; }
+        .notice { font-size: 13px; line-height: 1.5; color: #64748b; margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 16px; }
+        .footer { padding: 18px 28px 22px; background: #fafafa; border-top: 1px solid #f1f5f9; font-size: 14px; color: #475569; }
+        .footer strong { color: #1e293b; }
+        .footer-link { color: #4f46e5; text-decoration: none; font-size: 12px; display: block; margin-top: 6px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Eurotex Kids</h1>
+        </div>
+        <div class="content">
+          <div class="greeting">Hurmatli ${userName},</div>
+          <div class="message">
+            Sizning tasdiqlash kodingiz: <strong>${code}</strong>. Undan tizimga kirish uchun foydalaning.
+          </div>
+          <div class="code-box">
+            <span class="code-text">${code}</span>
+          </div>
+          <div class="notice">
+            Agar siz ushbu so'rovni yubormagan bo'lsangiz, shunchaki ushbu xabarga e'tibor bermang. Xavfsizligingiz uchun ushbu kodni hech kimga bermang.
+          </div>
+        </div>
+        <div class="footer">
+          Hurmat bilan,<br>
+          <strong>Eurotex Kids Jamoasi</strong>
+          <a href="https://eurotexkids.uz" class="footer-link">www.eurotexkids.uz</a>
+        </div>
       </div>
-      <p style="font-size: 13px; color: #64748b;">Ushbu kodni hech kimga bermang.</p>
-    </div>
+    </body>
+    </html>
   `;
 
   // 1. Resend HTTPS REST API (Port 443 — NEVER blocked on any cloud server)
