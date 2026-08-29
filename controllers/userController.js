@@ -114,30 +114,36 @@ async function sendVerificationCode(user, code) {
     ["re", "QK6tovbh", "6cTtwqM4nUsi5XPZ6WDbt4Da"].join("_")
   ).trim();
   if (resendApiKey) {
-    try {
-      const response = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${resendApiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: process.env.RESEND_FROM || "Eurotexkids <onboarding@resend.dev>",
-          to: [targetEmail],
-          subject: subject,
-          html: html,
-          text: text,
-        }),
-      });
-      const resData = await response.json();
-      if (response.ok) {
-        console.log(`🚀 [RESEND API EMAIL YUBORILDI]: ${targetEmail} -> ID: ${resData.id} -> KOD: ${code}`);
-        return { success: true, messageId: resData.id, via: "Resend HTTPS API" };
-      } else {
-        console.warn(`⚠️ [RESEND API ERROR]:`, resData);
+    const fromAddresses = [
+      process.env.RESEND_FROM || "Eurotexkids <noreply@eurotexkids.uz>",
+      "Eurotexkids <onboarding@resend.dev>",
+    ];
+    for (const senderFrom of fromAddresses) {
+      try {
+        const response = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${resendApiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: senderFrom,
+            to: [targetEmail],
+            subject: subject,
+            html: html,
+            text: text,
+          }),
+        });
+        const resData = await response.json();
+        if (response.ok) {
+          console.log(`🚀 [RESEND API EMAIL YUBORILDI (${senderFrom})]: ${targetEmail} -> ID: ${resData.id} -> KOD: ${code}`);
+          return { success: true, messageId: resData.id, via: `Resend (${senderFrom})` };
+        } else {
+          console.warn(`⚠️ [RESEND API WARN (${senderFrom})]:`, resData);
+        }
+      } catch (apiErr) {
+        console.warn(`⚠️ [RESEND FETCH ERROR]:`, apiErr.message);
       }
-    } catch (apiErr) {
-      console.warn(`⚠️ [RESEND FETCH ERROR]:`, apiErr.message);
     }
   }
 
