@@ -591,35 +591,29 @@ html[data-theme="dark"] .main-header.scrolled {
 
 .auth-logo-container {
   background: #ffffff;
-  border: 1.5px solid #1b6b68;
-  border-radius: 14px;
-  padding: 8px 16px;
-  display: inline-block;
+  border: 2px solid #1b6b68;
+  border-radius: 16px;
+  padding: 10px 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 14px;
-  box-shadow: 0 4px 12px rgba(27, 107, 104, 0.15);
+  box-shadow: 0 4px 16px rgba(27, 107, 104, 0.12);
+  transition: transform 0.2s ease;
 }
 
 .auth-logo-img {
-  height: 60px;
+  height: 80px;
   width: auto;
+  max-width: 140px;
   object-fit: contain;
   image-rendering: -webkit-optimize-contrast;
-  background: #ffffff;
-  padding: 4px 10px;
-  border-radius: var(--radius-sm);
-}
-
-.auth-logo-img {
-  height: 70px;
-  width: auto;
-  object-fit: contain;
-  background: #ffffff;
-  padding: 6px 14px;
-  border-radius: var(--radius-md);
-  margin: 0 auto 14px;
   display: block;
-  box-shadow: var(--shadow-sm);
-  color: var(--color-navy);
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  border: none;
+  box-shadow: none;
 }
 
 .logo-domain {
