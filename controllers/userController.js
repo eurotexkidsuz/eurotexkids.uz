@@ -170,17 +170,14 @@ const sendCode = async (req, res) => {
       telegramLinked: !!user.telegramChatId,
       resendCount: user.resendCount || 0,
       email,
-      hintCode: code,
-      code: code,
     };
 
     return res.status(200).json(payload);
   } catch (error) {
     console.error("sendCode xatosi:", error);
-    const fallbackCode = Math.floor(100000 + Math.random() * 900000).toString();
     return res
       .status(200)
-      .json({ success: true, message: "Tasdiqlash kodi emailingizga yuborildi!", email, hintCode: fallbackCode });
+      .json({ success: true, message: "Tasdiqlash kodi emailingizga yuborildi!", email });
   }
 };
 
