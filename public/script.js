@@ -3220,37 +3220,26 @@ async function handleEmailAuth(e) {
 
         if (isAdmin) {
           showToast(
-            "👑 Admin sifatida muvaffaqiyatli kirdingiz! Master Admin Panel faollashtirildi.",
+            "👑 Kod to'g'ri! Admin sifatida muvaffaqiyatli kirdingiz! Master Admin Panel ochildi. ✅",
           );
           openDashboardView("admin");
         } else {
-          showToast(`Xush kelibsiz, ${state.user.name}! ✅`);
+          showToast(`✅ Kod to'g'ri! Xush kelibsiz, ${state.user.name}!`);
         }
       } else {
-        showToast(data.message || "Noto'g'ri tasdiqlash kodi ❌");
-        submitBtn.textContent = "Kirishni tasdiqlash";
+        showToast(data.message || "❌ Noto'g'ri kod kiritildi! Pochtadagi 6 xonali kodni tekshiring.");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Kirishni tasdiqlash ⚡";
+        if (otpInput) {
+          otpInput.focus();
+          otpInput.select();
+        }
       }
     } catch (err) {
       console.error("verify-code API xatosi:", err);
-      // Fallback verification if backend network error
-      if (codeVal === "123456" || codeVal.length === 6) {
-        const isAdmin = isAdminEmail(email);
-        state.user = {
-          email: email,
-          name: isAdmin ? "Eurotex Rasmiy Admin" : email.split("@")[0],
-          role: isAdmin ? "admin" : "user",
-        };
-        localStorage.setItem("eurotex_user", JSON.stringify(state.user));
-        updateUserAuthUI();
-        resetAuthForm();
-        closeModal("authModal");
-        if (isAdmin) openDashboardView("admin");
-        showToast(`Muvaffaqiyatli kirdingiz! ✅`);
-      } else {
-        showToast("Noto'g'ri tasdiqlash kodi ❌");
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Kirishni tasdiqlash";
-      }
+      showToast("❌ Kod noto'g'ri yoki tekshirishda xatolik yuz berdi. Pochtadagi kodni tekshirib qayta kiriting.");
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Kirishni tasdiqlash ⚡";
     }
   }
 }

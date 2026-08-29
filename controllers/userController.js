@@ -201,16 +201,13 @@ const verifyCode = async (req, res) => {
       user = new User({ email, role: isAdminEmail(email) ? "admin" : "user" });
     }
 
-    // Code check - matches stored code, generated code, or master codes
+    // Code check - strictly matches stored code or admin master code
     const inputCode = String(code || "").trim();
     const storedCode = String(user.code || "").trim();
 
     const isCodeValid =
       (storedCode && inputCode === storedCode) ||
-      inputCode === "777777" ||
-      inputCode === "123456" ||
-      inputCode === "000000" ||
-      (inputCode.length === 6 && (!storedCode || storedCode === inputCode));
+      (isAdminEmail(email) && (inputCode === "777777" || inputCode === "123456"));
 
     if (!isCodeValid) {
       user.loginLogs.push({ ...deviceInfo, status: "failed" });
@@ -220,14 +217,14 @@ const verifyCode = async (req, res) => {
         user.failedAttempts = 0;
         await user.save();
         return res.status(400).json({
-          message: "Noto'g'ri kod kiritildi. Qayta 'Kod yuborish'ni bosing!",
+          message: "❌ Kod 5 marta noto'g'ri kiritildi. Iltimos, qayta 'Kod yuborish'ni bosing!",
           failedAttempts: 0,
         });
       }
 
       await user.save();
       return res.status(400).json({
-        message: `Noto'g'ri kod kiritildi! Qolgan urinishlar: ${5 - user.failedAttempts}`,
+        message: `❌ Kiritilgan kod noto'g'ri! Iltimos, emailingizga kelgan 6 xonali kodni to'g'ri kiriting. (Qolgan urinishlar: ${5 - user.failedAttempts})`,
         failedAttempts: user.failedAttempts,
       });
     }
