@@ -3062,17 +3062,11 @@ async function resendOtpCode(e) {
 
     if (res.ok) {
       if (otpInput) {
-        if (data.hintCode) {
-          otpInput.value = data.hintCode;
-        } else {
-          otpInput.value = "";
-        }
+        otpInput.value = "";
         otpInput.focus();
       }
       showToast(
-        data.hintCode
-          ? `🔑 Tasdiqlash kodingiz: ${data.hintCode} (Zaxira rejimida kiritildi) ✨`
-          : `📧 Yangi tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshiring va 6 xonali kodni kiriting! 📩`,
+        `📧 Yangi tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshiring va 6 xonali kodni kiriting! 📩`,
       );
       startResendTimer(30);
     } else {

@@ -172,22 +172,19 @@ const sendCode = async (req, res) => {
 
     const payload = {
       success: true,
-      message: "Tasdiqlash kodi yuborildi!",
+      message: "Tasdiqlash kodi emailingizga yuborildi!",
       channel: "email",
       telegramLinked: !!user.telegramChatId,
       resendCount: user.resendCount || 0,
       email,
-      hintCode: code,
-      code: code,
     };
 
     return res.status(200).json(payload);
   } catch (error) {
     console.error("sendCode xatosi:", error);
-    const fallbackCode = Math.floor(100000 + Math.random() * 900000).toString();
     return res
       .status(200)
-      .json({ success: true, message: "Tasdiqlash kodi tayyor!", hintCode: fallbackCode });
+      .json({ success: true, message: "Tasdiqlash kodi emailingizga yuborildi!", email });
   }
 };
 
