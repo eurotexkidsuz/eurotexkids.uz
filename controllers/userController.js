@@ -91,7 +91,7 @@ function getDeviceInfo(req) {
 async function sendVerificationCode(user, code) {
   if (transporter && user.email) {
     try {
-      const sendPromise = transporter.sendMail({
+      const info = await transporter.sendMail({
         from: `"Eurotexkids.uz" <${EMAIL_USER}>`,
         to: user.email,
         subject: `🔑 Eurotexkids.uz — Tasdiqlash kodingiz: ${code}`,
@@ -107,16 +107,10 @@ async function sendVerificationCode(user, code) {
           </div>
         `,
       });
-
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("SMTP Timeout (2.5s)")), 2500),
-      );
-
-      const info = await Promise.race([sendPromise, timeoutPromise]);
       console.log(`✅ [EMAIL YUBORILDI]: ${user.email} -> ID: ${info.messageId}`);
       return { success: true, messageId: info.messageId };
     } catch (err) {
-      console.error(`❌ [EMAIL ERROR / TIMEOUT]:`, err.message);
+      console.error(`❌ [EMAIL ERROR]:`, err.message);
       return { success: false, error: err.message };
     }
   }

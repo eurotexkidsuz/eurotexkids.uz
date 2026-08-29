@@ -3161,23 +3161,21 @@ async function handleEmailAuth(e) {
         otpStep = true;
         otpGroup.style.display = "block";
         submitBtn.textContent = "Kirishni tasdiqlash ⚡";
-        const generatedCode = data.hintCode || data.code || "777777";
         if (otpInput) {
-          otpInput.value = generatedCode;
+          otpInput.value = "";
           otpInput.focus();
         }
-        showToast(`🔑 Random tasdiqlash kodi: ${generatedCode} (Kiritildi) ✅`);
+        showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshirib 6 xonali kodni kiriting! 📩`);
         startResendTimer(60);
       } else {
         otpStep = true;
         otpGroup.style.display = "block";
         submitBtn.textContent = "Kirishni tasdiqlash ⚡";
-        const fallbackCode = data.hintCode || Math.floor(100000 + Math.random() * 900000).toString();
         if (otpInput) {
-          otpInput.value = fallbackCode;
+          otpInput.value = "";
           otpInput.focus();
         }
-        showToast(`🔑 Random tasdiqlash kodi: ${fallbackCode} (Kiritildi) ✅`);
+        showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshirib 6 xonali kodni kiriting! 📩`);
         startResendTimer(60);
       }
     } catch (err) {
@@ -3186,12 +3184,11 @@ async function handleEmailAuth(e) {
       otpGroup.style.display = "block";
       submitBtn.disabled = false;
       submitBtn.textContent = "Kirishni tasdiqlash ⚡";
-      const localRandomCode = Math.floor(100000 + Math.random() * 900000).toString();
       if (otpInput) {
-        otpInput.value = localRandomCode;
+        otpInput.value = "";
         otpInput.focus();
       }
-      showToast(`🔑 Random tasdiqlash kodi: ${localRandomCode} (Kiritildi) ✅`);
+      showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshirib 6 xonali kodni kiriting! 📩`);
       startResendTimer(60);
     }
   } else {
