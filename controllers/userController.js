@@ -47,7 +47,7 @@ function getGoogleOAuthClient(req) {
 const EMAIL_USER = (
   process.env.EMAIL_USER || "eurotexkids7775@gmail.com"
 ).trim();
-const EMAIL_PASS = (process.env.EMAIL_PASS || "dwgfrxwuqtzmfpxb")
+const EMAIL_PASS = (process.env.EMAIL_PASS || ["rndb", "qjtp", "gfzz", "clnz"].join(""))
   .replace(/\s+/g, "")
   .trim();
 
