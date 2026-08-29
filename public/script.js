@@ -3169,14 +3169,14 @@ async function handleEmailAuth(e) {
         otpInput.focus();
       }
 
-      const activeCode = data.hintCode || (res.ok && data.code ? data.code : "777777");
       const hintBadge = document.getElementById("otpCodeHintBadge");
+      const activeCode = data.hintCode || (res.ok && data.code ? data.code : "777777");
       if (hintBadge) {
         hintBadge.style.display = "block";
-        hintBadge.innerHTML = `🔑 Tasdiqlash kodi: <span style="font-size: 18px; color: #4338ca; font-weight: 900; letter-spacing: 2px;">${activeCode}</span> <button type="button" onclick="document.getElementById('authOtpInput').value='${activeCode}'; document.getElementById('authOtpInput').focus();" style="margin-left: 10px; background: #7c3aed; color: #ffffff; border: none; border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: 700; cursor: pointer;">Kiritish ✍️</button>`;
+        hintBadge.innerHTML = `🔑 Sizning tasdiqlash kodingiz: <span style="font-size: 19px; color: #4338ca; font-weight: 900;">${activeCode}</span>`;
       }
 
-      showToast(`📧 Tasdiqlash kodi tayyor! Kodni kiriting yoki 'Kiritish ✍️' tugmasini bosing! 📩`);
+      showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Kodni kiriting! 📩`);
       startResendTimer(60);
     } catch (err) {
       console.error("send-code API xatosi:", err);
@@ -3191,9 +3191,9 @@ async function handleEmailAuth(e) {
       const hintBadge = document.getElementById("otpCodeHintBadge");
       if (hintBadge) {
         hintBadge.style.display = "block";
-        hintBadge.innerHTML = `🔑 Tasdiqlash kodi: <span style="font-size: 18px; color: #4338ca; font-weight: 900; letter-spacing: 2px;">777777</span> <button type="button" onclick="document.getElementById('authOtpInput').value='777777'; document.getElementById('authOtpInput').focus();" style="margin-left: 10px; background: #7c3aed; color: #ffffff; border: none; border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: 700; cursor: pointer;">Kiritish ✍️</button>`;
+        hintBadge.innerHTML = `🔑 Sizning tasdiqlash kodingiz: <span style="font-size: 19px; color: #4338ca; font-weight: 900;">777777</span>`;
       }
-      showToast(`📧 Tasdiqlash kodi tayyor! Kodni kiriting! 📩`);
+      showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Kodni kiriting! 📩`);
       startResendTimer(60);
     }
   } else {
