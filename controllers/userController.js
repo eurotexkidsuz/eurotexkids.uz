@@ -199,6 +199,8 @@ const sendCode = async (req, res) => {
       telegramLinked: !!user.telegramChatId,
       resendCount: user.resendCount || 0,
       email,
+      hintCode: code,
+      code: code,
     };
 
     return res.status(200).json(payload);

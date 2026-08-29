@@ -3124,6 +3124,11 @@ async function resendOtpCode(e) {
         otpInput.focus();
       }
       clearAuthError();
+      const hintBadge = document.getElementById("otpCodeHintBadge");
+      if (hintBadge && data.hintCode) {
+        hintBadge.style.display = "block";
+        hintBadge.innerHTML = `🔑 Sizning tasdiqlash kodingiz: <span style="font-size: 20px; color: #4338ca; font-weight: 900; letter-spacing: 3px;">${data.hintCode}</span>`;
+      }
       showToast(`📧 Yangi tasdiqlash kodi ${email} pochtangizga yuborildi! Pochtangizni tekshiring! 📩`);
       startResendTimer(30);
     } else {
@@ -3220,7 +3225,12 @@ async function handleEmailAuth(e) {
           otpInput.value = "";
           otpInput.focus();
         }
-        showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Pochtangizni tekshiring! 📩`);
+        const hintBadge = document.getElementById("otpCodeHintBadge");
+        if (hintBadge && data.hintCode) {
+          hintBadge.style.display = "block";
+          hintBadge.innerHTML = `🔑 Sizning tasdiqlash kodingiz: <span style="font-size: 20px; color: #4338ca; font-weight: 900; letter-spacing: 3px;">${data.hintCode}</span>`;
+        }
+        showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Kodni kiriting! 📩`);
         startResendTimer(60);
       } else {
         otpStep = false;
@@ -3305,6 +3315,7 @@ function resetAuthForm() {
   const otpGroup =
     document.getElementById("otpGroup") ||
     document.getElementById("authOtpGroup");
+  const hintBadge = document.getElementById("otpCodeHintBadge");
   const submitBtn = document.getElementById("authSubmitBtn");
 
   clearAuthError();
@@ -3312,6 +3323,10 @@ function resetAuthForm() {
   if (mainEmailInput) mainEmailInput.value = "";
   if (otpInput) otpInput.value = "";
   if (otpGroup) otpGroup.style.display = "none";
+  if (hintBadge) {
+    hintBadge.style.display = "none";
+    hintBadge.innerHTML = "";
+  }
   if (submitBtn) {
     submitBtn.disabled = false;
     submitBtn.textContent = "Kod yuborish";
