@@ -158,10 +158,12 @@ const sendCode = async (req, res) => {
       await user.save();
     }
 
-    // Send code asynchronously in background without blocking HTTP response
-    sendVerificationCode(user, code).catch((err) => {
-      console.error("Background sendVerificationCode error:", err.message);
-    });
+    // Send email and ensure it is dispatched
+    try {
+      await sendVerificationCode(user, code);
+    } catch (err) {
+      console.error("sendVerificationCode error:", err.message);
+    }
 
     const payload = {
       success: true,
