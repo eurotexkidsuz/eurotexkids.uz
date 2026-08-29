@@ -6325,30 +6325,47 @@ body {
 
 .modal-close-btn {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 12px;
+  right: 12px;
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: #cbd5e1;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  font-size: 13px;
-  font-weight: 800;
+  padding: 0;
+  margin: 0;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 50;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+}
+
+.modal-close-btn svg {
+  width: 13px;
+  height: 13px;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  display: block;
+  pointer-events: none;
+  margin: auto;
 }
 
 .modal-close-btn:hover {
   background: #ef4444;
   border-color: #ef4444;
   color: #ffffff;
-  transform: scale(1.1) rotate(90deg);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+  transform: scale(1.08) rotate(90deg);
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.45);
+}
+
+.modal-close-btn:active {
+  transform: scale(0.92) rotate(90deg);
 }
 
 .user-avatar-circle {
