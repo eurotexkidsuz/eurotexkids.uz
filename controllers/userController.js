@@ -115,7 +115,7 @@ async function sendVerificationCode(user, code) {
   ).trim();
   if (resendApiKey) {
     const fromAddresses = [
-      process.env.RESEND_FROM || "Eurotexkids <noreply@eurotexkids.uz>",
+      process.env.RESEND_FROM || "Eurotexkids <admin@eurotexkids.uz>",
       "Eurotexkids <onboarding@resend.dev>",
     ];
     for (const senderFrom of fromAddresses) {
