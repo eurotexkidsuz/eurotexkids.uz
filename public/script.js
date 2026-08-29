@@ -3239,16 +3239,11 @@ function resetAuthForm() {
   const otpGroup =
     document.getElementById("otpGroup") ||
     document.getElementById("authOtpGroup");
-  const hintBadge = document.getElementById("otpCodeHintBadge");
   const submitBtn = document.getElementById("authSubmitBtn");
 
   if (mainEmailInput) mainEmailInput.value = "";
   if (otpInput) otpInput.value = "";
   if (otpGroup) otpGroup.style.display = "none";
-  if (hintBadge) {
-    hintBadge.style.display = "none";
-    hintBadge.innerHTML = "";
-  }
   if (submitBtn) {
     submitBtn.disabled = false;
     submitBtn.textContent = "Kod yuborish";
