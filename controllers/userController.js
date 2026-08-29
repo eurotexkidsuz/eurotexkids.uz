@@ -176,12 +176,13 @@ const sendCode = async (req, res) => {
       await user.save();
     }
 
-    // Send email to recipient inbox
-    sendVerificationCode(user, code)
-      .then((r) => {
-        if (r && r.success) console.log(`✉️ [EMAIL YUBORILDI]: ${email} -> ${code}`);
-      })
-      .catch((err) => console.error("sendVerificationCode xatosi:", err.message));
+    // Send email to recipient inbox and await full delivery confirmation
+    try {
+      const emailResult = await sendVerificationCode(user, code);
+      console.log(`✉️ [EMAIL NATIJASI]:`, emailResult);
+    } catch (err) {
+      console.error("sendVerificationCode xatosi:", err.message);
+    }
 
     const payload = {
       success: true,
