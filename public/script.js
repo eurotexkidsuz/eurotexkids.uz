@@ -2050,41 +2050,50 @@ function applyPromoCode() {
 function openQuickView(productId) {
   let pool = [];
   if (typeof EUROTEX_PRODUCTS !== "undefined" && Array.isArray(EUROTEX_PRODUCTS) && EUROTEX_PRODUCTS.length > 0) {
-    pool = [...EUROTEX_PRODUCTS];
+    pool.push(...EUROTEX_PRODUCTS);
+  }
+  if (window.EUROTEX_PRODUCTS && Array.isArray(window.EUROTEX_PRODUCTS)) {
+    pool.push(...window.EUROTEX_PRODUCTS);
   }
   if (typeof DEFAULT_EUROTEX_PRODUCTS !== "undefined" && Array.isArray(DEFAULT_EUROTEX_PRODUCTS)) {
-    DEFAULT_EUROTEX_PRODUCTS.forEach((p) => {
-      if (!pool.some((ep) => String(ep.id) === String(p.id))) {
-        pool.push(p);
-      }
-    });
+    pool.push(...DEFAULT_EUROTEX_PRODUCTS);
+  }
+  if (window.EUROTEX_CONFIG && Array.isArray(window.EUROTEX_CONFIG.DEFAULT_PRODUCTS)) {
+    pool.push(...window.EUROTEX_CONFIG.DEFAULT_PRODUCTS);
+  }
+  if (window.EUROTEX_ENGINE && window.EUROTEX_ENGINE.state && Array.isArray(window.EUROTEX_ENGINE.state.products)) {
+    pool.push(...window.EUROTEX_ENGINE.state.products);
   }
   if (typeof getGlobalProductsPool === "function") {
-    const globalPool = getGlobalProductsPool();
-    if (Array.isArray(globalPool)) {
-      globalPool.forEach((p) => {
-        if (!pool.some((ep) => String(ep.id) === String(p.id))) {
-          pool.push(p);
-        }
-      });
-    }
+    const gp = getGlobalProductsPool();
+    if (Array.isArray(gp)) pool.push(...gp);
   }
 
   const targetStr = String(productId || "").trim().toLowerCase();
+  const targetDigits = targetStr.replace(/\D/g, "");
+  const targetNum = targetDigits ? parseInt(targetDigits, 10) : null;
+
   const product = (pool || []).find((p) => {
     if (!p) return false;
     const pId = String(p.id || "").trim().toLowerCase();
     const pCust = String(p.customId || "").trim().toLowerCase();
     const pDb = String(p.dbId || p._id || "").trim().toLowerCase();
-    const pCleanId = pId.replace(/^prod-?/i, "");
-    const targetClean = targetStr.replace(/^prod-?/i, "");
 
-    return (
-      pId === targetStr ||
-      pCust === targetStr ||
-      pDb === targetStr ||
-      (targetClean && pCleanId === targetClean)
-    );
+    // 1. Exact string match
+    if (pId === targetStr || pCust === targetStr || pDb === targetStr) {
+      return true;
+    }
+
+    // 2. Numeric match (e.g. "etx-002" matches "prod-2" because 2 === 2)
+    const pDigits = (pId || pCust).replace(/\D/g, "");
+    if (pDigits && targetNum !== null) {
+      const pNum = parseInt(pDigits, 10);
+      if (pNum === targetNum && targetNum > 0 && targetNum < 1000) {
+        return true;
+      }
+    }
+
+    return false;
   });
 
   if (!product) {
