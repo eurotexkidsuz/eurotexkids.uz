@@ -1250,8 +1250,8 @@ function renderProducts() {
             product.image || product.img || "/images/navy_suit.jpg";
 
           return `
-            <div class="product-card" data-id="${product.id || "prod-1"}">
-                <div class="card-image-wrap" onclick="openQuickView('${product.id || "prod-1"}')">
+            <div class="product-card" data-id="${product.id || "prod-1"}" onclick="openQuickView('${product.id || "prod-1"}')">
+                <div class="card-image-wrap">
                     <img src="${imgSrc}" alt="${title}" loading="lazy" onerror="this.src='/images/navy_suit.jpg'">
                     ${badgeText ? `<span class="card-badge-tag ${badgeType}">${badgeText}</span>` : ""}
                     <button class="wishlist-heart-btn ${isWishlisted ? "active" : ""}" 
@@ -1270,12 +1270,12 @@ function renderProducts() {
                             <span class="old-price" style="font-size:11px; color:#94a3b8; text-decoration: line-through; white-space: nowrap !important; display: inline-block;">${formattedOldPrice}</span>
                         </div>
                     </div>
-                    <h3 class="card-title" onclick="openQuickView('${product.id || "prod-1"}')" style="margin-bottom: 4px;">${title}</h3>
+                    <h3 class="card-title" style="margin-bottom: 4px;">${title}</h3>
                     <div class="card-rating" style="margin-bottom: 8px;">
                         <span>⭐ ${product.rating || 4.9}</span>
                         <span>(${product.reviewsCount || 186} sharhlar)</span>
                     </div>
-                    <button type="button" onclick="addToCart('${product.id || "prod-1"}'); openCartDrawer();" class="btn btn-primary btn-block" style="margin-top: auto; height: 42px; border-radius: 12px; font-weight: 800; font-size: 14px; background: #7000ff; color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(112,0,255,0.25);">
+                    <button type="button" onclick="event.stopPropagation(); addToCart('${product.id || "prod-1"}'); openCartDrawer();" class="btn btn-primary btn-block" style="margin-top: auto; height: 42px; border-radius: 12px; font-weight: 800; font-size: 14px; background: #7000ff; color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(112,0,255,0.25);">
                         Savatga qo'shish 🛒
                     </button>
                 </div>
@@ -2048,19 +2048,22 @@ function applyPromoCode() {
 
 // Quick View Modal
 function openQuickView(productId) {
-  const product = EUROTEX_PRODUCTS.find((p) => p.id === productId);
+  const pool = (typeof EUROTEX_PRODUCTS !== "undefined" && Array.isArray(EUROTEX_PRODUCTS) && EUROTEX_PRODUCTS.length > 0)
+    ? EUROTEX_PRODUCTS
+    : getGlobalProductsPool();
+  const product = (pool || []).find(
+    (p) =>
+      String(p.id) === String(productId) ||
+      String(p.customId) === String(productId) ||
+      String(p._id) === String(productId) ||
+      String(p.dbId) === String(productId),
+  );
   if (!product) return;
 
-  const lang = state.currentLang;
-  const dict = TRANSLATIONS[lang];
+  const lang = state.currentLang || "uz";
+  const dict = TRANSLATIONS[lang] || TRANSLATIONS.uz;
   const title = product[`title_${lang}`] || product.title_uz;
-  const fabric = product[`fabric_${lang}`] || product.fabric_uz;
-
-  const colorsList = [
-    "To'q ko'k (Navy)",
-    "Qora (Black)",
-    "To'q kulrang (Charcoal)",
-  ];
+  const fabric = product[`fabric_${lang}`] || product.fabric_uz || "Turkiya Premium Jun & Viskoza Blend";
 
   const modal = document.getElementById("quickViewModal");
   const content = document.getElementById("quickViewContent");
@@ -2070,28 +2073,23 @@ function openQuickView(productId) {
     product.priceUsd ||
     Math.round(product.price / usdRate) ||
     50;
-  // Always compute UZS from USD * rate so "150 so'm" bug never happens
   const priceSomRaw = priceUsdVal * usdRate;
   const oldPriceUsdVal = Math.round(priceUsdVal * 1.25);
   const oldPriceSomRaw = oldPriceUsdVal * usdRate;
   const priceSomVal = formatMoneySom(priceSomRaw);
   const oldPriceSomVal = formatMoneySom(oldPriceSomRaw);
-  const nasiyaUsdVal = Math.round(priceUsdVal / 12);
-  const nasiyaSomVal = formatMoneySom(Math.round(priceSomRaw / 12));
 
   const imgs =
     product.images && Array.isArray(product.images) && product.images.length > 0
       ? product.images
-      : [product.image];
+      : [product.image || "/images/navy_suit.jpg"];
 
   window.qvCurrentImages = imgs;
   window.qvCurrentIndex = 0;
 
   if (content) {
     content.innerHTML = `
-            <!-- Multi-Image Gallery matching Screenshot 3 -->
             <div class="qv-gallery-container">
-                <!-- 5 Vertical Thumbnails Column on Left (Screenshot 3) -->
                 ${
                   imgs.length > 1
                     ? `
@@ -2110,7 +2108,6 @@ function openQuickView(productId) {
                     : ""
                 }
 
-                <!-- Main Large Display Area with Nav Arrows (Screenshot 3) -->
                 <div class="qv-main-stage">
                     <img id="qvMainDisplayImg" src="${imgs[0]}" alt="${title}">
                     ${
@@ -2141,7 +2138,7 @@ function openQuickView(productId) {
                     <div style="margin-top: 14px;">
                         <span class="opt-label">📐 O'lchamni tanlang:</span>
                         <div class="sizes-row" id="qvSizesRow" style="display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap;">
-                            ${product.sizes
+                            ${(product.sizes || [46, 48, 50, 52, 54, 56])
                               .map(
                                 (s, idx) => `
                                 <button type="button" class="size-btn ${idx === 0 ? "active" : ""}" onclick="selectQvSize(this)">${s}</button>
@@ -2153,14 +2150,14 @@ function openQuickView(productId) {
                 </div>
 
                 <div class="qv-actions" style="margin-top: 24px;">
-                    <button class="btn btn-gold qv-add-cart-btn" onclick="addCurrentQvToCart('${product.id}')">${dict.addToCart}</button>
-                    <button class="btn btn-outline qv-size-guide-btn" onclick="openSizeGuide()">${dict.slide1SizeGuideBtn} 📐</button>
+                    <button class="btn btn-gold qv-add-cart-btn" onclick="addCurrentQvToCart('${product.id}')">${dict.addToCart || "Savatga qo'shish"}</button>
+                    <button class="btn btn-outline qv-size-guide-btn" onclick="openSizeGuide()">${dict.slide1SizeGuideBtn || "O'lchamlar jadvali"} 📐</button>
                 </div>
             </div>
         `;
   }
 
-  if (modal) modal.classList.add("show");
+  openModal("quickViewModal");
   updateURLRoute(`/product/${productId}`);
 }
 
@@ -2853,8 +2850,8 @@ function renderWishlist() {
         product.image || product.img || "/images/navy_suit.jpg";
 
       return `
-        <div class="product-card" data-id="${product.id}" style="background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 4px 20px rgba(0,0,0,0.06); display: flex; flex-direction: column;">
-            <div class="card-image-wrap" onclick="closeModal('wishlistPopModal'); openQuickView('${product.id}')" style="position: relative; width: 100%; padding-top: 125%; background: #0f172a; overflow: hidden; cursor: pointer;">
+        <div class="product-card" data-id="${product.id}" onclick="closeModal('wishlistPopModal'); openQuickView('${product.id}')" style="background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 4px 20px rgba(0,0,0,0.06); display: flex; flex-direction: column; cursor: pointer;">
+            <div class="card-image-wrap" style="position: relative; width: 100%; padding-top: 125%; background: #0f172a; overflow: hidden; cursor: pointer;">
                 <img src="${imgSrc}" alt="${title}" loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center; background: #0f172a;" onerror="this.src='/images/navy_suit.jpg'">
                 <span class="card-badge-tag ${badgeType}" style="position: absolute; top: 10px; left: 10px; z-index: 2;">${badgeText}</span>
                 <button class="wishlist-heart-btn active" onclick="event.stopPropagation(); toggleWishlist('${product.id}')" title="Wishlist" style="position: absolute; top: 10px; right: 10px; z-index: 3; background: rgba(255,255,255,0.95); border: none; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">❤️</button>
@@ -2869,12 +2866,12 @@ function renderWishlist() {
                         <span class="old-price" style="font-size:11px; color:#94a3b8; text-decoration: line-through; white-space: nowrap !important; display: inline-block;">${formattedOldPrice}</span>
                     </div>
                 </div>
-                <h3 class="card-title" onclick="closeModal('wishlistPopModal'); openQuickView('${product.id}')" style="font-size: 13px; font-weight: 700; color: #1e293b; margin: 0; line-height: 1.3; cursor: pointer;">${title}</h3>
+                <h3 class="card-title" style="font-size: 13px; font-weight: 700; color: #1e293b; margin: 0; line-height: 1.3; cursor: pointer;">${title}</h3>
                 <div class="card-rating" style="font-size: 12px; color: #64748b; display: flex; align-items: center; gap: 4px;">
                     <span style="color: #f59e0b;">⭐</span>
                     <span>${product.rating || 4.9} (${product.reviewsCount || 186} sharhlar)</span>
                 </div>
-                <button type="button" onclick="addToCart('${product.id}'); openCartDrawer();" class="btn btn-primary btn-block" style="margin-top: auto; height: 42px; border-radius: 12px; font-weight: 800; font-size: 14px; background: #7000ff; color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(112,0,255,0.25);">
+                <button type="button" onclick="event.stopPropagation(); addToCart('${product.id}'); openCartDrawer();" class="btn btn-primary btn-block" style="margin-top: auto; height: 42px; border-radius: 12px; font-weight: 800; font-size: 14px; background: #7000ff; color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(112,0,255,0.25);">
                     Savatga qo'shish 🛒
                 </button>
             </div>
