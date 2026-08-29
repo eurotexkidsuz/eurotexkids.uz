@@ -894,11 +894,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   await syncProductsWithBackendAndStorage(false);
   await fetchOrdersFromServer();
   handleURLRouting();
-  // Auto-sync new products and orders from MongoDB every 3 seconds for instant admin alerts!
+  // Auto-sync products & orders in background gently every 15s (only re-renders on actual DB changes)
   setInterval(() => {
     syncProductsWithBackendAndStorage(true);
     fetchOrdersFromServer();
-  }, 3000);
+  }, 15000);
   loadCustomSizesFromStorage();
   setLanguage(state.currentLang);
   setupEventListeners();
@@ -4124,7 +4124,7 @@ function initCarousel() {
 
   setInterval(() => {
     gotoSlide(currentIndex + 1);
-  }, 3500);
+  }, 6500);
 }
 
 // Smart Size Quiz Modal Logic
@@ -4985,19 +4985,21 @@ async function syncProductsWithBackendAndStorage(isIntervalSync = false) {
     return;
   }
 
-  // Pre-load from IndexedDB and LocalStorage immediately so custom products show instantly on refresh!
-  try {
-    let cachedProds = await EurotexIDB.get("eurotex_custom_products");
-    if (!cachedProds || !Array.isArray(cachedProds) || cachedProds.length === 0) {
-      const localStr = localStorage.getItem("eurotex_custom_products");
-      if (localStr) cachedProds = JSON.parse(localStr);
-    }
-    if (Array.isArray(cachedProds) && cachedProds.length > 0) {
-      EUROTEX_PRODUCTS = cachedProds;
-      window.EUROTEX_PRODUCTS = EUROTEX_PRODUCTS;
-      renderProducts();
-    }
-  } catch (e) {}
+  // Pre-load from IndexedDB and LocalStorage ONLY on initial cold page load
+  if (!isIntervalSync && (!EUROTEX_PRODUCTS || EUROTEX_PRODUCTS.length === 0)) {
+    try {
+      let cachedProds = await EurotexIDB.get("eurotex_custom_products");
+      if (!cachedProds || !Array.isArray(cachedProds) || cachedProds.length === 0) {
+        const localStr = localStorage.getItem("eurotex_custom_products");
+        if (localStr) cachedProds = JSON.parse(localStr);
+      }
+      if (Array.isArray(cachedProds) && cachedProds.length > 0) {
+        EUROTEX_PRODUCTS = cachedProds;
+        window.EUROTEX_PRODUCTS = EUROTEX_PRODUCTS;
+        renderProducts();
+      }
+    } catch (e) {}
+  }
 
   try {
     const controller = new AbortController();
@@ -5053,33 +5055,33 @@ async function syncProductsWithBackendAndStorage(isIntervalSync = false) {
           }
         });
 
-        // Newly added Custom products ALWAYS go to the very top of the catalog!
-        EUROTEX_PRODUCTS = [...customProds, ...Array.from(defaultMap.values())];
-        window.EUROTEX_PRODUCTS = EUROTEX_PRODUCTS;
-        EurotexIDB.set("eurotex_custom_products", EUROTEX_PRODUCTS);
-        try {
-          localStorage.removeItem("eurotex_custom_products");
-        } catch (err) {}
+        const mergedProds = [...customProds, ...Array.from(defaultMap.values())];
+        const newHash = mergedProds.map(
+          (p) => `${p.id}:${p.title_uz}:${p.price}:${p.category}:${p.image}`,
+        ).join("|");
+
+        // ONLY update & re-render if product data has ACTUALLY changed!
+        if (newHash !== _lastProdsHash) {
+          _lastProdsHash = newHash;
+          EUROTEX_PRODUCTS = mergedProds;
+          window.EUROTEX_PRODUCTS = EUROTEX_PRODUCTS;
+          EurotexIDB.set("eurotex_custom_products", EUROTEX_PRODUCTS);
+          try {
+            localStorage.setItem("eurotex_custom_products", JSON.stringify(EUROTEX_PRODUCTS));
+          } catch (err) {}
+
+          renderProducts();
+          const isTypingInAdmin =
+            document.activeElement &&
+            document.activeElement.closest("#adminProductsTableContainer");
+          if (!isTypingInAdmin) {
+            renderAdminProducts();
+          }
+        }
       }
     }
   } catch (err) {
     console.log("Using cached products:", err);
-  }
-
-  // Smart Re-render: re-render both home catalog and admin table
-  const newHash = EUROTEX_PRODUCTS.map(
-    (p) => `${p.id}:${p.title_uz}:${p.price}:${p.category}`,
-  ).join("|");
-
-  if (newHash !== _lastProdsHash || !isIntervalSync) {
-    _lastProdsHash = newHash;
-    renderProducts();
-    const isTypingInAdmin =
-      document.activeElement &&
-      document.activeElement.closest("#adminProductsTableContainer");
-    if (!isTypingInAdmin) {
-      renderAdminProducts();
-    }
   }
 }
 
