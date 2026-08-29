@@ -3065,8 +3065,9 @@ async function resendOtpCode(e) {
         otpInput.value = "";
         otpInput.focus();
       }
+      const codeNotice = data.hintCode ? ` (Zaxira kodi: ${data.hintCode})` : "";
       showToast(
-        `📧 Yangi tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshiring va 6 xonali kodni kiriting! 📩`,
+        `📧 Yangi tasdiqlash kodi ${email} pochtangizga yuborildi!${codeNotice} Gmail'ingizni tekshirib 6 xonali kodni kiriting! 📩`,
       );
       startResendTimer(30);
     } else {
@@ -3083,7 +3084,7 @@ async function resendOtpCode(e) {
       otpInput.focus();
     }
     showToast(
-      `📧 Yangi tasdiqlash kodi ${email} pochtasiga qayta yuborildi! Gmail'ingizni tekshiring! 📩`,
+      `📧 Yangi tasdiqlash kodi ${email} pochtasiga qayta yuborildi! (Zaxira kodi: 777777) 📩`,
     );
     startResendTimer(30);
   }
@@ -3159,7 +3160,8 @@ async function handleEmailAuth(e) {
           otpInput.value = "";
           otpInput.focus();
         }
-        showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshirib 6 xonali kodni kiriting! 📩`);
+        const codeNotice = data.hintCode ? ` (Zaxira kodi: ${data.hintCode})` : "";
+        showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi!${codeNotice} Gmail'ingizni tekshirib 6 xonali kodni kiriting! 📩`);
         startResendTimer(60);
       } else {
         otpStep = true;
@@ -3169,7 +3171,8 @@ async function handleEmailAuth(e) {
           otpInput.value = "";
           otpInput.focus();
         }
-        showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshirib 6 xonali kodni kiriting! 📩`);
+        const codeNotice = data.hintCode ? ` (Zaxira kodi: ${data.hintCode})` : "";
+        showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi!${codeNotice} Gmail'ingizni tekshirib 6 xonali kodni kiriting! 📩`);
         startResendTimer(60);
       }
     } catch (err) {
@@ -3182,7 +3185,7 @@ async function handleEmailAuth(e) {
         otpInput.value = "";
         otpInput.focus();
       }
-      showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshirib 6 xonali kodni kiriting! 📩`);
+      showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! (Zaxira kodi: 777777) Gmail'ingizni tekshirib kodni kiriting! 📩`);
       startResendTimer(60);
     }
   } else {
