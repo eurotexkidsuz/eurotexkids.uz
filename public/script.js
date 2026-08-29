@@ -3092,6 +3092,7 @@ function goToAuthStepCode(email) {
 function setupOtpInputRestrictions() {
   const hiddenInput = document.getElementById("authOtpInput");
   const pinDigits = document.querySelectorAll(".otp-pin-digit");
+  const container = document.getElementById("otpPinBoxesContainer");
 
   function getCombinedPinValue() {
     let full = "";
@@ -3111,22 +3112,49 @@ function setupOtpInputRestrictions() {
     });
 
     if (fullCode.length === 6 && otpStep) {
-      const verifyBtn = document.getElementById("authVerifySubmitBtn");
-      if (verifyBtn && !verifyBtn.disabled) {
+      setTimeout(() => {
         const form = document.getElementById("emailLoginForm");
         if (form) {
           const submitEvent = new Event("submit", { cancelable: true, bubbles: true });
           form.dispatchEvent(submitEvent);
         }
-      }
+      }, 50);
     }
   }
 
+  function handlePasteText(rawText) {
+    if (!rawText) return;
+    const digits = String(rawText).replace(/[^0-9]/g, "").slice(0, 6).split("");
+    if (!digits.length) return;
+
+    pinDigits.forEach((box, idx) => {
+      if (idx < digits.length) {
+        box.value = digits[idx];
+        box.classList.add("filled");
+      } else {
+        box.value = "";
+        box.classList.remove("filled");
+      }
+    });
+
+    const targetIdx = Math.min(digits.length - 1, 5);
+    if (pinDigits[targetIdx]) pinDigits[targetIdx].focus();
+    updateHiddenValueAndCheckSubmit();
+  }
+
   pinDigits.forEach((input, index) => {
-    // Single digit input and auto-advance
+    // Input event - supports typing AND mobile autofill/paste
     input.addEventListener("input", (e) => {
-      const val = e.target.value.replace(/[^0-9]/g, "");
-      e.target.value = val ? val[val.length - 1] : "";
+      const raw = e.target.value || "";
+      const cleaned = raw.replace(/[^0-9]/g, "");
+
+      // If user pasted or mobile autofilled multiple numbers into single box
+      if (cleaned.length > 1) {
+        handlePasteText(cleaned);
+        return;
+      }
+
+      e.target.value = cleaned ? cleaned[0] : "";
       if (e.target.value) {
         e.target.classList.add("filled");
         if (index < pinDigits.length - 1) {
@@ -3158,27 +3186,22 @@ function setupOtpInputRestrictions() {
       }
     });
 
-    // Paste handling anywhere across the 6 boxes
+    // Explicit Paste (Ctrl + V / Right-click paste)
     input.addEventListener("paste", (e) => {
       e.preventDefault();
-      const pasted = (e.clipboardData || window.clipboardData).getData("text") || "";
-      const digits = pasted.replace(/[^0-9]/g, "").slice(0, 6).split("");
-      if (!digits.length) return;
-
-      digits.forEach((d, i) => {
-        if (pinDigits[i]) {
-          pinDigits[i].value = d;
-          pinDigits[i].classList.add("filled");
-        }
-      });
-
-      const nextIndex = Math.min(digits.length, 5);
-      if (pinDigits[nextIndex]) {
-        pinDigits[nextIndex].focus();
-      }
-      updateHiddenValueAndCheckSubmit();
+      e.stopPropagation();
+      const pasted = (e.clipboardData || window.clipboardData)?.getData("text") || "";
+      handlePasteText(pasted);
     });
   });
+
+  if (container) {
+    container.addEventListener("paste", (e) => {
+      e.preventDefault();
+      const pasted = (e.clipboardData || window.clipboardData)?.getData("text") || "";
+      handlePasteText(pasted);
+    });
+  }
 }
 
 function showAuthError(message) {
