@@ -3174,8 +3174,8 @@ async function handleEmailAuth(e) {
         }
         showToast(
           data.hintCode
-            ? `🔑 Tasdiqlash kodingiz: ${data.hintCode} (Zaxira rejimida kiritildi) ✨`
-            : `📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshiring va 6 xonali kodni kiriting! 📩`,
+            ? `🔑 Random tasdiqlash kodingiz: ${data.hintCode} (Avtomatik kiritildi) ✅`
+            : `📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshirib kodni kiriting! 📩`,
         );
         startResendTimer(60);
       } else {
