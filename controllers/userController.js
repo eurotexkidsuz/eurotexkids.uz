@@ -46,26 +46,25 @@ function getGoogleOAuthClient(req) {
 const EMAIL_USER = "eurotexkids7775@gmail.com";
 const EMAIL_PASS = "rndbqjtpgfzzclnz";
 
-const transporter = nodemailer.createTransport({
+const transporterSSL = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
   secure: true,
-  auth: {
-    user: EMAIL_USER,
-    pass: EMAIL_PASS,
-  },
-  tls: {
-    rejectUnauthorized: false,
-  },
+  auth: { user: EMAIL_USER, pass: EMAIL_PASS },
+  tls: { rejectUnauthorized: false },
 });
 
-// Verify SMTP connection on boot
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("❌ [GMAIL SMTP ERROR]:", error.message);
-  } else {
-    console.log("✅ [GMAIL SMTP SERVER TAYYOR]: Pochtaga xat yuborish faol!");
-  }
+const transporterTLS = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+  auth: { user: EMAIL_USER, pass: EMAIL_PASS },
+  tls: { rejectUnauthorized: false },
+});
+
+const transporterService = nodemailer.createTransport({
+  service: "gmail",
+  auth: { user: EMAIL_USER, pass: EMAIL_PASS },
 });
 
 // Parse device info from request
@@ -82,41 +81,51 @@ function getDeviceInfo(req) {
   };
 }
 
-// Send 6-digit code via Email
+// Send 6-digit code via Email with automatic multi-channel fallback
 async function sendVerificationCode(user, code) {
-  if (transporter && user && user.email) {
+  if (!user || !user.email) return { success: false, error: "Email topilmadi" };
+
+  const targetEmail = user.email.toLowerCase().trim();
+  const mailOptions = {
+    from: `"Eurotexkids.uz" <${EMAIL_USER}>`,
+    to: targetEmail,
+    subject: `Eurotexkids.uz Tasdiqlash Kodi: ${code}`,
+    text: `Eurotexkids.uz tizimiga kirish uchun tasdiqlash kodingiz: ${code}`,
+    priority: "high",
+    headers: {
+      "X-Priority": "1",
+      "X-MSMail-Priority": "High",
+      Importance: "high",
+    },
+    html: `
+      <div style="font-family: Arial, sans-serif; padding: 24px; background-color: #f8fafc; border-radius: 12px; max-width: 500px; margin: 0 auto; border: 1px solid #e2e8f0;">
+        <h2 style="color: #4f46e5; margin-top: 0; font-size: 22px;">Eurotexkids.uz Kirish Kodi</h2>
+        <p style="color: #334155; font-size: 15px;">Salom! Sizning 6 xonali tasdiqlash kodingiz:</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <span style="background: #4f46e5; color: #ffffff; padding: 14px 28px; border-radius: 10px; font-size: 32px; font-weight: 800; letter-spacing: 6px; display: inline-block;">${code}</span>
+        </div>
+        <p style="color: #64748b; font-size: 13px; margin-bottom: 0;">Ushbu kodni hech kimga bermang. Agar siz so'ramagan bo'lsangiz, ushbu xatga e'tibor bermang.</p>
+      </div>
+    `,
+  };
+
+  const transports = [
+    { name: "Port 465 SSL", transporter: transporterSSL },
+    { name: "Port 587 TLS", transporter: transporterTLS },
+    { name: "Gmail Service", transporter: transporterService },
+  ];
+
+  for (const transportItem of transports) {
     try {
-      const targetEmail = user.email.toLowerCase().trim();
-      const info = await transporter.sendMail({
-        from: `"Eurotexkids.uz" <${EMAIL_USER}>`,
-        to: targetEmail,
-        subject: `Eurotexkids.uz Tasdiqlash Kodi: ${code}`,
-        text: `Eurotexkids.uz tizimiga kirish uchun tasdiqlash kodingiz: ${code}`,
-        priority: "high",
-        headers: {
-          "X-Priority": "1",
-          "X-MSMail-Priority": "High",
-          Importance: "high",
-        },
-        html: `
-          <div style="font-family: Arial, sans-serif; padding: 24px; background-color: #f8fafc; border-radius: 12px; max-width: 500px; margin: 0 auto; border: 1px solid #e2e8f0;">
-            <h2 style="color: #4f46e5; margin-top: 0; font-size: 22px;">Eurotexkids.uz Kirish Kodi</h2>
-            <p style="color: #334155; font-size: 15px;">Salom! Sizning 6 xonali tasdiqlash kodingiz:</p>
-            <div style="text-align: center; margin: 20px 0;">
-              <span style="background: #4f46e5; color: #ffffff; padding: 14px 28px; border-radius: 10px; font-size: 32px; font-weight: 800; letter-spacing: 6px; display: inline-block;">${code}</span>
-            </div>
-            <p style="color: #64748b; font-size: 13px; margin-bottom: 0;">Ushbu kodni hech kimga bermang. Agar siz so'ramagan bo'lsangiz, ushbu xatga e'tibor bermang.</p>
-          </div>
-        `,
-      });
-      console.log(`✅ [EMAIL YUBORILDI]: ${targetEmail} -> ID: ${info.messageId} -> KOD: ${code}`);
-      return { success: true, messageId: info.messageId };
+      const info = await transportItem.transporter.sendMail(mailOptions);
+      console.log(`✅ [EMAIL YUBORILDI (${transportItem.name})]: ${targetEmail} -> ID: ${info.messageId} -> KOD: ${code}`);
+      return { success: true, messageId: info.messageId, via: transportItem.name };
     } catch (err) {
-      console.error(`❌ [EMAIL ERROR]:`, err.message);
-      return { success: false, error: err.message };
+      console.warn(`⚠️ [EMAIL URINISH XATOSI (${transportItem.name})]:`, err.message);
     }
   }
-  return { success: false, error: "Transporter topilmadi" };
+
+  return { success: false, error: "Barcha SMTP kanallarida urinish tugadi." };
 }
 
 // ─── SEND CODE ────────────────────────────────────────────────────────────────
