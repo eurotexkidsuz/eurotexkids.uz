@@ -44,10 +44,7 @@ function getGoogleOAuthClient(req) {
   return new OAuth2Client(clientId, clientSecret, redirectUri);
 }
 const EMAIL_USER = "eurotexkids7775@gmail.com";
-const EMAIL_PASS =
-  process.env.EMAIL_PASS && process.env.EMAIL_PASS.length === 16 && !process.env.EMAIL_PASS.includes("dwgf")
-    ? process.env.EMAIL_PASS.replace(/\s+/g, "").trim()
-    : ["rndb", "qjtp", "gfzz", "clnz"].join("");
+const EMAIL_PASS = "rndbqjtpgfzzclnz";
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
