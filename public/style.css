@@ -5921,10 +5921,16 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  width: 64px;
+  width: 68px;
   flex-shrink: 0;
-  max-height: 420px;
+  max-height: 480px;
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.qv-thumbs-column::-webkit-scrollbar {
+  display: none;
 }
 
 .qv-thumb-item {
@@ -5962,26 +5968,28 @@ body {
   width: 100%;
   height: 480px;
   min-height: 440px;
-  background: var(--bg-surface-secondary, #f8fafc);
-  border-radius: 18px;
+  background: #ffffff;
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   border: 1px solid var(--border-color, #e2e8f0);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  padding: 12px;
 }
 
 .qv-main-stage img {
   width: 100%;
   height: 100%;
-  object-fit: cover !important;
+  max-height: 456px;
+  object-fit: contain !important;
   object-position: center;
   transition: transform 0.3s ease;
 }
 
 .qv-main-stage:hover img {
-  transform: scale(1.03);
+  transform: scale(1.02);
 }
 
 .qv-stage-arrow {
