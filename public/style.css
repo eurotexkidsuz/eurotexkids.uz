@@ -1951,9 +1951,9 @@ body {
   right: 14px;
   width: 32px;
   height: 32px;
-  background: rgba(100, 116, 139, 0.1);
-  border: 1px solid rgba(100, 116, 139, 0.15);
-  color: #475569;
+  background: var(--bg-surface-secondary, #f1f5f9);
+  border: 1px solid var(--border-color, #e2e8f0);
+  color: var(--text-muted, #64748b);
   border-radius: 50%;
   font-size: 14px;
   font-weight: 700;
@@ -1963,40 +1963,32 @@ body {
   cursor: pointer;
   z-index: 50;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  padding: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   outline: none;
-}
-
-.modal-close svg {
-  width: 14px;
-  height: 14px;
-  stroke: currentColor;
-  stroke-width: 2.5;
-  transition: transform 0.2s ease;
+  line-height: 1;
 }
 
 .modal-close:hover {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
-  color: #0f172a;
-  transform: scale(1.08);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  background: #ef4444;
+  border-color: #ef4444;
+  color: #ffffff;
+  transform: rotate(90deg) scale(1.08);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 .modal-close:active {
-  transform: scale(0.94);
+  transform: rotate(90deg) scale(0.95);
 }
 
 html[data-theme="dark"] .modal-close {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.12);
-  color: #94a3b8;
+  background: #334155;
+  border-color: #475569;
+  color: #cbd5e1;
 }
 
 html[data-theme="dark"] .modal-close:hover {
-  background: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.25);
+  background: #ef4444;
+  border-color: #ef4444;
   color: #ffffff;
 }
 
