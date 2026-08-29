@@ -1947,32 +1947,57 @@ body {
 
 .modal-close {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 28px;
-  height: 28px;
-  background: rgba(15, 23, 42, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  color: #475569;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  background: rgba(100, 116, 139, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  color: #64748b;
   border-radius: 50%;
-  font-size: 13px;
-  font-weight: 800;
-  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 50;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  padding: 0;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.modal-close svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  transition: transform 0.2s ease;
 }
 
 .modal-close:hover {
-  background: #ef4444;
-  border-color: #ef4444;
-  color: #ffffff;
-  transform: scale(1.1) rotate(90deg);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #ef4444;
+  transform: scale(1.08);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.18);
+}
+
+.modal-close:hover svg {
+  transform: rotate(90deg);
+}
+
+.modal-close:active {
+  transform: scale(0.94);
+}
+
+html[data-theme="dark"] .modal-close {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #94a3b8;
+}
+
+html[data-theme="dark"] .modal-close:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #f87171;
 }
 
 /* Quick View Modal Content */
