@@ -5928,12 +5928,12 @@ body {
 }
 
 .qv-thumb-item {
-  width: 60px;
-  height: 60px;
+  width: 68px;
+  height: 84px;
   border-radius: 12px;
-  border: 2px solid transparent;
+  border: 2px solid var(--border-color, #e2e8f0);
   overflow: hidden;
-  background: #0f172a;
+  background: var(--bg-surface-secondary, #f8fafc);
   cursor: pointer;
   padding: 0;
   transition: all 0.25s ease;
@@ -5952,28 +5952,36 @@ body {
 
 .qv-thumb-item.active {
   border-color: #7000ff;
-  box-shadow: 0 0 12px rgba(112, 0, 255, 0.5);
+  box-shadow: 0 0 12px rgba(112, 0, 255, 0.4);
   transform: scale(1.04);
 }
 
 .qv-main-stage {
   position: relative;
   flex: 1;
-  height: 420px;
-  background: #0b1120;
-  border-radius: 16px;
+  width: 100%;
+  height: 480px;
+  min-height: 440px;
+  background: var(--bg-surface-secondary, #f8fafc);
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-color, #e2e8f0);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
 }
 
 .qv-main-stage img {
   width: 100%;
   height: 100%;
-  object-fit: contain !important;
+  object-fit: cover !important;
   object-position: center;
+  transition: transform 0.3s ease;
+}
+
+.qv-main-stage:hover img {
+  transform: scale(1.03);
 }
 
 .qv-stage-arrow {
