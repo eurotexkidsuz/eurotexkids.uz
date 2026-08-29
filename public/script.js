@@ -2246,12 +2246,7 @@ function switchMobileNavTab(tab) {
   } else if (tab === "profile") {
     const authBtn = document.getElementById("mobileAuthBtn");
     if (authBtn) authBtn.classList.add("active");
-    if (state.user && (state.user.role === "admin" || isAdminEmail(state.user.email))) {
-      openDashboardView("admin");
-      showAdminSection("products", true);
-    } else {
-      openAuthModal();
-    }
+    openAuthModal();
   }
 }
 

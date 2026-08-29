@@ -1589,26 +1589,48 @@
                     >
                   </div>
                 </div>
-                <button
-                  type="button"
-                  class="btn-admin-refresh"
-                  onclick="refreshAdminData()"
-                >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.2"
-                    stroke-linecap="round"
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                  <button
+                    type="button"
+                    class="btn-admin-refresh"
+                    onclick="refreshAdminData()"
                   >
-                    <path
-                      d="M21.5 2v6h-6M21.34 15.57a10 10 0 11-.57-8.38l5.67-5.67"
-                    />
-                  </svg>
-                  Ma'lumotlarni Yangilash
-                </button>
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                      stroke-linecap="round"
+                    >
+                      <path
+                        d="M21.5 2v6h-6M21.34 15.57a10 10 0 11-.57-8.38l5.67-5.67"
+                      />
+                    </svg>
+                    Yangilash
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-admin-refresh"
+                    style="background: #ef4444 !important; border-color: #ef4444 !important; color: #ffffff !important; font-weight: 700;"
+                    onclick="triggerUserLogoutProcess()"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                    >
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                      <polyline points="16 17 21 12 16 7" />
+                      <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                    Tizimdan Chiqish 🚪
+                  </button>
+                </div>
               </div>
 
               <!-- Admin Stat Cards Grid -->
@@ -3585,7 +3607,7 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=202.0.0" defer></script>
-    <script src="/eurotex-engine.js?v=6.9.0" defer></script>
+    <script src="/script.js?v=203.0.0" defer></script>
+    <script src="/eurotex-engine.js?v=7.0.0" defer></script>
   </body>
 </html>
