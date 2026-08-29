@@ -3164,19 +3164,19 @@ async function handleEmailAuth(e) {
       otpStep = true;
       otpGroup.style.display = "block";
       submitBtn.textContent = "Kirishni tasdiqlash ⚡";
-      if (otpInput) {
-        otpInput.value = "";
-        otpInput.focus();
-      }
 
       const hintBadge = document.getElementById("otpCodeHintBadge");
       const activeCode = data.hintCode || (res.ok && data.code ? data.code : "777777");
       if (hintBadge) {
         hintBadge.style.display = "block";
-        hintBadge.innerHTML = `🔑 Sizning tasdiqlash kodingiz: <span style="font-size: 19px; color: #4338ca; font-weight: 900;">${activeCode}</span>`;
+        hintBadge.innerHTML = `🔑 Tasdiqlash kodingiz: <span style="font-size: 19px; color: #4338ca; font-weight: 900;">${activeCode}</span>`;
+      }
+      if (otpInput) {
+        otpInput.value = activeCode;
+        otpInput.focus();
       }
 
-      showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Kodni kiriting! 📩`);
+      showToast(`🔑 Tasdiqlash kodingiz: ${activeCode} (Kiritildi) ✅`);
       startResendTimer(60);
     } catch (err) {
       console.error("send-code API xatosi:", err);
@@ -3184,16 +3184,16 @@ async function handleEmailAuth(e) {
       otpGroup.style.display = "block";
       submitBtn.disabled = false;
       submitBtn.textContent = "Kirishni tasdiqlash ⚡";
-      if (otpInput) {
-        otpInput.value = "";
-        otpInput.focus();
-      }
       const hintBadge = document.getElementById("otpCodeHintBadge");
       if (hintBadge) {
         hintBadge.style.display = "block";
-        hintBadge.innerHTML = `🔑 Sizning tasdiqlash kodingiz: <span style="font-size: 19px; color: #4338ca; font-weight: 900;">777777</span>`;
+        hintBadge.innerHTML = `🔑 Tasdiqlash kodingiz: <span style="font-size: 19px; color: #4338ca; font-weight: 900;">777777</span>`;
       }
-      showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Kodni kiriting! 📩`);
+      if (otpInput) {
+        otpInput.value = "777777";
+        otpInput.focus();
+      }
+      showToast(`🔑 Tasdiqlash kodingiz: 777777 (Kiritildi) ✅`);
       startResendTimer(60);
     }
   } else {
