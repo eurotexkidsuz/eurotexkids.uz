@@ -3111,10 +3111,68 @@ function goToAuthStepCode(email) {
   startResendTimer(60);
 }
 
+function distributePastedOtpCode(rawText) {
+  if (!rawText) return false;
+  const digits = String(rawText).replace(/[\u200B-\u200D\uFEFF\s\r\n\t]/g, "").replace(/[^0-9]/g, "").slice(0, 6).split("");
+  if (!digits.length) return false;
+
+  const pinDigits = document.querySelectorAll(".otp-pin-digit");
+  pinDigits.forEach((box, idx) => {
+    if (idx < digits.length) {
+      box.value = digits[idx];
+      box.classList.add("filled");
+    } else {
+      box.value = "";
+      box.classList.remove("filled");
+    }
+  });
+
+  const hiddenInput = document.getElementById("authOtpInput");
+  const fullCode = digits.join("");
+  if (hiddenInput) hiddenInput.value = fullCode;
+
+  if (digits.length === 6) {
+    if (pinDigits[5]) pinDigits[5].focus();
+    setTimeout(() => {
+      const form = document.getElementById("emailLoginForm");
+      if (form) {
+        const submitEvent = new Event("submit", { cancelable: true, bubbles: true });
+        form.dispatchEvent(submitEvent);
+      }
+    }, 50);
+  } else {
+    const nextIdx = Math.min(digits.length, 5);
+    if (pinDigits[nextIdx]) pinDigits[nextIdx].focus();
+  }
+  return true;
+}
+
+function handleOtpGlobalPaste(e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  let pasted = "";
+  if (e && e.clipboardData) {
+    pasted = e.clipboardData.getData("text/plain") || e.clipboardData.getData("text") || "";
+  } else if (window.clipboardData) {
+    pasted = window.clipboardData.getData("Text") || "";
+  }
+
+  if (pasted) {
+    distributePastedOtpCode(pasted);
+  } else if (navigator.clipboard && navigator.clipboard.readText) {
+    navigator.clipboard.readText().then((txt) => {
+      if (txt) distributePastedOtpCode(txt);
+    }).catch(() => {});
+  }
+}
+window.handleOtpGlobalPaste = handleOtpGlobalPaste;
+window.distributePastedOtpCode = distributePastedOtpCode;
+
 function setupOtpInputRestrictions() {
   const hiddenInput = document.getElementById("authOtpInput");
   const pinDigits = document.querySelectorAll(".otp-pin-digit");
-  const container = document.getElementById("otpPinBoxesContainer");
 
   function getCombinedPinValue() {
     let full = "";
@@ -3144,36 +3202,19 @@ function setupOtpInputRestrictions() {
     }
   }
 
-  function handlePasteText(rawText) {
-    if (!rawText) return;
-    const digits = String(rawText).replace(/[^0-9]/g, "").slice(0, 6).split("");
-    if (!digits.length) return;
-
-    pinDigits.forEach((box, idx) => {
-      if (idx < digits.length) {
-        box.value = digits[idx];
-        box.classList.add("filled");
-      } else {
-        box.value = "";
-        box.classList.remove("filled");
-      }
-    });
-
-    const targetIdx = Math.min(digits.length - 1, 5);
-    if (pinDigits[targetIdx]) pinDigits[targetIdx].focus();
-    updateHiddenValueAndCheckSubmit();
-  }
-
   pinDigits.forEach((input, index) => {
-    // 1. Direct Number Keydown Handler - Guarantees exactly 1 digit per box
+    // 1. Keydown handler: typing 0..9, backspace, arrows, delete, and Ctrl+V
     input.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === "v" || e.key === "V")) {
+        return; // Allow native paste event to fire
+      }
+
       if (/^[0-9]$/.test(e.key)) {
         e.preventDefault();
         input.value = e.key;
         input.classList.add("filled");
         if (index < pinDigits.length - 1) {
           pinDigits[index + 1].focus();
-          pinDigits[index + 1].select();
         }
         updateHiddenValueAndCheckSubmit();
         return;
@@ -3218,7 +3259,7 @@ function setupOtpInputRestrictions() {
       const cleaned = raw.replace(/[^0-9]/g, "");
 
       if (cleaned.length > 1) {
-        handlePasteText(cleaned);
+        distributePastedOtpCode(cleaned);
         return;
       }
 
@@ -3241,20 +3282,9 @@ function setupOtpInputRestrictions() {
 
     // 4. Paste handler
     input.addEventListener("paste", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const pasted = (e.clipboardData || window.clipboardData)?.getData("text") || "";
-      handlePasteText(pasted);
+      handleOtpGlobalPaste(e);
     });
   });
-
-  if (container) {
-    container.addEventListener("paste", (e) => {
-      e.preventDefault();
-      const pasted = (e.clipboardData || window.clipboardData)?.getData("text") || "";
-      handlePasteText(pasted);
-    });
-  }
 }
 
 function showAuthError(message) {
