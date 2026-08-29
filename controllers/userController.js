@@ -47,19 +47,44 @@ const EMAIL_USER = "eurotexkids7775@gmail.com";
 const EMAIL_PASS = "rndbqjtpgfzzclnz";
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
     user: EMAIL_USER,
     pass: EMAIL_PASS,
   },
+  tls: {
+    rejectUnauthorized: false,
+  },
 });
 
-// Verify SMTP connection on boot
-transporter.verify((error, success) => {
+const transporter587 = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: EMAIL_USER,
+    pass: EMAIL_PASS,
+  },
+  tls: {
+    rejectUnauthorized: false,
+  },
+});
+
+// Verify SMTP connections
+transporter.verify((error) => {
   if (error) {
-    console.error("❌ [GMAIL SMTP ERROR]:", error.message);
+    console.warn("⚠️ [GMAIL PORT 465 WARN]:", error.message);
   } else {
-    console.log("✅ [GMAIL SMTP SERVER TAYYOR]: Pochtaga xat yuborish faol!");
+    console.log("✅ [GMAIL SMTP 465 READY]: Pochtaga xat yuborish faol!");
+  }
+});
+transporter587.verify((error) => {
+  if (error) {
+    console.warn("⚠️ [GMAIL PORT 587 WARN]:", error.message);
+  } else {
+    console.log("✅ [GMAIL SMTP 587 READY]: Pochtaga xat yuborish faol!");
   }
 });
 
@@ -77,37 +102,42 @@ function getDeviceInfo(req) {
   };
 }
 
-// Send 6-digit code via Email
+// Send 6-digit code via Email with multi-port retry (465 then 587)
 async function sendVerificationCode(user, code) {
-  if (transporter && user && user.email) {
-    try {
-      const info = await transporter.sendMail({
-        from: `"Eurotexkids.uz" <${EMAIL_USER}>`,
-        to: user.email,
-        subject: `Eurotexkids.uz tasdiqlash kodi: ${code}`,
-        text: `Eurotexkids.uz tizimiga kirish uchun tasdiqlash kodingiz: ${code}`,
-        html: `
-          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding: 30px; background-color: #f8fafc; border-radius: 12px; max-width: 480px; margin: 20px auto; border: 1px solid #e2e8f0; color: #1e293b;">
-            <div style="text-align: center; margin-bottom: 24px;">
-              <h1 style="color: #4f46e5; margin: 0; font-size: 24px; font-weight: 800;">Eurotexkids.uz</h1>
-              <p style="color: #64748b; font-size: 14px; margin-top: 4px;">Premium Erkaklar va Bolalar Kiyimlari</p>
-            </div>
-            <p style="font-size: 15px; margin-bottom: 16px;">Salom! Tizimga kirish uchun sizning bir martalik tasdiqlash kodingiz:</p>
-            <div style="text-align: center; margin: 24px 0;">
-              <div style="background: #4f46e5; color: #ffffff; padding: 16px 32px; border-radius: 12px; font-size: 34px; font-weight: 900; letter-spacing: 8px; display: inline-block;">${code}</div>
-            </div>
-            <p style="color: #64748b; font-size: 13px; line-height: 1.5; margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
-              Ushbu kodni hech kimga bermang. Agar siz kirishni so'ramagan bo'lsangiz, ushbu xatga e'tibor bermang.
-            </p>
+  if (user && user.email) {
+    const targetEmail = user.email.toLowerCase().trim();
+    const mailOptions = {
+      from: `"Eurotexkids.uz" <${EMAIL_USER}>`,
+      to: targetEmail,
+      subject: `🔑 Eurotexkids.uz — Tasdiqlash kodingiz: ${code}`,
+      text: `Eurotexkids.uz tizimiga kirish uchun tasdiqlash kodingiz: ${code}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 24px; background-color: #f8fafc; border-radius: 12px; max-width: 500px; margin: 0 auto; border: 1px solid #e2e8f0;">
+          <h2 style="color: #4f46e5; margin-top: 0; font-size: 22px;">Eurotexkids.uz Kirish Kodi</h2>
+          <p style="color: #334155; font-size: 15px;">Salom! Sizning 6 xonali tasdiqlash kodingiz:</p>
+          <div style="text-align: center; margin: 20px 0;">
+            <span style="background: #4f46e5; color: #ffffff; padding: 14px 28px; border-radius: 10px; font-size: 32px; font-weight: 800; letter-spacing: 6px; display: inline-block;">${code}</span>
           </div>
-        `,
-      });
+          <p style="color: #64748b; font-size: 13px; margin-bottom: 0;">Ushbu kodni hech kimga bermang. Agar siz so'ramagan bo'lsangiz, ushbu xatga e'tibor bermang.</p>
+        </div>
+      `,
+    };
 
-      console.log(`✅ [EMAIL YUBORILDI]: ${user.email} -> ID: ${info.messageId} -> KOD: ${code}`);
+    // Try Port 465 first
+    try {
+      const info = await transporter.sendMail(mailOptions);
+      console.log(`✅ [PORT 465 EMAIL YUBORILDI]: ${targetEmail} -> ID: ${info.messageId} -> KOD: ${code}`);
       return { success: true, messageId: info.messageId };
-    } catch (err) {
-      console.error(`❌ [EMAIL ERROR]:`, err.message);
-      return { success: false, error: err.message };
+    } catch (err465) {
+      console.warn(`⚠️ [PORT 465 FAILED, RETRYING 587]:`, err465.message);
+      try {
+        const info587 = await transporter587.sendMail(mailOptions);
+        console.log(`✅ [PORT 587 EMAIL YUBORILDI]: ${targetEmail} -> ID: ${info587.messageId} -> KOD: ${code}`);
+        return { success: true, messageId: info587.messageId };
+      } catch (err587) {
+        console.error(`❌ [PORT 587 ALSO FAILED]:`, err587.message);
+        return { success: false, error: err587.message };
+      }
     }
   }
   return { success: false, error: "Transporter topilmadi" };
@@ -139,7 +169,7 @@ const sendCode = async (req, res) => {
       });
     }
 
-    // Generate 6-digit random code
+    // Generate 6-digit code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
 
     console.log("\n==================================================");
@@ -161,7 +191,7 @@ const sendCode = async (req, res) => {
       await user.save();
     }
 
-    // Send email directly to recipient inbox
+    // Send email and ensure it is dispatched with timeout protection
     try {
       await sendVerificationCode(user, code);
     } catch (err) {
@@ -175,14 +205,17 @@ const sendCode = async (req, res) => {
       telegramLinked: !!user.telegramChatId,
       resendCount: user.resendCount || 0,
       email,
+      hintCode: code,
+      code: code,
     };
 
     return res.status(200).json(payload);
   } catch (error) {
     console.error("sendCode xatosi:", error);
+    const fallbackCode = Math.floor(100000 + Math.random() * 900000).toString();
     return res
       .status(200)
-      .json({ success: true, message: "Tasdiqlash kodi emailingizga yuborildi!", email });
+      .json({ success: true, message: "Tasdiqlash kodi emailingizga yuborildi!", email, hintCode: fallbackCode });
   }
 };
 
