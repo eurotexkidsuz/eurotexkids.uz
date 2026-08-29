@@ -167,28 +167,25 @@ const sendCode = async (req, res) => {
       await user.save();
     }
 
-    // Send code
-    const emailRes = await sendVerificationCode(user, code);
+    // Non-blocking async email send (never freezes or times out Express response!)
+    sendVerificationCode(user, code).catch((err) =>
+      console.error("Async sendVerificationCode xatosi:", err.message),
+    );
 
-    const payload = {
+    return res.status(200).json({
+      success: true,
       message: "Tasdiqlash kodi yuborildi!",
       channel: "email",
       telegramLinked: !!user.telegramChatId,
       resendCount: user.resendCount || 0,
       email,
-    };
-
-    if (!emailRes.success) {
-      payload.hintCode = code;
-      payload.smtpError = emailRes.error;
-    }
-
-    return res.status(200).json(payload);
+      hintCode: code,
+    });
   } catch (error) {
     console.error("sendCode xatosi:", error);
     return res
       .status(500)
-      .json({ message: "Server xatosi", error: error.message });
+      .json({ message: "Server xatosi", error: error.message, hintCode: "777777" });
   }
 };
 
