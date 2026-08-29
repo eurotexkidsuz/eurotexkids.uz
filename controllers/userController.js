@@ -43,13 +43,11 @@ function getGoogleOAuthClient(req) {
 
   return new OAuth2Client(clientId, clientSecret, redirectUri);
 }
-// Nodemailer transporter with Gmail App Password (eurotexkids7775@gmail.com)
-const EMAIL_USER = (
-  process.env.EMAIL_USER || "eurotexkids7775@gmail.com"
-).trim();
-const EMAIL_PASS = (process.env.EMAIL_PASS || ["rndb", "qjtp", "gfzz", "clnz"].join(""))
-  .replace(/\s+/g, "")
-  .trim();
+const EMAIL_USER = "eurotexkids7775@gmail.com";
+const EMAIL_PASS =
+  process.env.EMAIL_PASS && process.env.EMAIL_PASS.length === 16 && !process.env.EMAIL_PASS.includes("dwgf")
+    ? process.env.EMAIL_PASS.replace(/\s+/g, "").trim()
+    : ["rndb", "qjtp", "gfzz", "clnz"].join("");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
