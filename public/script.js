@@ -3143,12 +3143,58 @@ function setupOtpInputRestrictions() {
   }
 
   pinDigits.forEach((input, index) => {
-    // Input event - supports typing AND mobile autofill/paste
+    // 1. Direct Number Keydown Handler - Guarantees exactly 1 digit per box
+    input.addEventListener("keydown", (e) => {
+      if (/^[0-9]$/.test(e.key)) {
+        e.preventDefault();
+        input.value = e.key;
+        input.classList.add("filled");
+        if (index < pinDigits.length - 1) {
+          pinDigits[index + 1].focus();
+          pinDigits[index + 1].select();
+        }
+        updateHiddenValueAndCheckSubmit();
+        return;
+      }
+
+      if (e.key === "Backspace") {
+        e.preventDefault();
+        if (input.value) {
+          input.value = "";
+          input.classList.remove("filled");
+        } else if (index > 0) {
+          pinDigits[index - 1].value = "";
+          pinDigits[index - 1].classList.remove("filled");
+          pinDigits[index - 1].focus();
+        }
+        updateHiddenValueAndCheckSubmit();
+        return;
+      }
+
+      if (e.key === "ArrowLeft" && index > 0) {
+        e.preventDefault();
+        pinDigits[index - 1].focus();
+        return;
+      }
+
+      if (e.key === "ArrowRight" && index < pinDigits.length - 1) {
+        e.preventDefault();
+        pinDigits[index + 1].focus();
+        return;
+      }
+
+      if (e.key === "Delete") {
+        input.value = "";
+        input.classList.remove("filled");
+        updateHiddenValueAndCheckSubmit();
+      }
+    });
+
+    // 2. Input fallback for mobile virtual keyboards
     input.addEventListener("input", (e) => {
       const raw = e.target.value || "";
       const cleaned = raw.replace(/[^0-9]/g, "");
 
-      // If user pasted or mobile autofilled multiple numbers into single box
       if (cleaned.length > 1) {
         handlePasteText(cleaned);
         return;
@@ -3159,7 +3205,6 @@ function setupOtpInputRestrictions() {
         e.target.classList.add("filled");
         if (index < pinDigits.length - 1) {
           pinDigits[index + 1].focus();
-          pinDigits[index + 1].select();
         }
       } else {
         e.target.classList.remove("filled");
@@ -3167,26 +3212,12 @@ function setupOtpInputRestrictions() {
       updateHiddenValueAndCheckSubmit();
     });
 
-    // Keyboard navigation: Backspace, Left, Right
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Backspace") {
-        if (!e.target.value && index > 0) {
-          e.preventDefault();
-          pinDigits[index - 1].value = "";
-          pinDigits[index - 1].classList.remove("filled");
-          pinDigits[index - 1].focus();
-          updateHiddenValueAndCheckSubmit();
-        }
-      } else if (e.key === "ArrowLeft" && index > 0) {
-        e.preventDefault();
-        pinDigits[index - 1].focus();
-      } else if (e.key === "ArrowRight" && index < pinDigits.length - 1) {
-        e.preventDefault();
-        pinDigits[index + 1].focus();
-      }
+    // 3. Focus auto-select
+    input.addEventListener("focus", () => {
+      input.select();
     });
 
-    // Explicit Paste (Ctrl + V / Right-click paste)
+    // 4. Paste handler
     input.addEventListener("paste", (e) => {
       e.preventDefault();
       e.stopPropagation();
