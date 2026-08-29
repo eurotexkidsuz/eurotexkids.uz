@@ -2048,17 +2048,49 @@ function applyPromoCode() {
 
 // Quick View Modal
 function openQuickView(productId) {
-  const pool = (typeof EUROTEX_PRODUCTS !== "undefined" && Array.isArray(EUROTEX_PRODUCTS) && EUROTEX_PRODUCTS.length > 0)
-    ? EUROTEX_PRODUCTS
-    : getGlobalProductsPool();
-  const product = (pool || []).find(
-    (p) =>
-      String(p.id) === String(productId) ||
-      String(p.customId) === String(productId) ||
-      String(p._id) === String(productId) ||
-      String(p.dbId) === String(productId),
-  );
-  if (!product) return;
+  let pool = [];
+  if (typeof EUROTEX_PRODUCTS !== "undefined" && Array.isArray(EUROTEX_PRODUCTS) && EUROTEX_PRODUCTS.length > 0) {
+    pool = [...EUROTEX_PRODUCTS];
+  }
+  if (typeof DEFAULT_EUROTEX_PRODUCTS !== "undefined" && Array.isArray(DEFAULT_EUROTEX_PRODUCTS)) {
+    DEFAULT_EUROTEX_PRODUCTS.forEach((p) => {
+      if (!pool.some((ep) => String(ep.id) === String(p.id))) {
+        pool.push(p);
+      }
+    });
+  }
+  if (typeof getGlobalProductsPool === "function") {
+    const globalPool = getGlobalProductsPool();
+    if (Array.isArray(globalPool)) {
+      globalPool.forEach((p) => {
+        if (!pool.some((ep) => String(ep.id) === String(p.id))) {
+          pool.push(p);
+        }
+      });
+    }
+  }
+
+  const targetStr = String(productId || "").trim().toLowerCase();
+  const product = (pool || []).find((p) => {
+    if (!p) return false;
+    const pId = String(p.id || "").trim().toLowerCase();
+    const pCust = String(p.customId || "").trim().toLowerCase();
+    const pDb = String(p.dbId || p._id || "").trim().toLowerCase();
+    const pCleanId = pId.replace(/^prod-?/i, "");
+    const targetClean = targetStr.replace(/^prod-?/i, "");
+
+    return (
+      pId === targetStr ||
+      pCust === targetStr ||
+      pDb === targetStr ||
+      (targetClean && pCleanId === targetClean)
+    );
+  });
+
+  if (!product) {
+    console.error("Mahsulot topilmadi:", productId);
+    return;
+  }
 
   const lang = state.currentLang || "uz";
   const dict = TRANSLATIONS[lang] || TRANSLATIONS.uz;
