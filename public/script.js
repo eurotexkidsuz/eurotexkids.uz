@@ -3032,7 +3032,29 @@ function normalizeUserEmail(input) {
 let otpStep = false;
 let resendTimerInterval = null;
 
+function handleAuthBackClick() {
+  const confirmModal = document.getElementById("authBackConfirmModal");
+  if (confirmModal) {
+    confirmModal.style.display = "flex";
+  } else {
+    goToAuthStepEmail();
+  }
+}
+
+function closeAuthBackConfirm() {
+  const confirmModal = document.getElementById("authBackConfirmModal");
+  if (confirmModal) {
+    confirmModal.style.display = "none";
+  }
+}
+
+function confirmGoBackToEmail() {
+  closeAuthBackConfirm();
+  goToAuthStepEmail();
+}
+
 function goToAuthStepEmail() {
+  closeAuthBackConfirm();
   otpStep = false;
   const stepEmail = document.getElementById("authStepEmail");
   const stepCode = document.getElementById("authStepCode");
@@ -3318,21 +3340,20 @@ async function resendOtpCode(e) {
   }
 }
 
-function startResendTimer(seconds = 30) {
+function startResendTimer(seconds = 60) {
   let timeLeft = seconds;
   const resendBtn = document.getElementById("resendOtpBtn");
-  const timerLabel = document.getElementById("resendTimerLabel");
 
   if (resendBtn) {
     resendBtn.style.pointerEvents = "none";
-    resendBtn.style.opacity = "0.6";
+    resendBtn.style.opacity = "0.7";
+    resendBtn.textContent = `⏳ Kuting (${timeLeft}s)`;
   }
 
   clearInterval(resendTimerInterval);
   resendTimerInterval = setInterval(() => {
     if (timeLeft <= 0) {
       clearInterval(resendTimerInterval);
-      if (timerLabel) timerLabel.textContent = "";
       if (resendBtn) {
         resendBtn.style.pointerEvents = "auto";
         resendBtn.style.opacity = "1";
@@ -3340,7 +3361,6 @@ function startResendTimer(seconds = 30) {
         resendBtn.textContent = "🔄 Qayta yuborish";
       }
     } else {
-      if (timerLabel) timerLabel.textContent = `Qayta yuborish: ${timeLeft}s`;
       if (resendBtn) resendBtn.textContent = `⏳ Kuting (${timeLeft}s)`;
       timeLeft--;
     }

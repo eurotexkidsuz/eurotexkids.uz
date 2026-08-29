@@ -2308,12 +2308,11 @@
             <!-- STEP 2: TELEGRAM-STYLE 6-DIGIT CODE ENTRY -->
             <div id="authStepCode" class="auth-step-container" style="display: none;">
               <div class="auth-step2-header">
-                <button type="button" class="btn-auth-back" onclick="goToAuthStepEmail()" title="Emailni o'zgartirish">
+                <button type="button" class="btn-auth-back" onclick="handleAuthBackClick()" title="Emailni o'zgartirish">
                   ←
                 </button>
                 <div class="auth-step2-email-wrap">
                   <span id="authSentEmailDisplay" class="auth-sent-email-badge"></span>
-                  <button type="button" class="btn-auth-edit-email" onclick="goToAuthStepEmail()">O'zgartirish ✏️</button>
                 </div>
               </div>
 
@@ -2338,15 +2337,14 @@
                 <span id="authErrorTextStep2" class="auth-error-text"></span>
               </div>
 
-              <div class="otp-resend-row">
-                <span id="resendTimerLabel" class="resend-timer-label"></span>
+              <div class="otp-resend-row single-btn-center">
                 <button
                   type="button"
                   id="resendOtpBtn"
                   class="resend-clean-btn"
                   onclick="resendOtpCode(event)"
                 >
-                  🔄 Qayta yuborish
+                  ⏳ Kuting (60s)
                 </button>
               </div>
 
@@ -2357,6 +2355,19 @@
               >
                 Kirishni tasdiqlash ⚡
               </button>
+            </div>
+
+            <!-- TELEGRAM STYLE BACK CONFIRMATION DIALOG -->
+            <div id="authBackConfirmModal" class="tg-confirm-overlay" style="display: none;">
+              <div class="tg-confirm-dialog">
+                <div class="tg-confirm-icon">✏️</div>
+                <div class="tg-confirm-title">Emailni tahrirlash</div>
+                <div class="tg-confirm-text">Rostdan ham tahrirlamoqchimisiz?</div>
+                <div class="tg-confirm-buttons">
+                  <button type="button" class="tg-confirm-btn danger" onclick="confirmGoBackToEmail()">Ha, tahrirlash</button>
+                  <button type="button" class="tg-confirm-btn cancel" onclick="closeAuthBackConfirm()">Davom etish</button>
+                </div>
+              </div>
             </div>
           </form>
 
@@ -3627,7 +3638,7 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=241.0.0" defer></script>
-    <script src="/eurotex-engine.js?v=10.8.0" defer></script>
+    <script src="/script.js?v=242.0.0" defer></script>
+    <script src="/eurotex-engine.js?v=10.9.0" defer></script>
   </body>
 </html>
