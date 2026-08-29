@@ -6,6 +6,9 @@
   "author": "",
   "type": "commonjs",
   "main": "index.js",
+  "nodemonConfig": {
+    "ignore": ["database.json", "test-*.js", ".env*", "*.log"]
+  },
   "scripts": {
     "dev": "nodemon index.js",
     "start": "nodemon index.js"

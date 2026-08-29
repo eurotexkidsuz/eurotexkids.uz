@@ -41,7 +41,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/style.css?v=64.0.0" />
+    <link rel="stylesheet" href="/style.css?v=65.0.1" />
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
@@ -2202,7 +2202,7 @@
           <div class="auth-tabs">
             <button
               type="button"
-              class="auth-tab active"
+              class="auth-tab"
               id="googleTabBtn"
               onclick="switchAuthTab('google')"
             >
@@ -2210,7 +2210,7 @@
             </button>
             <button
               type="button"
-              class="auth-tab"
+              class="auth-tab active"
               id="emailTabBtn"
               onclick="switchAuthTab('email')"
             >
@@ -2221,8 +2221,8 @@
           <!-- Google Login Pane -->
           <div
             id="googleAuthPane"
-            class="auth-form-pane active"
-            style="display: block; text-align: center; padding: 24px 0"
+            class="auth-form-pane"
+            style="display: none; text-align: center; padding: 24px 0"
           >
             <button
               type="button"
@@ -2270,8 +2270,8 @@
           <!-- Email Login Form -->
           <form
             id="emailLoginForm"
-            class="auth-form-pane"
-            style="display: none"
+            class="auth-form-pane active"
+            style="display: block"
             onsubmit="
               handleEmailAuth(event);
               return false;
@@ -2284,46 +2284,46 @@
               <input
                 type="text"
                 id="authEmailInput"
+                class="auth-email-input"
                 placeholder="example@gmail.com"
+                autocomplete="email"
                 required
-                style="border-radius: 12px; padding: 12px; width: 100%"
               />
             </div>
 
+            <div
+              id="authErrorBox"
+              class="auth-error-box"
+            >
+              <span class="auth-error-icon">⚠️</span>
+              <span id="authErrorText" class="auth-error-text"></span>
+            </div>
+
             <div class="form-group" id="otpGroup" style="display: none">
-              <label for="authOtpInput">Emailingizga yuborilgan OTP kod:</label>
+              <label for="authOtpInput" class="otp-input-label">
+                <span class="otp-label-text">📧 Emailingizga yuborilgan 6 xonali kod:</span>
+                <span class="otp-label-secure">Faqat pochta orqali oling!</span>
+              </label>
               <input
                 type="text"
                 id="authOtpInput"
-                placeholder="6 xonali tasdiqlash kodi"
+                class="otp-clean-input"
+                placeholder="• • • • • •"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autocomplete="one-time-code"
                 maxlength="6"
               />
-              <div
-                style="
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-                  margin-top: 8px;
-                "
-              >
+              <div class="otp-resend-row">
                 <span
                   id="resendTimerLabel"
-                  style="font-size: 12px; color: var(--text-secondary)"
+                  class="resend-timer-label"
                 ></span>
                 <button
                   type="button"
                   id="resendOtpBtn"
+                  class="resend-clean-btn"
                   onclick="resendOtpCode(event)"
-                  style="
-                    font-size: 13px;
-                    font-weight: 700;
-                    color: var(--color-uzum-purple);
-                    background: none;
-                    border: none;
-                    cursor: pointer;
-                    padding: 2px 0;
-                    text-decoration: underline;
-                  "
                 >
                   🔄 Kodni qayta yuborish
                 </button>
@@ -2332,9 +2332,8 @@
 
             <button
               type="submit"
-              class="btn btn-primary btn-block"
+              class="btn btn-primary btn-block auth-submit-btn"
               id="authSubmitBtn"
-              style="margin-top: 15px; width: 100%"
             >
               Kod yuborish
             </button>
@@ -3607,7 +3606,7 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=228.0.0" defer></script>
-    <script src="/eurotex-engine.js?v=9.5.0" defer></script>
+    <script src="/script.js?v=229.0.2" defer></script>
+    <script src="/eurotex-engine.js?v=9.6.1" defer></script>
   </body>
 </html>

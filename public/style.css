@@ -8426,3 +8426,292 @@ img {
     box-shadow: none !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   EMAIL OTP AUTHENTICATION MODULE STYLES (ALOHIDA CSS, INLINE YO'Q)
+   ═══════════════════════════════════════════════════════════════════ */
+
+.auth-email-input {
+  width: 100%;
+  border-radius: 12px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border-color-dark);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+
+.auth-email-input:focus {
+  border-color: var(--color-uzum-purple);
+  box-shadow: 0 0 0 4px rgba(112, 0, 255, 0.1);
+  background: var(--bg-surface);
+}
+
+.auth-error-box {
+  display: none;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  margin: 8px 0 16px 0;
+  background: rgba(225, 29, 72, 0.08);
+  border: 1.5px solid rgba(225, 29, 72, 0.6);
+  border-radius: 12px;
+  color: #be123c;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: left;
+  animation: authErrorShake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes authErrorShake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60% { transform: translateX(4px); }
+}
+
+.auth-error-icon {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.auth-error-text {
+  flex: 1;
+}
+
+.otp-input-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.otp-label-text {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 13.5px;
+}
+
+.otp-label-secure {
+  font-size: 11px;
+  color: #059669;
+  font-weight: 800;
+  padding: 3px 8px;
+  background: rgba(5, 150, 105, 0.1);
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.otp-clean-input {
+  width: 100%;
+  padding: 16px 18px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 12px;
+  text-align: center;
+  border: 2px solid var(--border-color-dark);
+  border-radius: 14px;
+  background: var(--bg-surface-secondary);
+  color: var(--color-navy);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  font-family: 'Inter', 'Outfit', monospace;
+  caret-color: var(--color-uzum-purple);
+}
+
+.otp-clean-input::placeholder {
+  letter-spacing: 8px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.otp-clean-input:focus {
+  border-color: var(--color-uzum-purple);
+  box-shadow: 0 0 0 4px rgba(112, 0, 255, 0.12);
+  background: var(--bg-surface);
+  transform: translateY(-1px);
+}
+
+.otp-clean-input:active {
+  transform: translateY(0);
+}
+
+.otp-clean-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.otp-resend-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border-color);
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.resend-timer-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-uzum-purple);
+  letter-spacing: 0.3px;
+}
+
+.resend-clean-btn {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--color-uzum-purple);
+  background: rgba(112, 0, 255, 0.08);
+  border: 1.5px solid rgba(112, 0, 255, 0.25);
+  cursor: pointer;
+  padding: 7px 14px;
+  border-radius: 10px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.resend-clean-btn:hover:not(:disabled) {
+  background: rgba(112, 0, 255, 0.15);
+  border-color: rgba(112, 0, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.resend-clean-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.resend-clean-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.3);
+}
+
+.auth-submit-btn {
+  margin-top: 15px;
+  width: 100%;
+  min-height: 48px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 14.5px;
+  letter-spacing: 0.3px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.auth-submit-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-purple);
+}
+
+.auth-submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.auth-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  filter: grayscale(0.2);
+}
+
+/* ───── Dark Mode Overrides for OTP Auth ───── */
+html[data-theme="dark"] .auth-email-input {
+  background: var(--bg-surface-secondary);
+  border-color: var(--border-color);
+}
+
+html[data-theme="dark"] .auth-email-input:focus {
+  border-color: var(--color-uzum-purple);
+  background: var(--bg-surface);
+}
+
+html[data-theme="dark"] .auth-error-box {
+  background: rgba(225, 29, 72, 0.15);
+  border-color: rgba(244, 63, 94, 0.6);
+  color: #fda4af;
+}
+
+html[data-theme="dark"] .otp-label-text {
+  color: var(--text-primary);
+}
+
+html[data-theme="dark"] .otp-label-secure {
+  background: rgba(5, 150, 105, 0.15);
+  color: #34d399;
+}
+
+html[data-theme="dark"] .otp-clean-input {
+  background: var(--bg-surface-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+html[data-theme="dark"] .otp-clean-input:focus {
+  background: var(--bg-surface);
+  border-color: var(--color-uzum-purple);
+}
+
+html[data-theme="dark"] .otp-clean-input::placeholder {
+  color: var(--text-muted);
+}
+
+html[data-theme="dark"] .otp-resend-row {
+  border-top-color: var(--border-color);
+}
+
+html[data-theme="dark"] .resend-timer-label {
+  color: #a78bfa;
+}
+
+html[data-theme="dark"] .resend-clean-btn {
+  background: rgba(167, 139, 250, 0.12);
+  border-color: rgba(167, 139, 250, 0.3);
+  color: #c4b5fd;
+}
+
+html[data-theme="dark"] .resend-clean-btn:hover:not(:disabled) {
+  background: rgba(167, 139, 250, 0.22);
+  border-color: rgba(167, 139, 250, 0.55);
+}
+
+/* ───── Mobile Responsive for OTP Auth ───── */
+@media (max-width: 480px) {
+  .otp-clean-input {
+    font-size: 20px;
+    letter-spacing: 10px;
+    padding: 14px 12px;
+  }
+
+  .otp-clean-input::placeholder {
+    letter-spacing: 6px;
+  }
+
+  .otp-input-label {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .resend-timer-label {
+    font-size: 11.5px;
+  }
+
+  .resend-clean-btn {
+    font-size: 12.5px;
+    padding: 6px 12px;
+  }
+
+  .auth-error-box {
+    padding: 10px 12px;
+    font-size: 12.5px;
+    gap: 8px;
+  }
+}

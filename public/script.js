@@ -902,6 +902,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   loadCustomSizesFromStorage();
   setLanguage(state.currentLang);
   setupEventListeners();
+  setupOtpInputRestrictions();
   initCarousel();
   loadCustomHeroSlides();
   initSlideLiveSync();
@@ -3031,12 +3032,69 @@ function normalizeUserEmail(input) {
 let otpStep = false;
 let resendTimerInterval = null;
 
+function setupOtpInputRestrictions() {
+  const otpInput = document.getElementById("authOtpInput");
+  if (!otpInput) return;
+
+  otpInput.addEventListener("input", (e) => {
+    e.target.value = e.target.value.replace(/[^0-9]/g, "").slice(0, 6);
+    const submitBtn = document.getElementById("authSubmitBtn");
+    if (e.target.value.length === 6 && otpStep && submitBtn && !submitBtn.disabled) {
+      const form = document.getElementById("emailLoginForm");
+      if (form) {
+        const submitEvent = new Event("submit", { cancelable: true, bubbles: true });
+        form.dispatchEvent(submitEvent);
+      }
+    }
+  });
+
+  otpInput.addEventListener("paste", (e) => {
+    e.preventDefault();
+    const paste = (e.clipboardData || window.clipboardData).getData("text");
+    const numbersOnly = paste.replace(/[^0-9]/g, "").slice(0, 6);
+    e.target.value = numbersOnly;
+    if (numbersOnly.length === 6 && otpStep) {
+      const submitBtn = document.getElementById("authSubmitBtn");
+      if (submitBtn && !submitBtn.disabled) {
+        const form = document.getElementById("emailLoginForm");
+        if (form) {
+          const submitEvent = new Event("submit", { cancelable: true, bubbles: true });
+          form.dispatchEvent(submitEvent);
+        }
+      }
+    }
+  });
+
+  otpInput.addEventListener("keydown", (e) => {
+    const allowedKeys = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Enter"];
+    if (allowedKeys.includes(e.key)) return;
+    if (e.key.length === 1 && !/[0-9]/.test(e.key)) {
+      e.preventDefault();
+    }
+  });
+}
+
+function showAuthError(message) {
+  const errorBox = document.getElementById("authErrorBox");
+  const errorText = document.getElementById("authErrorText");
+  if (!errorBox) return;
+  if (errorText) errorText.textContent = message || "";
+  else errorBox.textContent = message || "";
+  errorBox.style.display = message ? "flex" : "none";
+}
+
+function clearAuthError() {
+  showAuthError("");
+}
+
 async function resendOtpCode(e) {
   if (e) e.preventDefault();
   const emailInput = document.getElementById("authEmailInput");
   const otpInput = document.getElementById("authOtpInput");
   const resendBtn = document.getElementById("resendOtpBtn");
   const timerLabel = document.getElementById("resendTimerLabel");
+
+  clearAuthError();
 
   if (!emailInput || !emailInput.value.trim()) {
     showToast("Iltimos, email pochtangizni kiriting!");
@@ -3060,17 +3118,17 @@ async function resendOtpCode(e) {
 
     const data = await res.json();
 
-    if (res.ok) {
+    if (res.ok && data.success !== false) {
       if (otpInput) {
         otpInput.value = "";
         otpInput.focus();
       }
-      showToast(
-        `📧 Yangi tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshirib 6 xonali kodni kiriting! 📩`,
-      );
+      clearAuthError();
+      showToast(`📧 Yangi tasdiqlash kodi ${email} pochtangizga yuborildi! Pochtangizni tekshiring! 📩`);
       startResendTimer(30);
     } else {
-      showToast(data.message || "Kod qayta yuborishda xatolik! ❌");
+      showAuthError(data.message || "❌ Kod qayta yuborishda xatolik!");
+      showToast(data.message || "❌ Kod qayta yuborishda xatolik!", "error");
       if (resendBtn) {
         resendBtn.style.pointerEvents = "auto";
         resendBtn.style.opacity = "1";
@@ -3078,14 +3136,12 @@ async function resendOtpCode(e) {
     }
   } catch (err) {
     console.error("resendOtpCode API xatosi:", err);
-    if (otpInput) {
-      otpInput.value = "";
-      otpInput.focus();
+    showAuthError("❌ Tarmoq xatosi. Iltimos, internet aloqangizni tekshiring.");
+    showToast("❌ Tarmoq xatosi. Iltimos, qayta urinib ko'ring.", "error");
+    if (resendBtn) {
+      resendBtn.style.pointerEvents = "auto";
+      resendBtn.style.opacity = "1";
     }
-    showToast(
-      `📧 Yangi tasdiqlash kodi ${email} pochtasiga qayta yuborildi! Gmail'ingizni tekshiring! 📩`,
-    );
-    startResendTimer(30);
   }
 }
 
@@ -3112,7 +3168,7 @@ function startResendTimer(seconds = 30) {
       }
     } else {
       if (timerLabel) timerLabel.textContent = `Qayta yuborish: ${timeLeft}s`;
-      if (resendBtn) resendBtn.textContent = `⏳ yuborildi (${timeLeft}s)`;
+      if (resendBtn) resendBtn.textContent = `⏳ Kuting (${timeLeft}s)`;
       timeLeft--;
     }
   }, 1000);
@@ -3120,12 +3176,15 @@ function startResendTimer(seconds = 30) {
 
 async function handleEmailAuth(e) {
   if (e) e.preventDefault();
+  clearAuthError();
+
   const emailInput = document.getElementById("authEmailInput");
   const otpGroup = document.getElementById("otpGroup");
   const otpInput = document.getElementById("authOtpInput");
   const submitBtn = document.getElementById("authSubmitBtn");
 
   if (!emailInput || !emailInput.value.trim()) {
+    showAuthError("Iltimos, elektron pochtangizni kiriting!");
     showToast("Iltimos, elektron pochtangizni kiriting!");
     return;
   }
@@ -3147,37 +3206,44 @@ async function handleEmailAuth(e) {
       try {
         data = await res.json();
       } catch (parseErr) {
-        data = { message: "Serverdan kutilmagan javob qaytdi." };
+        data = { success: false, message: "Serverdan kutilmagan javob qaytdi." };
       }
+
       submitBtn.disabled = false;
 
-      otpStep = true;
-      otpGroup.style.display = "block";
-      submitBtn.textContent = "Kirishni tasdiqlash ⚡";
-      if (otpInput) {
-        otpInput.value = "";
-        otpInput.focus();
+      if (res.ok && data.success !== false) {
+        otpStep = true;
+        otpGroup.style.display = "block";
+        submitBtn.textContent = "Kirishni tasdiqlash ⚡";
+        clearAuthError();
+        if (otpInput) {
+          otpInput.value = "";
+          otpInput.focus();
+        }
+        showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Pochtangizni tekshiring! 📩`);
+        startResendTimer(60);
+      } else {
+        otpStep = false;
+        otpGroup.style.display = "none";
+        submitBtn.textContent = "Kod yuborish";
+        showAuthError(data.message || "❌ Kod yuborishda xatolik yuz berdi. Boshqa email kiriting yoki keyinroq qayta urinib ko'ring.");
+        showToast(data.message || "❌ Kod yuborishda xatolik!", "error");
       }
-
-      showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshirib 6 xonali kodni kiriting! 📩`);
-      startResendTimer(60);
     } catch (err) {
       console.error("send-code API xatosi:", err);
-      otpStep = true;
-      otpGroup.style.display = "block";
+      otpStep = false;
+      otpGroup.style.display = "none";
       submitBtn.disabled = false;
-      submitBtn.textContent = "Kirishni tasdiqlash ⚡";
-      if (otpInput) {
-        otpInput.value = "";
-        otpInput.focus();
-      }
-      showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshirib 6 xonali kodni kiriting! 📩`);
-      startResendTimer(60);
+      submitBtn.textContent = "Kod yuborish";
+      showAuthError("❌ Tarmoq xatosi. Iltimos, internet aloqangizni tekshiring va qayta urinib ko'ring.");
+      showToast("❌ Tarmoq xatosi. Internetni tekshiring!", "error");
     }
   } else {
     const codeVal = otpInput ? otpInput.value.trim() : "";
-    if (!codeVal) {
-      showToast("6 xonali kodingizni kiriting!");
+    if (!codeVal || codeVal.length !== 6) {
+      showAuthError("Iltimos, 6 xonali to'liq tasdiqlash kodini kiriting!");
+      showToast("Iltimos, 6 xonali kodingizni kiriting!");
+      if (otpInput) otpInput.focus();
       return;
     }
 
@@ -3208,25 +3274,25 @@ async function handleEmailAuth(e) {
         closeModal("authModal");
 
         if (isAdmin) {
-          showToast(
-            "👑 Kod to'g'ri! Admin sifatida muvaffaqiyatli kirdingiz! Master Admin Panel ochildi. ✅",
-          );
+          showToast("👑 Kod to'g'ri! Admin sifatida muvaffaqiyatli kirdingiz! ✅");
           openDashboardView("admin");
         } else {
           showToast(`✅ Kod to'g'ri! Xush kelibsiz, ${state.user.name}!`);
         }
       } else {
-        showToast(data.message || "❌ Noto'g'ri kod kiritildi! Pochtadagi 6 xonali kodni tekshiring.");
+        showAuthError(data.message || "❌ Noto'g'ri kod kiritildi! Pochtadagi 6 xonali kodni tekshiring.");
+        showToast(data.message || "❌ Noto'g'ri kod kiritildi!", "error");
         submitBtn.disabled = false;
         submitBtn.textContent = "Kirishni tasdiqlash ⚡";
         if (otpInput) {
+          otpInput.value = "";
           otpInput.focus();
-          otpInput.select();
         }
       }
     } catch (err) {
       console.error("verify-code API xatosi:", err);
-      showToast("❌ Kod noto'g'ri yoki tekshirishda xatolik yuz berdi. Pochtadagi kodni tekshirib qayta kiriting.");
+      showAuthError("❌ Tarmoq xatosi. Iltimos, internet aloqangizni tekshiring.");
+      showToast("❌ Tarmoq xatosi. Internetni tekshiring!", "error");
       submitBtn.disabled = false;
       submitBtn.textContent = "Kirishni tasdiqlash ⚡";
     }
@@ -3241,6 +3307,8 @@ function resetAuthForm() {
     document.getElementById("authOtpGroup");
   const submitBtn = document.getElementById("authSubmitBtn");
 
+  clearAuthError();
+
   if (mainEmailInput) mainEmailInput.value = "";
   if (otpInput) otpInput.value = "";
   if (otpGroup) otpGroup.style.display = "none";
@@ -3249,6 +3317,15 @@ function resetAuthForm() {
     submitBtn.textContent = "Kod yuborish";
   }
   otpStep = false;
+  clearInterval(resendTimerInterval);
+  const timerLabel = document.getElementById("resendTimerLabel");
+  if (timerLabel) timerLabel.textContent = "";
+  const resendBtn = document.getElementById("resendOtpBtn");
+  if (resendBtn) {
+    resendBtn.style.pointerEvents = "auto";
+    resendBtn.style.opacity = "1";
+    resendBtn.textContent = "🔄 Kodni qayta yuborish";
+  }
 }
 
 function handleGoogleFormSubmit(e) {

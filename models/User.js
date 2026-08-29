@@ -26,6 +26,7 @@ const userSchema = new mongoose.Schema(
   {
     email: { type: String, required: true, unique: true },
     code: { type: String },
+    codeExpiry: { type: Date, default: null },
     resendCount: { type: Number, default: 0 },
     failedAttempts: { type: Number, default: 0 },
     blockCount: { type: Number, default: 0 },

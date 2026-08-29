@@ -33,12 +33,14 @@ class UserMock {
         : Math.random().toString(36).substring(2, 11);
     this.email = "";
     this.code = null;
+    this.codeExpiry = null;
     this.telegramChatId = null;
     this.resendCount = 0;
     this.failedAttempts = 0;
     this.blockCount = 0;
     this.blockedUntil = null;
     this.rememberToken = null;
+    this.role = "user";
     this.telegramLinkToken = null;
     this.telegramLinkTokenExpiry = null;
     this.isGuest = false;

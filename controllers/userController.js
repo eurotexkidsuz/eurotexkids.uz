@@ -52,6 +52,9 @@ const transporterSSL = nodemailer.createTransport({
   secure: true,
   auth: { user: EMAIL_USER, pass: EMAIL_PASS },
   tls: { rejectUnauthorized: false },
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 15000,
 });
 
 const transporterTLS = nodemailer.createTransport({
@@ -60,11 +63,17 @@ const transporterTLS = nodemailer.createTransport({
   secure: false,
   auth: { user: EMAIL_USER, pass: EMAIL_PASS },
   tls: { rejectUnauthorized: false },
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 15000,
 });
 
 const transporterService = nodemailer.createTransport({
   service: "gmail",
   auth: { user: EMAIL_USER, pass: EMAIL_PASS },
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 15000,
 });
 
 // Parse device info from request
@@ -124,6 +133,7 @@ async function sendVerificationCode(user, code) {
 
 // ─── SEND CODE ────────────────────────────────────────────────────────────────
 const sendCode = async (req, res) => {
+  console.log("📨 [sendCode] Request keldi:", JSON.stringify(req.body));
   try {
     let { email, isResend } = req.body;
     if (!email)
@@ -139,7 +149,6 @@ const sendCode = async (req, res) => {
 
     let user = await User.findOne({ email });
 
-    // Check block
     if (user && user.blockedUntil && new Date(user.blockedUntil) > now) {
       const remaining = Math.ceil((new Date(user.blockedUntil) - now) / 1000);
       return res.status(429).json({
@@ -148,35 +157,43 @@ const sendCode = async (req, res) => {
       });
     }
 
-    // Generate 6-digit code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-
-    console.log("\n==================================================");
-    console.log(`🔥 [EUROTEX EMAIL KODI] Email: ${email} -> KOD: ${code}`);
-    console.log("==================================================\n");
+    const codeExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
     if (user) {
       const newCount = isResend ? (user.resendCount || 0) + 1 : 0;
       user.code = code;
+      user.codeExpiry = codeExpiry;
       user.resendCount = newCount;
+      user.failedAttempts = 0;
       if (isAdminEmail(email)) user.role = "admin";
       await user.save();
     } else {
       user = new User({
         email,
         code,
+        codeExpiry,
+        failedAttempts: 0,
+        resendCount: 0,
         role: isAdminEmail(email) ? "admin" : "user",
       });
       await user.save();
     }
 
-    // Send email to recipient inbox and await full delivery confirmation
-    try {
-      const emailResult = await sendVerificationCode(user, code);
-      console.log(`✉️ [EMAIL NATIJASI]:`, emailResult);
-    } catch (err) {
-      console.error("sendVerificationCode xatosi:", err.message);
+    const emailResult = await sendVerificationCode(user, code);
+
+    if (!emailResult.success) {
+      user.code = null;
+      user.codeExpiry = null;
+      await user.save();
+      console.error("❌ EMAIL YUBORISH XATOSI:", emailResult.error);
+      return res.status(500).json({
+        success: false,
+        message: "Email xat yuborishda xatolik yuz berdi. Iltimos, keyinroq qayta urinib ko'ring yoki boshqa email kiriting.",
+      });
     }
+
+    console.log(`✅ [EMAIL YUBORILDI] ${email} -> ID: ${emailResult.messageId} (${emailResult.via})`);
 
     const payload = {
       success: true,
@@ -191,8 +208,8 @@ const sendCode = async (req, res) => {
   } catch (error) {
     console.error("sendCode xatosi:", error);
     return res
-      .status(200)
-      .json({ success: true, message: "Tasdiqlash kodi emailingizga yuborildi!", email });
+      .status(500)
+      .json({ success: false, message: "Server xatosi: Kod yuborishda xatolik yuz berdi. Iltimos, qayta urinib ko'ring." });
   }
 };
 
@@ -211,18 +228,34 @@ const verifyCode = async (req, res) => {
 
     let user = await User.findOne({ email });
     if (!user) {
-      user = new User({ email, role: isAdminEmail(email) ? "admin" : "user" });
+      return res.status(400).json({
+        message: "❌ Avval emaillingizni kiriting va 'Kod yuborish' tugmasini bosing!",
+        failedAttempts: 0,
+      });
     }
 
-    // Code check - strictly matches the unique random code sent to the email
     const inputCode = String(code || "").trim();
     const storedCode = String(user.code || "").trim();
 
-    const isCodeValid =
-      Boolean(storedCode && inputCode === storedCode) ||
-      inputCode === "777777" ||
-      inputCode === "123456" ||
-      inputCode === "885522";
+    if (!storedCode) {
+      return res.status(400).json({
+        message: "❌ Avval emaillingizni kiriting va 'Kod yuborish' tugmasini bosing!",
+        failedAttempts: 0,
+      });
+    }
+
+    if (user.codeExpiry && new Date(user.codeExpiry) < now) {
+      user.code = null;
+      user.codeExpiry = null;
+      user.failedAttempts = 0;
+      await user.save();
+      return res.status(400).json({
+        message: "⏰ Tasdiqlash kodi muddati tugadi! Iltimos, 'Kodni qayta yuborish' ni bosing.",
+        failedAttempts: 0,
+      });
+    }
+
+    const isCodeValid = Boolean(storedCode && storedCode.length === 6 && inputCode.length === 6 && inputCode === storedCode);
 
     if (!isCodeValid) {
       user.loginLogs.push({ ...deviceInfo, status: "failed" });
@@ -230,6 +263,8 @@ const verifyCode = async (req, res) => {
 
       if (user.failedAttempts >= 5) {
         user.failedAttempts = 0;
+        user.code = null;
+        user.codeExpiry = null;
         await user.save();
         return res.status(400).json({
           message: "❌ Kod 5 marta noto'g'ri kiritildi. Iltimos, qayta 'Kod yuborish'ni bosing!",
@@ -244,20 +279,17 @@ const verifyCode = async (req, res) => {
       });
     }
 
-    // Code has no expiry — it stays valid until used or a new one is generated
-
-    // Success: reset resend count, failed attempts, block count, add session & log
     user.resendCount = 0;
     user.failedAttempts = 0;
     user.blockCount = 0;
     user.blockedUntil = null;
     user.code = null;
+    user.codeExpiry = null;
 
     const session = { ...deviceInfo, createdAt: now, lastActive: now };
     user.sessions.push(session);
     user.loginLogs.push({ ...deviceInfo, status: "success" });
 
-    // Always generate a token to authenticate session actions
     const parsedDays = parseInt(rememberDays, 10);
     const days = Math.min(
       365,
@@ -271,7 +303,6 @@ const verifyCode = async (req, res) => {
     });
     user.rememberToken = rememberToken;
 
-    // Admin assignment rule for admin emails
     if (isAdminEmail(user.email)) {
       user.role = "admin";
     }
