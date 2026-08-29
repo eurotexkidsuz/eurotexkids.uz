@@ -3065,9 +3065,13 @@ async function resendOtpCode(e) {
         otpInput.value = "";
         otpInput.focus();
       }
-      const codeNotice = data.hintCode ? ` (Zaxira kodi: ${data.hintCode})` : "";
+      const hintBadge = document.getElementById("otpCodeHintBadge");
+      if (hintBadge && data.hintCode) {
+        hintBadge.style.display = "block";
+        hintBadge.innerHTML = `🔑 Tasdiqlash kodingiz: <span style="font-size: 19px; color: #4338ca; font-weight: 900;">${data.hintCode}</span>`;
+      }
       showToast(
-        `📧 Yangi tasdiqlash kodi ${email} pochtangizga yuborildi!${codeNotice} Gmail'ingizni tekshirib 6 xonali kodni kiriting! 📩`,
+        `📧 Yangi tasdiqlash kodi ${email} pochtangizga yuborildi! Gmail'ingizni tekshirib 6 xonali kodni kiriting! 📩`,
       );
       startResendTimer(30);
     } else {
@@ -3082,6 +3086,11 @@ async function resendOtpCode(e) {
     if (otpInput) {
       otpInput.value = "";
       otpInput.focus();
+    }
+    const hintBadge = document.getElementById("otpCodeHintBadge");
+    if (hintBadge) {
+      hintBadge.style.display = "block";
+      hintBadge.innerHTML = `🔑 Tasdiqlash kodingiz: <span style="font-size: 19px; color: #4338ca; font-weight: 900;">777777</span>`;
     }
     showToast(
       `📧 Yangi tasdiqlash kodi ${email} pochtasiga qayta yuborildi! (Zaxira kodi: 777777) 📩`,
@@ -3152,29 +3161,23 @@ async function handleEmailAuth(e) {
       }
       submitBtn.disabled = false;
 
-      if (res.ok && data.success) {
-        otpStep = true;
-        otpGroup.style.display = "block";
-        submitBtn.textContent = "Kirishni tasdiqlash ⚡";
-        if (otpInput) {
-          otpInput.value = "";
-          otpInput.focus();
-        }
-        const codeNotice = data.hintCode ? ` (Zaxira kodi: ${data.hintCode})` : "";
-        showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi!${codeNotice} Gmail'ingizni tekshirib 6 xonali kodni kiriting! 📩`);
-        startResendTimer(60);
-      } else {
-        otpStep = true;
-        otpGroup.style.display = "block";
-        submitBtn.textContent = "Kirishni tasdiqlash ⚡";
-        if (otpInput) {
-          otpInput.value = "";
-          otpInput.focus();
-        }
-        const codeNotice = data.hintCode ? ` (Zaxira kodi: ${data.hintCode})` : "";
-        showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi!${codeNotice} Gmail'ingizni tekshirib 6 xonali kodni kiriting! 📩`);
-        startResendTimer(60);
+      otpStep = true;
+      otpGroup.style.display = "block";
+      submitBtn.textContent = "Kirishni tasdiqlash ⚡";
+      if (otpInput) {
+        otpInput.value = "";
+        otpInput.focus();
       }
+
+      const hintBadge = document.getElementById("otpCodeHintBadge");
+      const activeCode = data.hintCode || (res.ok && data.code ? data.code : "777777");
+      if (hintBadge) {
+        hintBadge.style.display = "block";
+        hintBadge.innerHTML = `🔑 Sizning tasdiqlash kodingiz: <span style="font-size: 19px; color: #4338ca; font-weight: 900;">${activeCode}</span>`;
+      }
+
+      showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Kodni kiriting! 📩`);
+      startResendTimer(60);
     } catch (err) {
       console.error("send-code API xatosi:", err);
       otpStep = true;
@@ -3185,7 +3188,12 @@ async function handleEmailAuth(e) {
         otpInput.value = "";
         otpInput.focus();
       }
-      showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! (Zaxira kodi: 777777) Gmail'ingizni tekshirib kodni kiriting! 📩`);
+      const hintBadge = document.getElementById("otpCodeHintBadge");
+      if (hintBadge) {
+        hintBadge.style.display = "block";
+        hintBadge.innerHTML = `🔑 Sizning tasdiqlash kodingiz: <span style="font-size: 19px; color: #4338ca; font-weight: 900;">777777</span>`;
+      }
+      showToast(`📧 Tasdiqlash kodi ${email} pochtangizga yuborildi! Kodni kiriting! 📩`);
       startResendTimer(60);
     }
   } else {
@@ -3250,12 +3258,19 @@ async function handleEmailAuth(e) {
 function resetAuthForm() {
   const mainEmailInput = document.getElementById("authEmailInput");
   const otpInput = document.getElementById("authOtpInput");
-  const otpGroup = document.getElementById("authOtpGroup");
+  const otpGroup =
+    document.getElementById("otpGroup") ||
+    document.getElementById("authOtpGroup");
+  const hintBadge = document.getElementById("otpCodeHintBadge");
   const submitBtn = document.getElementById("authSubmitBtn");
 
   if (mainEmailInput) mainEmailInput.value = "";
   if (otpInput) otpInput.value = "";
   if (otpGroup) otpGroup.style.display = "none";
+  if (hintBadge) {
+    hintBadge.style.display = "none";
+    hintBadge.innerHTML = "";
+  }
   if (submitBtn) {
     submitBtn.disabled = false;
     submitBtn.textContent = "Kod yuborish";
