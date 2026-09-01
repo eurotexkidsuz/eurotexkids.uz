@@ -6974,14 +6974,11 @@ body {
 
 .admin-tab-row {
   display: flex !important;
-  gap: 12px !important;
+  gap: 10px !important;
   padding: 14px 16px !important;
   background: rgba(11, 19, 34, 0.95) !important;
   border-bottom: 1px solid rgba(51, 65, 85, 0.5) !important;
-  flex-wrap: nowrap !important;
-  overflow-x: auto !important;
-  -webkit-overflow-scrolling: touch !important;
-  scrollbar-width: none !important;
+  flex-wrap: wrap !important;
   align-items: center !important;
   width: 100% !important;
   box-sizing: border-box !important;
