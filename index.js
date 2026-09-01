@@ -56,6 +56,9 @@ app.use((req, res, next) => {
     !req.path.startsWith("/orders") &&
     !req.path.includes(".")
   ) {
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
     return res.sendFile(path.join(__dirname, "public", "index.html"));
   }
   next();
