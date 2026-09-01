@@ -1176,23 +1176,21 @@ function renderProducts() {
         matchCategory(item.category, state.currentCategory)
       : true;
 
-    const q = activeSearch.toLowerCase();
+    const q = activeSearch.toLowerCase().trim();
+    const tokens = q.split(/[\s,;._\-+]+/).filter((t) => t.length > 0);
+    const fullText = `${titleUz} ${titleRu} ${titleEn} ${colorUz} ${categoryUz} ${fabricUz} ${itemId}`;
     const matchesSearch =
       !activeSearch ||
-      titleUz.includes(q) ||
-      titleRu.includes(q) ||
-      titleEn.includes(q) ||
-      colorUz.includes(q) ||
-      categoryUz.includes(q) ||
-      fabricUz.includes(q) ||
-      itemId.includes(q);
+      fullText.includes(q) ||
+      (tokens.length > 0 &&
+        tokens.some(
+          (t) =>
+            t.length >= 2 &&
+            (fullText.includes(t) || (titleUz.length >= 2 && t.includes(titleUz))),
+        ));
 
     return matchesCategory && matchesSearch;
   });
-
-  if (!filtered || filtered.length === 0) {
-    filtered = getGlobalProductsPool();
-  }
 
   if (countBadge) {
     countBadge.textContent = `${filtered.length} ${lang === "ru" ? "товаров" : lang === "en" ? "items" : "ta mahsulot"}`;
@@ -1575,8 +1573,10 @@ function renderSearchSuggestions(query) {
 
   const lang = state.currentLang;
 
+  const tokens = q.split(/[\s,;._\-+]+/).filter((t) => t.length > 0);
+
   // Filter matching products (up to 5)
-  const matches = EUROTEX_PRODUCTS.filter((item) => {
+  const matches = (EUROTEX_PRODUCTS || []).filter((item) => {
     const titleUz = (item.title_uz || item.title || "").toLowerCase();
     const titleRu = (
       item.title_ru ||
@@ -1593,17 +1593,19 @@ function renderSearchSuggestions(query) {
     const cat = (item.category || "").toLowerCase();
     const color = (item.color_uz || "").toLowerCase();
     const fabric = (item.fabric_uz || "").toLowerCase();
-    const itemId = String(item.id || "").toLowerCase();
+    const itemId = String(item.id || item.customId || "").toLowerCase();
 
-    return (
-      titleUz.includes(q) ||
-      titleRu.includes(q) ||
-      titleEn.includes(q) ||
-      cat.includes(q) ||
-      color.includes(q) ||
-      fabric.includes(q) ||
-      itemId.includes(q)
-    );
+    const fullText = `${titleUz} ${titleRu} ${titleEn} ${cat} ${color} ${fabric} ${itemId}`;
+
+    if (fullText.includes(q)) return true;
+    if (tokens.length > 0) {
+      return tokens.some(
+        (t) =>
+          t.length >= 2 &&
+          (fullText.includes(t) || (titleUz.length >= 2 && t.includes(titleUz))),
+      );
+    }
+    return false;
   });
 
   const safeQ = encodeURIComponent(q);
@@ -5044,7 +5046,7 @@ async function syncProductsWithBackendAndStorage(isIntervalSync = false) {
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    const timeoutId = setTimeout(() => controller.abort(), 35000);
     const res = await fetch("/products?_t=" + Date.now(), { signal: controller.signal }).catch(() => null);
     clearTimeout(timeoutId);
     if (res && res.ok) {
@@ -5111,7 +5113,13 @@ async function syncProductsWithBackendAndStorage(isIntervalSync = false) {
             localStorage.setItem("eurotex_custom_products", JSON.stringify(EUROTEX_PRODUCTS));
           } catch (err) {}
 
-          renderProducts();
+          const searchInput = document.getElementById("searchInput");
+          const isTypingInSearch = searchInput && document.activeElement === searchInput;
+
+          if (!isTypingInSearch) {
+            renderProducts();
+          }
+
           const isTypingInAdmin =
             document.activeElement &&
             document.activeElement.closest("#adminProductsTableContainer");
