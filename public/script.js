@@ -2489,6 +2489,18 @@ function handleURLRouting() {
       return;
     }
 
+    if (
+      raw === "/admin/size" ||
+      raw === "/admin/sizes" ||
+      raw === "/admin/razmer" ||
+      raw === "/admin/razmerlar" ||
+      raw === "/admin/olcham" ||
+      raw === "/admin/olchamlar"
+    ) {
+      showAdminSection("sizes", false);
+      return;
+    }
+
     showAdminSection("products", false);
     return;
   }
@@ -2927,7 +2939,60 @@ function renderWishlist() {
   if (popGrid) popGrid.innerHTML = htmlContent;
 }
 
+const DEFAULT_SIZE_GUIDE = [
+  { size: "46 (S)", chest: "90 - 94", waist: "78 - 82", height: "170 - 176" },
+  { size: "48 (M)", chest: "95 - 98", waist: "83 - 86", height: "172 - 178" },
+  { size: "50 (L)", chest: "99 - 102", waist: "87 - 90", height: "174 - 180" },
+  { size: "52 (XL)", chest: "103 - 106", waist: "91 - 94", height: "176 - 182" },
+  { size: "54 (XXL)", chest: "107 - 110", waist: "95 - 98", height: "178 - 184" },
+  { size: "56 (3XL)", chest: "111 - 114", waist: "99 - 103", height: "180 - 186" },
+  { size: "58 (4XL)", chest: "115 - 118", waist: "104 - 108", height: "182 - 188" },
+];
+
+function getSizeGuideData() {
+  try {
+    const saved = localStorage.getItem("eurotex_size_guide");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {}
+  return [...DEFAULT_SIZE_GUIDE];
+}
+
+function getSizeGuideNote() {
+  try {
+    const saved = localStorage.getItem("eurotex_size_guide_note");
+    if (saved) return saved;
+  } catch (e) {}
+  return "💡 Agar 2 ta o'lcham orasida ikkilansangiz, katttaroq o'lchamni tanlashni tavsiya etamiz.";
+}
+
 function openSizeGuide() {
+  const tableBody = document.getElementById("sizeGuideModalTableBody");
+  const noteEl = document.getElementById("sizeGuideModalNote");
+  const data = getSizeGuideData();
+  const note = getSizeGuideNote();
+
+  if (tableBody) {
+    tableBody.innerHTML = data
+      .map(
+        (row) => `
+        <tr>
+          <td><strong>${row.size || ""}</strong></td>
+          <td>${row.chest || ""}</td>
+          <td>${row.waist || ""}</td>
+          <td>${row.height || ""}</td>
+        </tr>
+      `,
+      )
+      .join("");
+  }
+
+  if (noteEl) {
+    noteEl.textContent = note;
+  }
+
   openModal("sizeGuideModal");
   updateURLRoute("/size-guide");
 }
@@ -4512,6 +4577,7 @@ function showAdminSection(sec, pushUrl = true) {
   const secProducts = document.getElementById("adminSecProducts");
   const secReturns = document.getElementById("adminSecReturns");
   const secSettings = document.getElementById("adminSecSettings");
+  const secSizes = document.getElementById("adminSecSizes");
 
   if (secOrders) secOrders.style.display = sec === "orders" ? "block" : "none";
   if (secProducts)
@@ -4520,11 +4586,14 @@ function showAdminSection(sec, pushUrl = true) {
     secReturns.style.display = sec === "returns" ? "block" : "none";
   if (secSettings)
     secSettings.style.display = sec === "settings" ? "block" : "none";
+  if (secSizes)
+    secSizes.style.display = sec === "sizes" ? "block" : "none";
 
   const bOrd = document.getElementById("btnAdminOrders");
   const bProd = document.getElementById("btnAdminProducts");
   const bRet = document.getElementById("btnAdminReturns");
   const bSet = document.getElementById("btnAdminSettings");
+  const bSiz = document.getElementById("btnAdminSizes");
 
   if (bOrd)
     bOrd.className =
@@ -4538,12 +4607,122 @@ function showAdminSection(sec, pushUrl = true) {
   if (bSet)
     bSet.className =
       sec === "settings" ? "admin-nav-tab active" : "admin-nav-tab";
+  if (bSiz)
+    bSiz.className =
+      sec === "sizes" ? "admin-nav-tab active" : "admin-nav-tab";
+
+  if (sec === "sizes") {
+    renderAdminSizeGuide();
+  }
 
   if (pushUrl) {
     if (sec === "orders") updateURLRoute("/admin/orders");
     else if (sec === "products") updateURLRoute("/admin/products");
     else if (sec === "returns") updateURLRoute("/admin/returns");
     else if (sec === "settings") updateURLRoute("/admin/settings");
+    else if (sec === "sizes") updateURLRoute("/admin/sizes");
+  }
+}
+
+function renderAdminSizeGuide() {
+  const tableBody = document.getElementById("adminSizeGuideTableBody");
+  const noteInput = document.getElementById("adminSizeGuideNoteInput");
+  if (!tableBody) return;
+
+  const data = getSizeGuideData();
+  const note = getSizeGuideNote();
+
+  if (noteInput) {
+    noteInput.value = note;
+  }
+
+  tableBody.innerHTML = data
+    .map(
+      (row, idx) => `
+      <tr style="background: rgba(255,255,255,0.04); border-radius: 12px; transition: var(--transition);">
+        <td style="padding: 10px 12px;">
+          <input type="text" id="adminSize_name_${idx}" class="form-control" value="${row.size || ""}" style="width: 100%; border-radius: 8px; padding: 8px 12px; background: rgba(0,0,0,0.4); color: #fff; border: 1px solid rgba(255,255,255,0.15); font-weight: 700;" placeholder="Masalan: 46 (S) yoki 32 (Kids)" />
+        </td>
+        <td style="padding: 10px 12px;">
+          <input type="text" id="adminSize_chest_${idx}" class="form-control" value="${row.chest || ""}" style="width: 100%; border-radius: 8px; padding: 8px 12px; background: rgba(0,0,0,0.4); color: #fff; border: 1px solid rgba(255,255,255,0.15);" placeholder="Masalan: 90 - 94" />
+        </td>
+        <td style="padding: 10px 12px;">
+          <input type="text" id="adminSize_waist_${idx}" class="form-control" value="${row.waist || ""}" style="width: 100%; border-radius: 8px; padding: 8px 12px; background: rgba(0,0,0,0.4); color: #fff; border: 1px solid rgba(255,255,255,0.15);" placeholder="Masalan: 78 - 82" />
+        </td>
+        <td style="padding: 10px 12px;">
+          <input type="text" id="adminSize_height_${idx}" class="form-control" value="${row.height || ""}" style="width: 100%; border-radius: 8px; padding: 8px 12px; background: rgba(0,0,0,0.4); color: #fff; border: 1px solid rgba(255,255,255,0.15);" placeholder="Masalan: 170 - 176" />
+        </td>
+        <td style="padding: 10px 12px; text-align: center;">
+          <button type="button" class="btn btn-sm" onclick="deleteAdminSizeRow(${idx})" style="background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.4); border-radius: 8px; padding: 6px 12px; cursor: pointer;" title="O'chirish">
+            🗑️
+          </button>
+        </td>
+      </tr>
+    `,
+    )
+    .join("");
+}
+
+function addAdminSizeRow() {
+  const data = collectAdminSizeGuideFromInputs();
+  data.push({ size: "Yangi Razmer", chest: "—", waist: "—", height: "—" });
+  localStorage.setItem("eurotex_size_guide", JSON.stringify(data));
+  renderAdminSizeGuide();
+}
+
+function deleteAdminSizeRow(idx) {
+  const data = collectAdminSizeGuideFromInputs();
+  if (data.length <= 1) {
+    showToast("Kamida bitta o'lcham bo'lishi kerak! ❌");
+    return;
+  }
+  data.splice(idx, 1);
+  localStorage.setItem("eurotex_size_guide", JSON.stringify(data));
+  renderAdminSizeGuide();
+  showToast("O'lcham qatori o'chirildi 🗑️");
+}
+
+function collectAdminSizeGuideFromInputs() {
+  const currentData = getSizeGuideData();
+  const updated = [];
+  currentData.forEach((_, idx) => {
+    const sizeIn = document.getElementById(`adminSize_name_${idx}`);
+    const chestIn = document.getElementById(`adminSize_chest_${idx}`);
+    const waistIn = document.getElementById(`adminSize_waist_${idx}`);
+    const heightIn = document.getElementById(`adminSize_height_${idx}`);
+
+    if (sizeIn) {
+      updated.push({
+        size: sizeIn.value.trim() || `Razmer ${idx + 1}`,
+        chest: chestIn ? chestIn.value.trim() || "—" : "—",
+        waist: waistIn ? waistIn.value.trim() || "—" : "—",
+        height: heightIn ? heightIn.value.trim() || "—" : "—",
+      });
+    }
+  });
+  return updated.length > 0 ? updated : currentData;
+}
+
+function saveAdminSizeGuide() {
+  const updatedData = collectAdminSizeGuideFromInputs();
+  const noteInput = document.getElementById("adminSizeGuideNoteInput");
+  const note = noteInput ? noteInput.value.trim() : getSizeGuideNote();
+
+  localStorage.setItem("eurotex_size_guide", JSON.stringify(updatedData));
+  localStorage.setItem("eurotex_size_guide_note", note);
+  EurotexIDB.set("eurotex_size_guide", updatedData);
+  EurotexIDB.set("eurotex_size_guide_note", note);
+
+  showToast("O'lchamlar jadvali muvaffaqiyatli saqlandi va saytda yangilandi! ✅");
+}
+
+function resetAdminSizeGuide() {
+  if (confirm("Haqiqatan ham barcha o'lchamlarni standart holatiga qaytarmoqchimisiz?")) {
+    localStorage.removeItem("eurotex_size_guide");
+    localStorage.removeItem("eurotex_size_guide_note");
+    EurotexIDB.set("eurotex_size_guide", DEFAULT_SIZE_GUIDE);
+    renderAdminSizeGuide();
+    showToast("O'lchamlar jadvali standart holatga qaytarildi 🔄");
   }
 }
 
