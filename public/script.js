@@ -4376,8 +4376,11 @@ function renderOrdersHistory() {
 let deferredPwaPrompt = null;
 function initPWA() {
   if ("serviceWorker" in navigator) {
+    caches.keys().then((keys) => {
+      keys.forEach((key) => caches.delete(key));
+    });
     navigator.serviceWorker
-      .register("/sw.js")
+      .register("/sw.js?v=" + Date.now())
       .catch((err) => console.log("SW Register Error:", err));
   }
 
@@ -4993,6 +4996,7 @@ function updateOrderStatusByAdmin(index, newStepStr) {
 }
 
 function renderAdminProducts() {
+  ensureAdminSizesElements();
   const container = document.getElementById("adminProductsTableContainer");
   if (!container) return;
 
