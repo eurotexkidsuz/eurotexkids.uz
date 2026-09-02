@@ -3174,38 +3174,58 @@ html[data-theme="dark"] .modal-close:hover {
   margin: 20px 0;
 }
 
+.eurotex-pay-selector-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 10px 0 16px 0;
+}
+
+.eurotex-pay-btn {
+  flex: 1 1 0;
+  min-width: 100px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 13px 18px;
+  background: #1e293b;
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  color: #f1f5f9;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.eurotex-pay-btn input[type="radio"] {
+  display: none;
+}
+
+.eurotex-pay-btn:hover {
+  background: #334155;
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  color: #ffffff;
+}
+
+.eurotex-pay-btn.active,
+.eurotex-pay-btn:has(input[type="radio"]:checked) {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+  border-color: #00f2fe !important;
+  color: #00f2fe !important;
+  box-shadow: 0 0 20px rgba(0, 242, 254, 0.35), inset 0 0 10px rgba(0, 242, 254, 0.15) !important;
+  transform: translateY(-1px);
+}
+
 .payment-options {
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-
-.pay-option {
-  border: 1px solid var(--border-color-dark);
-  padding: 14px;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.pay-option:hover,
-.pay-option.active {
-  border-color: var(--color-uzum-purple);
-  background: var(--color-uzum-purple-bg);
-}
-
-.pay-label-content strong {
-  display: block;
-  font-size: 14px;
-  color: var(--color-navy);
-}
-
-.pay-label-content span {
-  font-size: 12px;
-  color: var(--text-secondary);
 }
 
 .checkout-total-banner {

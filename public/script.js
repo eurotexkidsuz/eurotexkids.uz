@@ -1693,11 +1693,11 @@ function initCheckoutInteractiveControls() {
     });
   });
 
-  // Payment Option Cards
-  const payOptions = document.querySelectorAll(".pay-option");
-  payOptions.forEach((opt) => {
-    opt.addEventListener("click", function () {
-      payOptions.forEach((p) => p.classList.remove("active"));
+  // Payment Option Buttons (Payme, Click, Naqd to'lov)
+  const payButtons = document.querySelectorAll(".eurotex-pay-btn, .pay-option");
+  payButtons.forEach((btn) => {
+    btn.addEventListener("click", function () {
+      payButtons.forEach((p) => p.classList.remove("active"));
       this.classList.add("active");
       const radio = this.querySelector('input[type="radio"]');
       if (radio) radio.checked = true;
@@ -1850,7 +1850,6 @@ function updateCartTotalsOnly() {
   const mobileCartBadge = document.getElementById("mobileCartBadge");
   const cartSubtotal = document.getElementById("cartSubtotal");
   const cartTotal = document.getElementById("cartTotal");
-  const nasiyaEst = document.getElementById("nasiyaEst");
   const cartHeaderCount = document.getElementById("cartHeaderCount");
   const cartItemQty = document.getElementById("cartItemQty");
   const dashCartCount = document.getElementById("dashCartCount");
@@ -1864,7 +1863,6 @@ function updateCartTotalsOnly() {
   );
   const discountAmount = Math.round(rawSubtotal * (state.discountRate || 0));
   const finalTotal = rawSubtotal - discountAmount;
-  const monthlyNasiya = Math.round(finalTotal / 12);
 
   if (cartCount) cartCount.textContent = totalCount;
   if (mobileCartBadge) mobileCartBadge.textContent = totalCount;
@@ -1875,8 +1873,6 @@ function updateCartTotalsOnly() {
   if (cartSubtotal) cartSubtotal.textContent = formatMoney(rawSubtotal);
   if (cartTotal) cartTotal.textContent = formatMoney(finalTotal);
   if (cartPopTotal) cartPopTotal.textContent = safeFormatMoney(finalTotal);
-  if (nasiyaEst)
-    nasiyaEst.innerHTML = `Eurotex Nasiya: Oyiga <b>${formatMoney(monthlyNasiya)}</b> (12 oy)`;
 }
 
 function updateCartQtyByIndex(index, change, ev) {
