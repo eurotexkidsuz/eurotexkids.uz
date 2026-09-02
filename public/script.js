@@ -4754,6 +4754,40 @@ function renderAdminSizeGuide() {
 
 let customConfirmResolve = null;
 
+function ensureCustomConfirmModalDOM() {
+  let modal = document.getElementById("eurotexCustomConfirmModal");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.className = "modal-overlay custom-confirm-overlay";
+    modal.id = "eurotexCustomConfirmModal";
+    modal.style.display = "none";
+    modal.style.zIndex = "999999";
+    modal.innerHTML = `
+      <div class="modal-dialog custom-confirm-dialog" role="dialog" aria-modal="true">
+        <div class="custom-confirm-card">
+          <div class="custom-confirm-icon-wrap" id="customConfirmIconWrap">
+            <span class="custom-confirm-icon" id="customConfirmIcon">⚠️</span>
+          </div>
+          <h3 class="custom-confirm-title" id="customConfirmTitle">Tasdiqlash</h3>
+          <p class="custom-confirm-message" id="customConfirmMessage">
+            Haqiqatan ham ushbu amalni bajarmoqchimisiz?
+          </p>
+          <div class="custom-confirm-actions">
+            <button type="button" class="btn-confirm-cancel" id="customConfirmCancelBtn" onclick="closeCustomConfirmModal(false)">
+              Bekor qilish
+            </button>
+            <button type="button" class="btn-confirm-accept" id="customConfirmAcceptBtn" onclick="closeCustomConfirmModal(true)">
+              Ha, tasdiqlayman
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+  return modal;
+}
+
 function showConfirmDialog({
   title = "Tasdiqlash",
   message = "Haqiqatan ham bu amalni bajarmoqchimisiz?",
@@ -4766,18 +4800,13 @@ function showConfirmDialog({
   return new Promise((resolve) => {
     customConfirmResolve = resolve;
 
-    const modal = document.getElementById("eurotexCustomConfirmModal");
+    const modal = ensureCustomConfirmModalDOM();
     const titleEl = document.getElementById("customConfirmTitle");
     const msgEl = document.getElementById("customConfirmMessage");
     const iconEl = document.getElementById("customConfirmIcon");
     const iconWrap = document.getElementById("customConfirmIconWrap");
     const cancelBtn = document.getElementById("customConfirmCancelBtn");
     const acceptBtn = document.getElementById("customConfirmAcceptBtn");
-
-    if (!modal) {
-      resolve(window.confirm(message));
-      return;
-    }
 
     if (titleEl) titleEl.textContent = title;
     if (msgEl) msgEl.textContent = message;
