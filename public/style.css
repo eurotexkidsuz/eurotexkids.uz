@@ -9381,3 +9381,135 @@ html[data-theme="dark"] .resend-clean-btn:hover:not(:disabled) {
   margin-top: 18px;
 }
 
+/* =============================================================================
+   👑 EUROTEX ULTRA-LUXURY CONFIRMATION MODAL (2026 EDITION)
+   ============================================================================= */
+.custom-confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(3, 7, 18, 0.84) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.custom-confirm-overlay.active {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.custom-confirm-dialog {
+  max-width: 440px !important;
+  width: 100% !important;
+  transform: scale(0.9) translateY(20px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.custom-confirm-overlay.active .custom-confirm-dialog {
+  transform: scale(1) translateY(0) !important;
+}
+
+.custom-confirm-card {
+  background: linear-gradient(160deg, #0f172a 0%, #1e293b 100%) !important;
+  border: 1.5px solid rgba(112, 0, 255, 0.4) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75), 0 0 40px rgba(112, 0, 255, 0.25) !important;
+  text-align: center !important;
+  padding: 34px 28px !important;
+}
+
+.custom-confirm-icon-wrap {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  margin: 0 auto 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  box-shadow: 0 0 24px rgba(245, 158, 11, 0.35);
+  animation: confirmPulse 2s infinite ease-in-out;
+}
+
+@keyframes confirmPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 0 32px rgba(245, 158, 11, 0.5);
+  }
+}
+
+.custom-confirm-title {
+  font-size: 21px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  margin-bottom: 12px !important;
+  letter-spacing: -0.2px;
+}
+
+.custom-confirm-message {
+  font-size: 14.5px !important;
+  line-height: 1.65 !important;
+  color: #cbd5e1 !important;
+  margin-bottom: 28px !important;
+}
+
+.custom-confirm-actions {
+  display: flex !important;
+  gap: 12px !important;
+  justify-content: center !important;
+}
+
+.btn-confirm-cancel {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+  color: #e2e8f0 !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  padding: 13px 18px !important;
+  border-radius: 14px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-confirm-cancel:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+.btn-confirm-accept {
+  flex: 1.2;
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  font-size: 14px !important;
+  padding: 13px 20px !important;
+  border-radius: 14px !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 18px rgba(239, 68, 68, 0.45) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.btn-confirm-accept:hover {
+  box-shadow: 0 6px 24px rgba(239, 68, 68, 0.65) !important;
+  transform: translateY(-2px);
+}
+
+

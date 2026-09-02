@@ -2876,6 +2876,31 @@
       </div>
     </section>
 
+    <!-- =========================================================================
+         🌟 EUROTEX ULTRA-LUXURY CONFIRMATION / ALERT MODAL DIALOG
+         ========================================================================= -->
+    <div class="modal-overlay custom-confirm-overlay" id="eurotexCustomConfirmModal" style="display: none; z-index: 999999;">
+      <div class="modal-dialog custom-confirm-dialog" role="dialog" aria-modal="true">
+        <div class="custom-confirm-card">
+          <div class="custom-confirm-icon-wrap" id="customConfirmIconWrap">
+            <span class="custom-confirm-icon" id="customConfirmIcon">⚠️</span>
+          </div>
+          <h3 class="custom-confirm-title" id="customConfirmTitle">Tasdiqlash</h3>
+          <p class="custom-confirm-message" id="customConfirmMessage">
+            Haqiqatan ham ushbu amalni bajarmoqchimisiz?
+          </p>
+          <div class="custom-confirm-actions">
+            <button type="button" class="btn-confirm-cancel" id="customConfirmCancelBtn" onclick="closeCustomConfirmModal(false)">
+              Bekor qilish
+            </button>
+            <button type="button" class="btn-confirm-accept" id="customConfirmAcceptBtn" onclick="closeCustomConfirmModal(true)">
+              Ha, tasdiqlayman
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- MODAL 6: Size Guide Modal -->
     <div class="modal-overlay" id="sizeGuideModal">
       <div class="modal-dialog modal-md">
@@ -3672,7 +3697,7 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=269.0.0" defer></script>
-    <script src="/eurotex-engine.js?v=13.6.0" defer></script>
+    <script src="/script.js?v=270.0.0" defer></script>
+    <script src="/eurotex-engine.js?v=13.7.0" defer></script>
   </body>
 </html>

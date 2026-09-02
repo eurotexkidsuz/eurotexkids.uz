@@ -4752,23 +4752,103 @@ function renderAdminSizeGuide() {
     .join("");
 }
 
+let customConfirmResolve = null;
+
+function showConfirmDialog({
+  title = "Tasdiqlash",
+  message = "Haqiqatan ham bu amalni bajarmoqchimisiz?",
+  confirmText = "Ha, davom etish",
+  cancelText = "Bekor qilish",
+  icon = "⚠️",
+  iconBg = "rgba(245, 158, 11, 0.15)",
+  confirmColor = "danger",
+}) {
+  return new Promise((resolve) => {
+    customConfirmResolve = resolve;
+
+    const modal = document.getElementById("eurotexCustomConfirmModal");
+    const titleEl = document.getElementById("customConfirmTitle");
+    const msgEl = document.getElementById("customConfirmMessage");
+    const iconEl = document.getElementById("customConfirmIcon");
+    const iconWrap = document.getElementById("customConfirmIconWrap");
+    const cancelBtn = document.getElementById("customConfirmCancelBtn");
+    const acceptBtn = document.getElementById("customConfirmAcceptBtn");
+
+    if (!modal) {
+      resolve(window.confirm(message));
+      return;
+    }
+
+    if (titleEl) titleEl.textContent = title;
+    if (msgEl) msgEl.textContent = message;
+    if (iconEl) iconEl.textContent = icon;
+    if (iconWrap) iconWrap.style.background = iconBg;
+    if (cancelBtn) cancelBtn.textContent = cancelText;
+
+    if (acceptBtn) {
+      acceptBtn.textContent = confirmText;
+      if (confirmColor === "danger") {
+        acceptBtn.style.background = "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)";
+        acceptBtn.style.boxShadow = "0 4px 18px rgba(239, 68, 68, 0.45)";
+      } else if (confirmColor === "primary") {
+        acceptBtn.style.background = "linear-gradient(135deg, #7000ff 0%, #00f2fe 100%)";
+        acceptBtn.style.boxShadow = "0 4px 18px rgba(112, 0, 255, 0.45)";
+      } else {
+        acceptBtn.style.background = "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)";
+        acceptBtn.style.boxShadow = "0 4px 18px rgba(245, 158, 11, 0.45)";
+      }
+    }
+
+    modal.style.display = "flex";
+    setTimeout(() => modal.classList.add("active"), 10);
+  });
+}
+
+function closeCustomConfirmModal(result) {
+  const modal = document.getElementById("eurotexCustomConfirmModal");
+  if (modal) {
+    modal.classList.remove("active");
+    setTimeout(() => {
+      modal.style.display = "none";
+    }, 200);
+  }
+  if (typeof customConfirmResolve === "function") {
+    customConfirmResolve(result);
+    customConfirmResolve = null;
+  }
+}
+
 function addAdminSizeRow() {
   const data = collectAdminSizeGuideFromInputs();
   data.push({ size: "Yangi Razmer", chest: "—", waist: "—", height: "—" });
   localStorage.setItem("eurotex_size_guide", JSON.stringify(data));
   renderAdminSizeGuide();
+  showToast("Yangi o'lcham qatori qo'shildi ➕");
 }
 
-function deleteAdminSizeRow(idx) {
+async function deleteAdminSizeRow(idx) {
   const data = collectAdminSizeGuideFromInputs();
   if (data.length <= 1) {
     showToast("Kamida bitta o'lcham bo'lishi kerak! ❌");
     return;
   }
-  data.splice(idx, 1);
-  localStorage.setItem("eurotex_size_guide", JSON.stringify(data));
-  renderAdminSizeGuide();
-  showToast("O'lcham qatori o'chirildi 🗑️");
+  const sizeName = data[idx]?.size || "ushbu";
+  const confirmed = await showConfirmDialog({
+    title: "O'lchamni O'chirish 🗑️",
+    message: `"${sizeName}" o'lchamini jadvaldan butunlay o'chirib tashlamoqchimisiz?`,
+    confirmText: "Ha, o'chirilsin",
+    cancelText: "Bekor qilish",
+    icon: "🗑️",
+    iconBg: "rgba(239, 68, 68, 0.18)",
+    confirmColor: "danger",
+  });
+
+  if (confirmed) {
+    data.splice(idx, 1);
+    localStorage.setItem("eurotex_size_guide", JSON.stringify(data));
+    renderAdminSizeGuide();
+    showToast("O'lcham qatori o'chirildi 🗑️");
+  }
 }
 
 function collectAdminSizeGuideFromInputs() {
@@ -4805,8 +4885,18 @@ function saveAdminSizeGuide() {
   showToast("O'lchamlar jadvali muvaffaqiyatli saqlandi va saytda yangilandi! ✅");
 }
 
-function resetAdminSizeGuide() {
-  if (confirm("Haqiqatan ham barcha o'lchamlarni standart holatiga qaytarmoqchimisiz?")) {
+async function resetAdminSizeGuide() {
+  const confirmed = await showConfirmDialog({
+    title: "O'lchamlarni Qaytarish 🔄",
+    message: "Haqiqatan ham barcha o'lchamlarni standart holatiga qaytarmoqchimisiz? Kiritilgan o'zgarishlar asl holiga qaytadi.",
+    confirmText: "Ha, standartga qaytarilsin",
+    cancelText: "Bekor qilish",
+    icon: "🔄",
+    iconBg: "rgba(0, 242, 254, 0.18)",
+    confirmColor: "danger",
+  });
+
+  if (confirmed) {
     localStorage.removeItem("eurotex_size_guide");
     localStorage.removeItem("eurotex_size_guide_note");
     EurotexIDB.set("eurotex_size_guide", DEFAULT_SIZE_GUIDE);
@@ -5458,41 +5548,23 @@ function showCustomConfirm({
   text,
   confirmText = "O'chirish",
   onConfirm,
+  onCancel,
 }) {
-  const modal = document.getElementById("customConfirmModal");
-  const titleEl = document.getElementById("confirmModalTitle");
-  const textEl = document.getElementById("confirmModalText");
-  const okBtn = document.getElementById("confirmModalOkBtn");
-  const cancelBtn = document.getElementById("confirmModalCancelBtn");
-
-  if (!modal) return;
-  if (titleEl) titleEl.textContent = title;
-  if (textEl) {
-    if (htmlText) textEl.innerHTML = htmlText;
-    else textEl.textContent = text || "Ushbu amalni bajarishni xohlaysizmi?";
-  }
-  if (okBtn) okBtn.textContent = confirmText;
-
-  openModal("customConfirmModal");
-
-  const handleOk = () => {
-    closeModal("customConfirmModal");
-    cleanup();
-    if (typeof onConfirm === "function") onConfirm();
-  };
-
-  const handleCancel = () => {
-    closeModal("customConfirmModal");
-    cleanup();
-  };
-
-  const cleanup = () => {
-    if (okBtn) okBtn.removeEventListener("click", handleOk);
-    if (cancelBtn) cancelBtn.removeEventListener("click", handleCancel);
-  };
-
-  if (okBtn) okBtn.addEventListener("click", handleOk);
-  if (cancelBtn) cancelBtn.addEventListener("click", handleCancel);
+  const cleanMsg = htmlText ? htmlText.replace(/<[^>]*>/g, " ") : text || "Ushbu amalni bajarishni xohlaysizmi?";
+  showConfirmDialog({
+    title,
+    message: cleanMsg,
+    confirmText,
+    cancelText: "Bekor qilish",
+    icon: title.includes("Chiqish") ? "🚪" : "⚠️",
+    confirmColor: "danger",
+  }).then((confirmed) => {
+    if (confirmed) {
+      if (typeof onConfirm === "function") onConfirm();
+    } else {
+      if (typeof onCancel === "function") onCancel();
+    }
+  });
 }
 
 function deleteProductByAdmin(index) {
