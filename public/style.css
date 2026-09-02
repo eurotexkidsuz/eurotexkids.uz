@@ -3438,28 +3438,65 @@ html[data-theme="dark"] .modal-close:hover {
   box-shadow: 0 4px 14px rgba(236, 72, 153, 0.4);
 }
 
-/* Footer Contact Details */
+/* Footer Contact Details - Ultra-Clean Flex Alignment */
 .footer-contact-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: #cbd5e1;
-  font-size: 14px;
-  margin-bottom: 12px;
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 12px !important;
+  color: #cbd5e1 !important;
+  font-size: 14px !important;
+  margin-bottom: 14px !important;
+  line-height: 1.45 !important;
+}
+
+.footer-contact-item .f-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  border-radius: 10px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  font-size: 16px !important;
+  flex-shrink: 0 !important;
+  margin-top: 2px !important;
+  transition: all 0.2s ease !important;
+}
+
+.footer-contact-item:hover .f-icon {
+  background: rgba(0, 242, 254, 0.15) !important;
+  border-color: rgba(0, 242, 254, 0.4) !important;
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.3) !important;
+  transform: scale(1.05);
 }
 
 .footer-contact-item a {
-  display: inline;
-  color: #ffffff;
-  font-weight: 700;
-  margin-bottom: 0;
+  display: inline-flex !important;
+  align-items: center !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  text-decoration: none !important;
+  margin-bottom: 0 !important;
+  padding-top: 5px !important;
+  transition: color 0.2s ease !important;
 }
 
 .footer-contact-item a:hover {
-  color: var(--color-gold);
+  color: #00f2fe !important;
+  text-decoration: underline !important;
 }
 
-.payment-methods-row {
+.footer-contact-item .f-contact-content {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  padding-top: 4px !important;
+  font-size: 13.5px !important;
+  color: #cbd5e1 !important;
+}
   display: flex;
   gap: 8px;
   margin-top: 18px;
