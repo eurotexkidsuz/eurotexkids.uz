@@ -1712,16 +1712,21 @@ function filterWishlistProducts() {
 
 // Wishlist Toggling
 function toggleWishlist(productId) {
-  const pool = (typeof getGlobalProductsPool === "function" ? getGlobalProductsPool() : EUROTEX_PRODUCTS);
+  const pool =
+    typeof getGlobalProductsPool === "function"
+      ? getGlobalProductsPool()
+      : EUROTEX_PRODUCTS;
   const product = pool.find((p) => p && String(p.id) === String(productId));
 
   const index = state.wishlist.findIndex((w) => {
-    const wId = (typeof w === "object" && w) ? w.id : w;
+    const wId = typeof w === "object" && w ? w.id : w;
     return String(wId) === String(productId);
   });
 
+  const isNowAdded = index === -1;
   const lang = state.currentLang || "uz";
-  if (index > -1) {
+
+  if (!isNowAdded) {
     state.wishlist.splice(index, 1);
     showToast(
       lang === "ru"
@@ -1729,7 +1734,7 @@ function toggleWishlist(productId) {
         : lang === "en"
           ? "💔 Removed from wishlist"
           : "💔 Saralanganlardan olib tashlandi",
-      "info"
+      "info",
     );
   } else {
     state.wishlist.push(product || productId);
@@ -1739,14 +1744,40 @@ function toggleWishlist(productId) {
         : lang === "en"
           ? "❤️ Added to wishlist!"
           : "❤️ Saralanganlarga saqlandi!",
-      "success"
+      "success",
     );
   }
 
   localStorage.setItem("eurotex_wishlist", JSON.stringify(state.wishlist));
   updateWishlistUI();
-  if (typeof renderWishlist === "function") renderWishlist();
-  if (typeof renderProducts === "function") renderProducts();
+
+  // Instant in-place heart update (NO FULL PAGE RELOAD OR FLICKERING!)
+  const targetButtons = document.querySelectorAll(
+    `.product-card[data-id="${productId}"] .wishlist-heart-btn, button[onclick*="toggleWishlist('${productId}')"]`,
+  );
+  targetButtons.forEach((btn) => {
+    if (isNowAdded) {
+      btn.classList.add("active");
+      btn.innerHTML = "❤️";
+      btn.style.animation = "none";
+      btn.offsetHeight; // trigger reflow
+      btn.style.animation = "heartPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+    } else {
+      btn.classList.remove("active");
+      btn.innerHTML = "🤍";
+      btn.style.animation = "none";
+    }
+  });
+
+  // Only re-render wishlist modal if it is currently open
+  const wModal = document.getElementById("wishlistModal");
+  if (
+    wModal &&
+    wModal.classList.contains("active") &&
+    typeof renderWishlist === "function"
+  ) {
+    renderWishlist();
+  }
 }
 
 function updateWishlistUI() {
