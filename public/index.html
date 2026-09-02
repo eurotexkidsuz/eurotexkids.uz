@@ -2122,14 +2122,14 @@
 
         <div class="footer-col">
           <h4 data-i18n="footerCompany">Kompaniya</h4>
-          <a href="#">Kompaniya haqida</a>
-          <a href="#">Do'konlarimiz manzili</a>
-          <a href="#">Vakansiyalar</a>
-          <a href="#">Hamkorlik va Ulgurji xarid (Optom)</a>
+          <a href="#" onclick="event.preventDefault(); openModal('aboutUsModal');">Kompaniya haqida</a>
+          <a href="#" onclick="event.preventDefault(); openModal('storesModal');">🏬 Do'konlarimiz manzili</a>
+          <a href="#" onclick="event.preventDefault(); openModal('vipBookingModal');">👑 VIP Kiyib ko'rish</a>
+          <a href="https://t.me/eurotex_admin" target="_blank">Hamkorlik va Ulgurji xarid (Optom)</a>
         </div>
 
         <div class="footer-col">
-          <h4 data-i18n="footerContact">Aloqa va Yordam</h4>
+          <h4 data-i18n="footerContact">Aloqa va Do'konlar</h4>
           <div class="footer-contact-item">
             <span>📞</span>
             <a href="tel:+998905557775" title="Eurotex Telefon">+998 (90) 555-77-75</a>
@@ -2155,12 +2155,15 @@
             >
           </div>
           <div class="footer-contact-item">
-            <span>✉️</span>
-            <a href="mailto:info@eurotexkids.uz">info@eurotexkids.uz</a>
+            <span>⏰</span>
+            <span>Ish vaqti: Har kuni 09:00 – 20:00</span>
           </div>
           <div class="footer-contact-item">
             <span>📍</span>
-            <span>Toshkent sh., Chilonzor tumani, Lutfiy ko'chasi 14-uy</span>
+            <div>
+              <div><b>1-Do'kon:</b> Abu Saxiy Centir 2-etaj, A48 do'kon</div>
+              <div style="margin-top: 4px;"><b>2-Do'kon:</b> Giper Market 2-etaj, 297 do'kon</div>
+            </div>
           </div>
           <div class="payment-methods-row">
             <span class="pay-badge">CLICK</span>
@@ -2901,6 +2904,70 @@
       </div>
     </div>
 
+    <!-- =========================================================================
+         🏬 EUROTEX RASMIY DO'KONLAR MANZILLARI MODALI
+         ========================================================================= -->
+    <div class="modal-overlay" id="storesModal">
+      <div class="modal-dialog modal-md">
+        <button class="modal-close" onclick="closeModal('storesModal')" title="Yopish">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <div class="auth-box" style="text-align: left;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <span style="font-size: 28px;">🏬</span>
+            <div>
+              <h3 style="margin: 0; font-size: 20px; font-weight: 800; color: #fff;">Eurotex Rasmiy Do'konlarimiz</h3>
+              <p style="margin: 2px 0 0 0; font-size: 13.5px; color: var(--text-muted);">Sizni do'konlarimizda kutib qolamiz!</p>
+            </div>
+          </div>
+
+          <!-- Store Card 1 -->
+          <div style="background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); border: 1.5px solid rgba(112,0,255,0.3); border-radius: 16px; padding: 18px; margin-bottom: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <strong style="color: #00f2fe; font-size: 16px;">📍 1-Asosiy Do'kon:</strong>
+              <span style="background: rgba(0,242,254,0.15); color: #00f2fe; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 999px; text-transform: uppercase;">Abu Saxiy</span>
+            </div>
+            <div style="font-size: 15px; font-weight: 700; color: #ffffff; margin-bottom: 6px;">
+              Abu Saxiy Centir 2-etaj, A48 do'kon
+            </div>
+            <div style="font-size: 13.5px; color: #cbd5e1; margin-bottom: 4px;">
+              ⏰ <b>Ish vaqti:</b> Har kuni 09:00 – 20:00 (Dam olish kunlarisiz)
+            </div>
+            <div style="font-size: 13.5px; color: #cbd5e1;">
+              📞 <b>Telefon:</b> <a href="tel:+998905557775" style="color: #fbbf24; font-weight: 700;">+998 (90) 555-77-75</a>
+            </div>
+          </div>
+
+          <!-- Store Card 2 -->
+          <div style="background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); border: 1.5px solid rgba(0,242,254,0.3); border-radius: 16px; padding: 18px; margin-bottom: 18px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <strong style="color: #a855f7; font-size: 16px;">📍 2-Do'kon:</strong>
+              <span style="background: rgba(168,85,247,0.15); color: #a855f7; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 999px; text-transform: uppercase;">Giper Market</span>
+            </div>
+            <div style="font-size: 15px; font-weight: 700; color: #ffffff; margin-bottom: 6px;">
+              Giper Market 2-etaj, 297 do'kon
+            </div>
+            <div style="font-size: 13.5px; color: #cbd5e1; margin-bottom: 4px;">
+              ⏰ <b>Ish vaqti:</b> Har kuni 09:00 – 20:00 (Dam olish kunlarisiz)
+            </div>
+            <div style="font-size: 13.5px; color: #cbd5e1;">
+              📞 <b>Telefon:</b> <a href="tel:+998905557775" style="color: #fbbf24; font-weight: 700;">+998 (90) 555-77-75</a>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div style="display: flex; gap: 10px;">
+            <a href="tel:+998905557775" class="btn btn-gold btn-block" style="flex: 1; text-align: center; text-decoration: none;">
+              📞 Qo'ng'iroq qilish
+            </a>
+            <a href="https://t.me/eurotex_admin" target="_blank" class="btn btn-outline btn-block" style="flex: 1; text-align: center; text-decoration: none;">
+              ✈️ Telegram Admin
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- MODAL 6: Size Guide Modal -->
     <div class="modal-overlay" id="sizeGuideModal">
       <div class="modal-dialog modal-md">
@@ -3015,12 +3082,19 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
         <div class="auth-box">
-          <h3>🏛️ Chilonzordagi Flagman Do'konda VIP Vaqt Band Qilish</h3>
+          <h3>👑 Eurotex Do'konlarimizda VIP Vaqt Band Qilish</h3>
           <p>
             Do'konga kelishingizdan oldin vaqtni belgilang — siz tanlagan
-            kostyumlar VIP kiyib ko'rish xonasida dazmollab tayyorlab qo'yiladi!
+            kostyumlar VIP kiyib ko'rish xonasida tayyorlab qo'yiladi!
           </p>
           <form onsubmit="handleVipBookingSubmit(event)">
+            <div class="form-group">
+              <label>Qaysi do'konimizga tashrif buyurasiz?</label>
+              <select id="vipStoreBranchSelect" required>
+                <option value="abu-saxiy">🏬 1-Do'kon: Abu Saxiy Centir 2-etaj, A48 do'kon</option>
+                <option value="giper-market">🏬 2-Do'kon: Giper Market 2-etaj, 297 do'kon</option>
+              </select>
+            </div>
             <div class="form-group">
               <label>Ismingiz va Familiyangiz:</label>
               <input
@@ -3704,7 +3778,7 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=272.0.0" defer></script>
-    <script src="/eurotex-engine.js?v=13.9.0" defer></script>
+    <script src="/script.js?v=273.0.0" defer></script>
+    <script src="/eurotex-engine.js?v=14.0.0" defer></script>
   </body>
 </html>

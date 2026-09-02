@@ -4294,9 +4294,14 @@ function openVipBookingModal() {
 function handleVipBookingSubmit(e) {
   e.preventDefault();
   const name = document.getElementById("vipCustName").value;
+  const branchSelect = document.getElementById("vipStoreBranchSelect");
+  const branchName =
+    branchSelect && branchSelect.value === "giper-market"
+      ? "Giper Market 2-etaj 297-do'kon"
+      : "Abu Saxiy Centir 2-etaj A48-do'kon";
   closeModal("vipBookingModal");
   showToast(
-    `Rahmat, ${name}! Chilonzor flagman do'konimizda VIP kiyib ko'rish xonasi va Bosh Usta vaqti siz uchun muvaffaqiyatli band qilindi 👑`,
+    `Rahmat, ${name}! ${branchName}imizda VIP kiyib ko'rish xonasi va Bosh Usta vaqti siz uchun muvaffaqiyatli band qilindi 👑`,
   );
 }
 
