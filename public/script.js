@@ -3977,14 +3977,17 @@ function updateUserAuthUI() {
   }
 
   // Suppress Google One-Tap prompt if user is already logged in
-  if (state.user) {
+  if (state.user || localStorage.getItem("eurotex_user")) {
     try {
+      const gDiv = document.getElementById("g_id_onload");
+      if (gDiv) gDiv.remove();
       if (
         window.google &&
         window.google.accounts &&
         window.google.accounts.id
       ) {
         window.google.accounts.id.cancel();
+        window.google.accounts.id.disableAutoSelect();
       }
     } catch (e) {}
   }

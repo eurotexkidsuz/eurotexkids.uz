@@ -3679,25 +3679,32 @@
       </div>
     </div>
 
-    <!-- Google One Tap Automatic Prompt Container -->
+    <!-- Google Identity Services Response Handler -->
     <script>
       window.handleGsiCredentialResponse = function (res) {
         if (typeof window.handleGsiCredentialResponseImpl === "function") {
           window.handleGsiCredentialResponseImpl(res);
         }
       };
+      // Prevent Google One Tap from appearing if user is already logged in
+      try {
+        if (localStorage.getItem("eurotex_user")) {
+          window.addEventListener("DOMContentLoaded", function () {
+            var el = document.getElementById("g_id_onload");
+            if (el) el.remove();
+            if (window.google && window.google.accounts && window.google.accounts.id) {
+              window.google.accounts.id.cancel();
+              window.google.accounts.id.disableAutoSelect();
+            }
+          });
+        }
+      } catch (e) {}
     </script>
-    <div
-      id="g_id_onload"
-      data-client_id="949327485964-pbdlffn30vuge0ert42rlpdnf82854ql.apps.googleusercontent.com"
-      data-callback="handleGsiCredentialResponse"
-      data-auto_prompt="true"
-    ></div>
 
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=271.0.0" defer></script>
-    <script src="/eurotex-engine.js?v=13.8.0" defer></script>
+    <script src="/script.js?v=272.0.0" defer></script>
+    <script src="/eurotex-engine.js?v=13.9.0" defer></script>
   </body>
 </html>
