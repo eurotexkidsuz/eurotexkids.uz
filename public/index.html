@@ -1902,48 +1902,51 @@
 
                 <!-- Admin Section 5: Size Guide Management -->
                 <div id="adminSecSizes" style="display: none">
-                  <div class="admin-sec-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 18px;">
-                    <div class="admin-sec-header-left" style="display: flex; align-items: center; gap: 12px;">
-                      <div class="admin-sec-icon" style="width: 44px; height: 44px; border-radius: 12px; background: rgba(0, 242, 254, 0.15); display: flex; align-items: center; justify-content: center; color: #00f2fe;">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M21.3 15.3l-8.6-8.6a2 2 0 0 0-2.8 0L2.7 13.9a2 2 0 0 0 0 2.8l2.6 2.6a2 2 0 0 0 2.8 0l7.2-7.2"></path>
-                          <line x1="8.6" y1="8" x2="10" y2="9.4"></line>
-                          <line x1="11.4" y1="10.8" x2="12.8" y2="12.2"></line>
-                          <line x1="14.3" y1="13.7" x2="15.7" y2="15.1"></line>
-                        </svg>
+                  <div class="admin-size-guide-card">
+                    <div class="admin-sec-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 22px;">
+                      <div class="admin-sec-header-left" style="display: flex; align-items: center; gap: 14px;">
+                        <div class="admin-sec-icon" style="width: 48px; height: 48px; border-radius: 14px; background: rgba(0, 242, 254, 0.15); display: flex; align-items: center; justify-content: center; color: #00f2fe; border: 1px solid rgba(0, 242, 254, 0.3);">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21.3 15.3l-8.6-8.6a2 2 0 0 0-2.8 0L2.7 13.9a2 2 0 0 0 0 2.8l2.6 2.6a2 2 0 0 0 2.8 0l7.2-7.2"></path>
+                            <line x1="8.6" y1="8" x2="10" y2="9.4"></line>
+                            <line x1="11.4" y1="10.8" x2="12.8" y2="12.2"></line>
+                            <line x1="14.3" y1="13.7" x2="15.7" y2="15.1"></line>
+                          </svg>
+                        </div>
+                        <div>
+                          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                            <h3 class="admin-sec-title" style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0;">📐 O'lchamlar (Razmerlar) Jadvali</h3>
+                            <span class="admin-size-header-pill">Live Sync ⚡</span>
+                          </div>
+                          <p class="admin-sec-desc" style="font-size: 13.5px; color: #94a3b8; margin: 0;">Mijozlar ko'radigan o'lchamlar parametrlarini tahrirlash, yangi razmerlar qo'shish yoki o'chirish</p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 class="admin-sec-title" style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0;">📐 O'lchamlar (Razmerlar) Jadvali Boshqaruvi</h3>
-                        <p class="admin-sec-desc" style="font-size: 13px; color: var(--text-muted); margin: 2px 0 0 0;">Mijozlar ko'radigan o'lchamlar parametrlarini tahrirlash, yangi razmerlar qo'shish yoki o'chirish</p>
+                      <div class="admin-sec-actions" style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <button type="button" class="size-btn-add" onclick="addAdminSizeRow()">
+                          <span>➕</span> Yangi Razmer Qo'shish
+                        </button>
+                        <button type="button" class="size-btn-save" onclick="saveAdminSizeGuide()">
+                          <span>💾</span> Saqlash va Saytda Yangilash
+                        </button>
                       </div>
-                    </div>
-                    <div class="admin-sec-actions" style="display: flex; gap: 10px; flex-wrap: wrap;">
-                      <button type="button" class="btn btn-outline btn-sm" onclick="addAdminSizeRow()" style="border-radius: 12px; font-weight: 700; border-color: rgba(255,255,255,0.2); color:#fff;">
-                        ➕ Yangi Razmer Qo'shish
-                      </button>
-                      <button type="button" class="btn btn-gold btn-sm" onclick="saveAdminSizeGuide()" style="border-radius: 12px; font-weight: 700; background: linear-gradient(135deg, #7000ff, #00f2fe); color: #fff; border:none; box-shadow: 0 4px 14px rgba(112,0,255,0.4);">
-                        💾 O'zgarishlarni Saqlash
-                      </button>
-                    </div>
-                  </div>
-
-                  <div class="admin-card-body" style="padding: 22px; background: rgba(255,255,255,0.02); border-radius: 18px; border: 1px solid rgba(255,255,255,0.08);">
-                    <div style="margin-bottom: 20px;">
-                      <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: #ffffff;">
-                        💡 Jadval ostidagi maslahat / izoh matni:
-                      </label>
-                      <input type="text" id="adminSizeGuideNoteInput" class="form-control" style="width: 100%; border-radius: 12px; padding: 12px 16px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: #fff;" placeholder="Masalan: Agar 2 ta o'lcham orasida ikkilansangiz, kattaroq o'lchamni tanlashni tavsiya etamiz." />
                     </div>
 
-                    <div style="overflow-x: auto;">
-                      <table class="table" style="width: 100%; border-collapse: separate; border-spacing: 0 10px;">
+                    <div class="admin-size-note-box">
+                      <div class="admin-size-note-label">
+                        <span>💡</span> Jadval ostidagi maslahat / izoh matni:
+                      </div>
+                      <input type="text" id="adminSizeGuideNoteInput" class="admin-size-note-input" placeholder="Masalan: Agar 2 ta o'lcham orasida ikkilansangiz, kattaroq o'lchamni tanlashni tavsiya etamiz." />
+                    </div>
+
+                    <div style="overflow-x: auto; padding-bottom: 8px;">
+                      <table class="admin-size-table">
                         <thead>
-                          <tr style="color: var(--text-muted); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
-                            <th style="padding: 8px 12px; text-align: left;">O'lcham (EU / Nomi)</th>
-                            <th style="padding: 8px 12px; text-align: left;">Ko'krak aylanasi (sm)</th>
-                            <th style="padding: 8px 12px; text-align: left;">Bel aylanasi (sm)</th>
-                            <th style="padding: 8px 12px; text-align: left;">Bo'y (sm)</th>
-                            <th style="padding: 8px 12px; text-align: center; width: 80px;">Amal</th>
+                          <tr>
+                            <th style="width: 25%;">O'lcham (EU / Nomi)</th>
+                            <th style="width: 22%;">Ko'krak aylanasi (sm)</th>
+                            <th style="width: 22%;">Bel aylanasi (sm)</th>
+                            <th style="width: 22%;">Bo'y (sm)</th>
+                            <th style="width: 9%; text-align: center;">Amal</th>
                           </tr>
                         </thead>
                         <tbody id="adminSizeGuideTableBody">
@@ -1952,12 +1955,12 @@
                       </table>
                     </div>
 
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; flex-wrap: wrap; gap: 12px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 18px;">
-                      <button type="button" class="btn btn-outline btn-sm" onclick="resetAdminSizeGuide()" style="color: #ef4444; border-color: rgba(239,68,68,0.4); border-radius: 10px; font-weight: 600;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 26px; flex-wrap: wrap; gap: 14px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px;">
+                      <button type="button" class="size-btn-reset" onclick="resetAdminSizeGuide()">
                         🔄 Standart holatga qaytarish
                       </button>
-                      <button type="button" class="btn btn-gold" onclick="saveAdminSizeGuide()" style="padding: 12px 28px; border-radius: 14px; font-weight: 800; background: linear-gradient(135deg, #7000ff, #00f2fe); color: #fff; border:none; box-shadow: 0 4px 18px rgba(0, 242, 254, 0.4);">
-                        💾 Saqlash va Saytda Yangilash
+                      <button type="button" class="size-btn-save" onclick="saveAdminSizeGuide()">
+                        <span>💾</span> Saqlash va Saytda Yangilash
                       </button>
                     </div>
                   </div>
@@ -3669,7 +3672,7 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=268.0.0" defer></script>
-    <script src="/eurotex-engine.js?v=13.5.0" defer></script>
+    <script src="/script.js?v=269.0.0" defer></script>
+    <script src="/eurotex-engine.js?v=13.6.0" defer></script>
   </body>
 </html>
