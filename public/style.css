@@ -1499,14 +1499,14 @@ html[data-theme="dark"] .main-header.scrolled {
   display: flex;
   flex-direction: column;
   position: relative;
-  transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease, border-color 0.4s ease, opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1), filter 0.75s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  transition: transform 1.15s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease, border-color 0.4s ease, opacity 1.15s cubic-bezier(0.22, 1, 0.36, 1), filter 1.15s cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
-/* Luxury Slow Cinematic Reveal Animation (Tepadan mayin tushib to'liq ochilish) */
+/* Luxury Slow Cinematic Reveal Animation (1.5x Sekinlashtirilgan Tepadan Suzib Tushish) */
 .product-card.scroll-reveal-init {
   opacity: 0 !important;
-  transform: translateY(-26px) scale(0.97) !important;
-  filter: blur(6px) !important;
+  transform: translateY(-30px) scale(0.96) !important;
+  filter: blur(8px) !important;
   will-change: transform, opacity, filter;
 }
 

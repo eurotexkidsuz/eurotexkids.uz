@@ -1334,7 +1334,7 @@ function initProductScrollReveal() {
   );
   cards.forEach((card, idx) => {
     card.classList.add("scroll-reveal-init");
-    const delay = (idx % 4) * 0.1;
+    const delay = (idx % 4) * 0.15;
     card.style.transitionDelay = `${delay}s`;
     _productScrollObserver.observe(card);
   });
