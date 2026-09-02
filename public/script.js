@@ -1292,6 +1292,52 @@ function renderProducts() {
          </button>
        </div>`
       : "");
+
+  // Initialize Luxury Scroll Reveal Animation
+  setTimeout(initProductScrollReveal, 30);
+}
+
+let _productScrollObserver = null;
+
+function initProductScrollReveal() {
+  if (!("IntersectionObserver" in window)) {
+    document.querySelectorAll(".product-card").forEach((card) => {
+      card.classList.add("scroll-reveal-visible");
+      card.classList.remove("scroll-reveal-init");
+    });
+    return;
+  }
+
+  if (_productScrollObserver) {
+    _productScrollObserver.disconnect();
+  }
+
+  _productScrollObserver = new IntersectionObserver(
+    (entries, observer) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("scroll-reveal-visible");
+          entry.target.classList.remove("scroll-reveal-init");
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    {
+      root: null,
+      rootMargin: "0px 0px -40px 0px",
+      threshold: 0.06,
+    },
+  );
+
+  const cards = document.querySelectorAll(
+    ".product-card:not(.scroll-reveal-visible)",
+  );
+  cards.forEach((card, idx) => {
+    card.classList.add("scroll-reveal-init");
+    const delay = (idx % 4) * 0.08;
+    card.style.transitionDelay = `${delay}s`;
+    _productScrollObserver.observe(card);
+  });
 }
 
 function loadMoreProducts() {
