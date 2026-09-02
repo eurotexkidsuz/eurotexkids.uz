@@ -1324,8 +1324,8 @@ function initProductScrollReveal() {
     },
     {
       root: null,
-      rootMargin: "0px 0px -40px 0px",
-      threshold: 0.06,
+      rootMargin: "0px 0px -20px 0px",
+      threshold: 0.05,
     },
   );
 
@@ -1334,7 +1334,7 @@ function initProductScrollReveal() {
   );
   cards.forEach((card, idx) => {
     card.classList.add("scroll-reveal-init");
-    const delay = (idx % 4) * 0.08;
+    const delay = (idx % 4) * 0.1;
     card.style.transitionDelay = `${delay}s`;
     _productScrollObserver.observe(card);
   });

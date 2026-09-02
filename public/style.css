@@ -1499,23 +1499,25 @@ html[data-theme="dark"] .main-header.scrolled {
   display: flex;
   flex-direction: column;
   position: relative;
-  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.4s ease, opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease, border-color 0.4s ease, opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1), filter 0.75s cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
-/* Luxury Scroll Reveal Animation */
+/* Luxury Slow Cinematic Reveal Animation (Tepadan mayin tushib to'liq ochilish) */
 .product-card.scroll-reveal-init {
   opacity: 0 !important;
-  transform: translateY(36px) scale(0.96) !important;
-  will-change: transform, opacity;
+  transform: translateY(-26px) scale(0.97) !important;
+  filter: blur(6px) !important;
+  will-change: transform, opacity, filter;
 }
 
 .product-card.scroll-reveal-visible {
   opacity: 1 !important;
   transform: translateY(0) scale(1) !important;
+  filter: blur(0px) !important;
 }
 
 .product-card.scroll-reveal-visible:hover {
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.18) !important;
   border-color: var(--color-uzum-purple) !important;
   transform: translateY(-6px) !important;
 }
