@@ -1184,7 +1184,7 @@
         return;
       }
 
-      if (routeType === "admin") {
+      if (routeType === "admin" && (path.startsWith("/admin") || path.startsWith("/dashboard"))) {
         this._openAdminView(value);
         return;
       }
@@ -1196,12 +1196,11 @@
       try {
         if (typeof window.closeDashboardView === "function") {
           window.closeDashboardView();
-        } else {
-          const hw = document.getElementById("homePageWrapper");
-          const dv = document.getElementById("dashboardPageView");
-          if (hw) hw.style.display = "";
-          if (dv) dv.style.display = "none";
         }
+        const hw = document.getElementById("homePageWrapper");
+        const dv = document.getElementById("dashboardPageView");
+        if (hw) hw.style.display = "";
+        if (dv) dv.style.display = "none";
       } catch (e) {}
     },
 

@@ -893,7 +893,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   updateUserAuthUI();
   await syncProductsWithBackendAndStorage(false);
   await fetchOrdersFromServer();
-  handleURLRouting();
+  
+  const currentPath = (window.location.pathname || "").toLowerCase().replace(/\/$/, "") || "/";
+  if (currentPath === "/" || currentPath === "/index.html" || currentPath === "") {
+    closeDashboardView();
+    closeAllModals();
+  } else {
+    handleURLRouting();
+  }
+
   // Auto-sync products & orders in background gently every 15s (only re-renders on actual DB changes)
   setInterval(() => {
     syncProductsWithBackendAndStorage(true);
@@ -949,9 +957,14 @@ function checkGoogleAuthRedirect() {
       showToast(
         "👑 Google orqali Admin sifatida kirdingiz! Master Panel faollashtirildi.",
       );
-      openDashboardView("admin");
+      if (window.location.pathname.startsWith("/admin")) {
+        openDashboardView("admin");
+      } else {
+        closeDashboardView();
+      }
     } else {
       showToast(`Google orqali muvaffaqiyatli kirdingiz! ✅`);
+      closeDashboardView();
     }
   } else if (emailPrompt || err === "auth_failed") {
     window.history.replaceState({}, document.title, window.location.pathname);
@@ -2877,6 +2890,9 @@ function openDashboardView(tabName = "cart") {
     return;
   }
 
+  closeAllModals();
+  document.body.style.overflow = "auto";
+
   const homeWrapper = document.getElementById("homePageWrapper");
   const dashView = document.getElementById("dashboardPageView");
   if (!dashView) {
@@ -2888,6 +2904,11 @@ function openDashboardView(tabName = "cart") {
   dashView.style.display = "block";
   window.scrollTo({ top: 0, behavior: "smooth" });
   switchDashboardTab(tabName);
+
+  const routePath = tabName === "admin" ? "/admin" : `/${tabName}`;
+  if (window.location.pathname !== routePath) {
+    history.pushState({ route: routePath }, document.title, routePath);
+  }
 }
 
 function closeDashboardView() {
@@ -2895,8 +2916,10 @@ function closeDashboardView() {
   const dashView = document.getElementById("dashboardPageView");
   if (dashView) dashView.style.display = "none";
   if (homeWrapper) homeWrapper.style.display = "block";
+  closeAllModals();
+  document.body.style.overflow = "auto";
   window.scrollTo({ top: 0, behavior: "smooth" });
-  if (window.location.pathname !== "/") {
+  if (window.location.pathname !== "/" && window.location.pathname !== "/index.html") {
     history.pushState({}, document.title, "/");
   }
 }
