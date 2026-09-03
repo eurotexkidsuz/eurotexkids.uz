@@ -5131,6 +5131,7 @@ function showAdminSection(sec, pushUrl = true) {
   const secReturns = document.getElementById("adminSecReturns");
   const secSettings = document.getElementById("adminSecSettings");
   const secSizes = document.getElementById("adminSecSizes");
+  const secReviews = document.getElementById("adminSecReviews");
 
   if (secOrders) secOrders.style.display = sec === "orders" ? "block" : "none";
   if (secProducts)
@@ -5141,12 +5142,15 @@ function showAdminSection(sec, pushUrl = true) {
     secSettings.style.display = sec === "settings" ? "block" : "none";
   if (secSizes)
     secSizes.style.display = sec === "sizes" ? "block" : "none";
+  if (secReviews)
+    secReviews.style.display = sec === "reviews" ? "block" : "none";
 
   const bOrd = document.getElementById("btnAdminOrders");
   const bProd = document.getElementById("btnAdminProducts");
   const bRet = document.getElementById("btnAdminReturns");
   const bSet = document.getElementById("btnAdminSettings");
   const bSiz = document.getElementById("btnAdminSizes");
+  const bRev = document.getElementById("btnAdminReviews");
 
   if (bOrd)
     bOrd.className =
@@ -5163,6 +5167,15 @@ function showAdminSection(sec, pushUrl = true) {
   if (bSiz)
     bSiz.className =
       sec === "sizes" ? "admin-nav-tab active" : "admin-nav-tab";
+  if (bRev)
+    bRev.className =
+      sec === "reviews" ? "admin-nav-tab active" : "admin-nav-tab";
+
+  if (sec === "orders") renderAdminOrders();
+  else if (sec === "products") renderAdminProducts();
+  else if (sec === "returns") renderAdminReturns();
+  else if (sec === "sizes") renderAdminSizeGuide();
+  else if (sec === "reviews") renderAdminReviews();
 
   if (sec === "sizes") {
     renderAdminSizeGuide();
@@ -5628,6 +5641,9 @@ function renderAdminProducts() {
                             <div class="admin-card-header-row">
                                 <input type="text" id="pTitle_${idx}" value="${p.title_uz}" class="admin-card-title-input" placeholder="Mahsulot nomi">
                                 <div class="admin-card-actions">
+                                    <button type="button" class="admin-action-btn" onclick="openEditProductModal(${idx})" title="Tavsif, Xususiyatlar va Rasmlarni Tahrirlash ⚙️" style="background: rgba(112, 0, 255, 0.2); border-color: rgba(112, 0, 255, 0.5); color: #c084fc;">
+                                        ⚙️
+                                    </button>
                                     <button type="button" class="admin-action-btn btn-save" onclick="saveProductPriceByAdmin(${idx})" title="Saqlash 💾">
                                         💾
                                     </button>
@@ -5663,6 +5679,13 @@ function renderAdminProducts() {
                                 <div class="detail-line total">
                                     <span class="detail-label">Jami so'mda:</span>
                                     <span class="detail-value cyan" id="cardTotalSom_${idx}">${totalSomFormatted} so'm</span>
+                                </div>
+
+                                <div class="detail-line" style="margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 11.5px; color: #94a3b8; display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Mato: <b>${(p.fabric_uz || p.fabric || "Turkiya Jun").slice(0, 18)}...</b></span>
+                                    <button type="button" onclick="openEditProductModal(${idx})" style="background: none; border: none; color: #38bdf8; font-weight: 700; cursor: pointer; text-decoration: underline; font-size: 11.5px; padding: 0;">
+                                        Tavsif &amp; Xususiyatlar ⚙️
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -6521,7 +6544,12 @@ function handleAddNewProduct(e) {
     image: imagesArr[0],
     images: imagesArr,
     sizes: sizesArr.length > 0 ? sizesArr : [46, 48, 50],
-    fabric_uz: "Turkiya Premium Jun & Viskoza Blend",
+    fabric_uz: document.getElementById("newProdFabric")?.value.trim() || "Turkiya Premium Jun & Viskoza Blend",
+    desc_uz: document.getElementById("newProdDescription")?.value.trim() || "",
+    brand: document.getElementById("newProdBrand")?.value.trim() || "EUROTEX KIDS / A-FARID",
+    colors: (document.getElementById("newProdColors")?.value.trim() || "Qora, To'q ko'k (Navy), Kulrang").split(",").map(c => c.trim()).filter(Boolean),
+    season: document.getElementById("newProdSeason")?.value.trim() || "To'rt fasl",
+    origin: "O'zbekiston (Eurotex Factory)",
     inStock: true,
     rating: 5.0,
     reviewsCount: 12,
@@ -6565,6 +6593,11 @@ function handleAddNewProduct(e) {
       images: newProd.images,
       sizes: newProd.sizes,
       fabric_uz: newProd.fabric_uz,
+      desc_uz: newProd.desc_uz,
+      brand: newProd.brand,
+      colors: newProd.colors,
+      season: newProd.season,
+      origin: newProd.origin,
       inStock: true,
     }),
   })
@@ -6582,6 +6615,244 @@ function handleAddNewProduct(e) {
   showToast(
     `✨ Yangi mahsulot "${title}" katalogga muvaffaqiyatli qo'shildi! ✅`,
   );
+}
+
+// ─── FULL PRODUCT DETAILS & SPECS EDITOR MODAL ───────────────────────────────
+function openEditProductModal(idx) {
+  const pool = window.EUROTEX_PRODUCTS || EUROTEX_PRODUCTS || [];
+  const p = pool[idx];
+  if (!p) return;
+
+  const rate = state.usdRate || 12650;
+  const pUsd = p.pachkaPriceUsd || p.priceUsd || 50;
+
+  const editIndex = document.getElementById("editProdIndex");
+  const editId = document.getElementById("editProdId");
+  const editTitle = document.getElementById("editProdTitleUz");
+  const editPrice = document.getElementById("editProdPriceUsd");
+  const editOldPrice = document.getElementById("editProdOldPrice");
+  const editQty = document.getElementById("editProdPachkaQty");
+  const editCat = document.getElementById("editProdCategory");
+  const editDesc = document.getElementById("editProdDescription");
+  const editBrand = document.getElementById("editProdBrand");
+  const editFabric = document.getElementById("editProdFabric");
+  const editColors = document.getElementById("editProdColors");
+  const editSizes = document.getElementById("editProdSizes");
+  const editSeason = document.getElementById("editProdSeason");
+  const editOrigin = document.getElementById("editProdOrigin");
+  const editImage = document.getElementById("editProdImage");
+  const editImages = document.getElementById("editProdImages");
+
+  if (editIndex) editIndex.value = idx;
+  if (editId) editId.value = p.id || p.customId || "";
+  if (editTitle) editTitle.value = p.title_uz || p.title || "";
+  if (editPrice) editPrice.value = pUsd;
+  if (editOldPrice) editOldPrice.value = p.oldPrice ? Math.round(p.oldPrice / rate) : Math.round(pUsd * 1.25);
+  if (editQty) editQty.value = p.pachkaQty || 6;
+  if (editCat) editCat.value = p.category || "suits";
+  if (editDesc) editDesc.value = p.desc_uz || p.description || "";
+  if (editBrand) editBrand.value = p.brand || "EUROTEX KIDS / A-FARID";
+  if (editFabric) editFabric.value = p.fabric_uz || p.fabric || "Turkiya Premium Jun & Viskoza Blend";
+  
+  if (editColors) {
+    if (Array.isArray(p.colors) && p.colors.length > 0) {
+      editColors.value = p.colors.map(c => typeof c === "string" ? c : c.name).join(", ");
+    } else {
+      editColors.value = "Qora, To'q ko'k (Navy), Kulrang";
+    }
+  }
+
+  if (editSizes) {
+    if (Array.isArray(p.sizes) && p.sizes.length > 0) {
+      editSizes.value = p.sizes.join(", ");
+    } else {
+      editSizes.value = "30, 32, 34, 36, 38, 40, 42, 44";
+    }
+  }
+
+  if (editSeason) editSeason.value = p.season || "To'rt fasl";
+  if (editOrigin) editOrigin.value = p.origin || "O'zbekiston (Eurotex Factory)";
+  if (editImage) editImage.value = p.image || p.img || "/images/navy_suit.jpg";
+
+  if (editImages) {
+    if (Array.isArray(p.images) && p.images.length > 0) {
+      editImages.value = p.images.join("\n");
+    } else {
+      editImages.value = p.image || "/images/navy_suit.jpg";
+    }
+  }
+
+  openModal("editProductModal");
+}
+
+function handleSaveProductDetails(e) {
+  e.preventDefault();
+  const idx = parseInt(document.getElementById("editProdIndex").value, 10);
+  const pool = window.EUROTEX_PRODUCTS || EUROTEX_PRODUCTS || [];
+  const p = pool[idx];
+  if (!p) return;
+
+  const rate = state.usdRate || 12650;
+  const newTitle = document.getElementById("editProdTitleUz").value.trim();
+  const newPriceUsd = parseFloat(document.getElementById("editProdPriceUsd").value) || p.pachkaPriceUsd || 50;
+  const newOldPriceUsd = parseFloat(document.getElementById("editProdOldPrice").value) || Math.round(newPriceUsd * 1.25);
+  const newQty = parseInt(document.getElementById("editProdPachkaQty").value, 10) || p.pachkaQty || 6;
+  const newCat = document.getElementById("editProdCategory").value;
+  const newDesc = document.getElementById("editProdDescription").value.trim();
+  const newBrand = document.getElementById("editProdBrand").value.trim();
+  const newFabric = document.getElementById("editProdFabric").value.trim();
+  const newColors = document.getElementById("editProdColors").value.split(",").map(c => c.trim()).filter(Boolean);
+  const newSizes = document.getElementById("editProdSizes").value.split(",").map(s => s.trim()).filter(Boolean);
+  const newSeason = document.getElementById("editProdSeason").value.trim();
+  const newOrigin = document.getElementById("editProdOrigin").value.trim();
+  const newImage = document.getElementById("editProdImage").value.trim() || p.image;
+  const newImages = document.getElementById("editProdImages").value.split("\n").map(u => u.trim()).filter(Boolean);
+
+  // Update object
+  p.title_uz = newTitle;
+  p.title = newTitle;
+  p.pachkaPriceUsd = newPriceUsd;
+  p.priceUsd = Math.round(newPriceUsd / newQty);
+  p.pachkaQty = newQty;
+  p.price = newPriceUsd * rate;
+  p.oldPrice = newOldPriceUsd * rate;
+  p.category = newCat;
+  p.desc_uz = newDesc;
+  p.description = newDesc;
+  p.brand = newBrand;
+  p.fabric_uz = newFabric;
+  p.fabric = newFabric;
+  p.colors = newColors;
+  p.sizes = newSizes;
+  p.season = newSeason;
+  p.origin = newOrigin;
+  p.image = newImage;
+  p.images = newImages.length > 0 ? newImages : [newImage];
+
+  // Save to IDB & LocalStorage
+  EurotexIDB.set("eurotex_custom_products", pool);
+  try {
+    localStorage.setItem("eurotex_custom_products", JSON.stringify(pool));
+  } catch (err) {}
+  notifyProductChange();
+
+  // Send to backend
+  fetch("/products", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      customId: String(p.id || p.customId),
+      title_uz: p.title_uz,
+      category: p.category,
+      pachkaPriceUsd: p.pachkaPriceUsd,
+      priceUsd: p.priceUsd,
+      pachkaQty: p.pachkaQty,
+      price: p.price,
+      oldPrice: p.oldPrice,
+      desc_uz: p.desc_uz,
+      brand: p.brand,
+      fabric_uz: p.fabric_uz,
+      colors: p.colors,
+      sizes: p.sizes,
+      season: p.season,
+      origin: p.origin,
+      image: p.image,
+      images: p.images,
+    }),
+  }).catch((err) => console.error("Update error:", err));
+
+  closeModal("editProductModal");
+  renderAdminProducts();
+  renderProducts();
+
+  // If PDP is active, update live view
+  if (window.currentPdpProduct && String(window.currentPdpProduct.id) === String(p.id)) {
+    openProductPage(p.id);
+  }
+
+  showToast("✓ Mahsulot tavsifi va xususiyatlari saqlandi!");
+}
+
+// ─── ADMIN REVIEWS MANAGEMENT ───────────────────────────────────────────────
+function renderAdminReviews() {
+  const container = document.getElementById("adminReviewsContainer");
+  if (!container) return;
+
+  let reviews = [];
+  try {
+    const raw = localStorage.getItem("eurotex_admin_reviews");
+    if (raw) reviews = JSON.parse(raw);
+  } catch (e) {}
+
+  if (!reviews || reviews.length === 0) {
+    reviews = [
+      { id: 1, author: "Sardorbek Rahimov", rating: 5, date: "Bugun", text: "Mato sifati a'lo darajada! Bolalar uchun juda qulay bichim, to'yda o'g'lim juda yarashib turdi. Rahmat Eurotex!", product: "Slim Fit Bolalar Kostyumi" },
+      { id: 2, author: "Dilshod Alimov", rating: 5, date: "Kecha", text: "Turkiya matosi yumshoq, g'ijimlanmaydi. 1 kunda yetkazib berishdi. Tavsiya qilaman!", product: "Klassik Maktab Formasi" },
+      { id: 3, author: "Zafar Qodirov", rating: 5, date: "2 kun oldin", text: "Fabrikaning o'zidan to'g'ridan-to'g'ri ulgurji narxda oldik. Narxiga 100% arziydi!", product: "To'q ko'k Royal Navy Kostyum" }
+    ];
+    localStorage.setItem("eurotex_admin_reviews", JSON.stringify(reviews));
+  }
+
+  container.innerHTML = `
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
+      ${reviews.map((r, i) => `
+        <div style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <b style="color: #f8fafc; font-size: 15px;">${r.author}</b>
+            <span style="color: #f59e0b; font-size: 13px;">${"⭐".repeat(r.rating || 5)}</span>
+          </div>
+          <small style="color: #94a3b8; font-size: 12px;">Mahsulot: <b style="color: #38bdf8;">${r.product || "Eurotex Kostyum"}</b> • ${r.date}</small>
+          <p style="color: #cbd5e1; font-size: 13.5px; line-height: 1.5; margin: 4px 0;">"${r.text}"</p>
+          <div style="margin-top: auto; display: flex; justify-content: flex-end;">
+            <button type="button" class="btn btn-outline" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4); padding: 5px 12px; font-size: 12px; border-radius: 8px;" onclick="deleteAdminReview(${r.id || i})">
+              🗑️ O'chirish
+            </button>
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function adminAddNewReviewPrompt() {
+  const author = prompt("Mijoz ismini kiriting (masalan: Otabek Jo'rayev):");
+  if (!author) return;
+  const product = prompt("Qaysi mahsulotga sharh? (masalan: Slim Fit Kostyum):", "Eurotex Kids Kostyumi");
+  const text = prompt("Mijozning fikri / sharh matni:");
+  if (!text) return;
+
+  let reviews = [];
+  try {
+    const raw = localStorage.getItem("eurotex_admin_reviews");
+    if (raw) reviews = JSON.parse(raw);
+  } catch (e) {}
+
+  reviews.unshift({
+    id: Date.now(),
+    author,
+    product: product || "Eurotex Kids",
+    text,
+    rating: 5,
+    date: "Hozirgina",
+  });
+
+  localStorage.setItem("eurotex_admin_reviews", JSON.stringify(reviews));
+  renderAdminReviews();
+  showToast("✓ Yangi mijoz sharhi muvaffaqiyatli qo'shildi!");
+}
+
+function deleteAdminReview(id) {
+  if (!confirm("Ushbu sharhni o'chirishni tasdiqlaysizmi?")) return;
+  let reviews = [];
+  try {
+    const raw = localStorage.getItem("eurotex_admin_reviews");
+    if (raw) reviews = JSON.parse(raw);
+  } catch (e) {}
+
+  reviews = reviews.filter((r, idx) => (r.id ? r.id !== id : idx !== id));
+  localStorage.setItem("eurotex_admin_reviews", JSON.stringify(reviews));
+  renderAdminReviews();
+  showToast("Sharh o'chirildi");
 }
 
 function renderAdminReturns() {

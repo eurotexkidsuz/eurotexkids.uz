@@ -41,7 +41,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/style.css?v=287.0.0" />
+    <link rel="stylesheet" href="/style.css?v=288.0.0" />
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
@@ -1987,6 +1987,14 @@
                   >
                     📐 O'lchamlar (Razmerlar)
                   </button>
+                  <button
+                    type="button"
+                    class="admin-nav-tab"
+                    id="btnAdminReviews"
+                    onclick="showAdminSection('reviews')"
+                  >
+                    ⭐ Mijozlar Sharhlari
+                  </button>
                 </div>
 
                 <!-- Admin Section 1: Customer Orders -->
@@ -2214,6 +2222,27 @@
                         <span>💾</span> Saqlash va Saytda Yangilash
                       </button>
                     </div>
+                  </div>
+                </div>
+
+                <!-- Admin Section 6: Customer Reviews Management -->
+                <div id="adminSecReviews" style="display: none">
+                  <div class="admin-sec-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 22px;">
+                    <div class="admin-sec-header-left" style="display: flex; align-items: center; gap: 14px;">
+                      <div class="admin-sec-icon" style="width: 48px; height: 48px; border-radius: 14px; background: rgba(245, 158, 11, 0.15); display: flex; align-items: center; justify-content: center; color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); font-size: 24px;">
+                        ⭐
+                      </div>
+                      <div>
+                        <h3 class="admin-sec-title">Mijozlar Sharhlari Boshqaruvi</h3>
+                        <p class="admin-sec-subtitle">Mahsulotlarga qoldirilgan xaridor sharhlarini ko'rish, qo'shish va o'chirish</p>
+                      </div>
+                    </div>
+                    <button type="button" class="btn btn-gold" style="border-radius: 12px; padding: 10px 20px; font-weight: 700;" onclick="adminAddNewReviewPrompt()">
+                      ✍️ Yangi Sharh Qo'shish
+                    </button>
+                  </div>
+                  <div id="adminReviewsContainer">
+                    <!-- Populated dynamically -->
                   </div>
                 </div>
               </div>
@@ -3627,7 +3656,81 @@
             </div>
           </div>
 
-          <!-- Image upload zone (Supports up to 5 images) -->
+          <!-- Tavsif (Description) -->
+          <div class="apm-field">
+            <label class="apm-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              Mahsulot Tavsifi (Tavsif Tabi uchun)
+            </label>
+            <textarea
+              class="apm-input"
+              id="newProdDescription"
+              rows="3"
+              placeholder="Mahsulot haqida batafsil ma'lumot, mato xususiyatlari, qulayliklari va parvarishlash qoidalari..."
+            ></textarea>
+          </div>
+
+          <!-- Xususiyatlar: Brend, Mato, Ranglar -->
+          <div class="apm-row">
+            <div class="apm-field">
+              <label class="apm-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+                Brend
+              </label>
+              <input
+                class="apm-input"
+                type="text"
+                id="newProdBrand"
+                value="EUROTEX KIDS / A-FARID"
+                placeholder="EUROTEX KIDS / A-FARID"
+              />
+            </div>
+            <div class="apm-field">
+              <label class="apm-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"/></svg>
+                Mato Tarkibi
+              </label>
+              <input
+                class="apm-input"
+                type="text"
+                id="newProdFabric"
+                value="Turkiya Premium Jun & Viskoza Blend"
+                placeholder="Turkiya Premium Jun & Viskoza Blend"
+              />
+            </div>
+          </div>
+
+          <!-- Xususiyatlar: Ranglar, Mavsum, Joyi -->
+          <div class="apm-row">
+            <div class="apm-field">
+              <label class="apm-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0110 10"/></svg>
+                Ranglar (Vergul bilan)
+              </label>
+              <input
+                class="apm-input"
+                type="text"
+                id="newProdColors"
+                value="Qora, To'q ko'k (Navy), Kulrang"
+                placeholder="Qora, To'q ko'k (Navy), Kulrang"
+              />
+            </div>
+            <div class="apm-field">
+              <label class="apm-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg>
+                Mavsum
+              </label>
+              <input
+                class="apm-input"
+                type="text"
+                id="newProdSeason"
+                value="To'rt fasl"
+                placeholder="To'rt fasl"
+              />
+            </div>
+          </div>
+
+          <!-- Image upload zone (Supports up to 7 images) -->
           <div class="apm-field">
             <label class="apm-label">
               <svg
@@ -3854,6 +3957,121 @@
       </div>
     </div>
 
+    <!-- Dedicated Edit Product Modal for Admin (Tavsif, Xususiyatlar, Narx, Rasmlar, Sharhlar) -->
+    <div id="editProductModal" class="modal-overlay">
+      <div class="apm-card" style="max-width: 680px; max-height: 90vh; overflow-y: auto;">
+        <div class="apm-header">
+          <div class="apm-header-icon" style="background: linear-gradient(135deg, #7000ff, #00f2fe);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </div>
+          <div>
+            <h2 class="apm-title">Mahsulotni Tahrirlash</h2>
+            <p class="apm-subtitle">Tavsif, Xususiyatlar, Narx va Rasmlarni to'liq boshqarish</p>
+          </div>
+          <button class="apm-close" onclick="closeModal('editProductModal')" aria-label="Yopish">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <form id="editProductForm" onsubmit="handleSaveProductDetails(event)" class="apm-body">
+          <input type="hidden" id="editProdIndex" value="" />
+          <input type="hidden" id="editProdId" value="" />
+
+          <!-- Nomi -->
+          <div class="apm-field">
+            <label class="apm-label">Mahsulot Nomi</label>
+            <input class="apm-input" type="text" id="editProdTitleUz" required />
+          </div>
+
+          <!-- Narx & Pachka -->
+          <div class="apm-row">
+            <div class="apm-field">
+              <label class="apm-label">Pachka Narxi ($)</label>
+              <input class="apm-input" type="number" id="editProdPriceUsd" required />
+            </div>
+            <div class="apm-field">
+              <label class="apm-label">Eski Narxi ($)</label>
+              <input class="apm-input" type="number" id="editProdOldPrice" placeholder="Masalan: 60" />
+            </div>
+            <div class="apm-field">
+              <label class="apm-label">Pachka (Dona)</label>
+              <input class="apm-input" type="number" id="editProdPachkaQty" value="6" />
+            </div>
+          </div>
+
+          <!-- Turkumi -->
+          <div class="apm-field">
+            <label class="apm-label">Toifasi / Turkumi</label>
+            <select class="apm-input apm-select" id="editProdCategory">
+              <option value="suits">🤵 Kostyum-Shimlar</option>
+              <option value="tuxedos">🎩 Smoking &amp; To'y liboslari</option>
+              <option value="trousers">👖 Klassik Shimlar</option>
+              <option value="shirts">👔 Erkaklar Ko'ylaklari</option>
+              <option value="blazers">🧥 Pijaklar &amp; Blazerlar</option>
+              <option value="accessories">🎗️ Aksessuarlar</option>
+            </select>
+          </div>
+
+          <!-- Tavsif -->
+          <div class="apm-field">
+            <label class="apm-label">📝 Mahsulot Tavsifi (Tavsif Tabi uchun)</label>
+            <textarea class="apm-input" id="editProdDescription" rows="4" placeholder="Mato xususiyatlari, qulayliklari va parvarishlash qoidalari..."></textarea>
+          </div>
+
+          <!-- Xususiyatlar: Brend, Mato -->
+          <div class="apm-row">
+            <div class="apm-field">
+              <label class="apm-label">🏢 Brend</label>
+              <input class="apm-input" type="text" id="editProdBrand" placeholder="EUROTEX KIDS / A-FARID" />
+            </div>
+            <div class="apm-field">
+              <label class="apm-label">🧵 Mato Tarkibi</label>
+              <input class="apm-input" type="text" id="editProdFabric" placeholder="Turkiya Premium Jun & Viskoza Blend" />
+            </div>
+          </div>
+
+          <!-- Xususiyatlar: Ranglar, O'lchamlar -->
+          <div class="apm-row">
+            <div class="apm-field">
+              <label class="apm-label">🎨 Ranglar (Vergul bilan)</label>
+              <input class="apm-input" type="text" id="editProdColors" placeholder="Qora, To'q ko'k, Kulrang" />
+            </div>
+            <div class="apm-field">
+              <label class="apm-label">📐 O'lchamlar (Vergul bilan)</label>
+              <input class="apm-input" type="text" id="editProdSizes" placeholder="30, 32, 34, 36, 38, 40, 42, 44" />
+            </div>
+          </div>
+
+          <!-- Xususiyatlar: Mavsum, Joyi -->
+          <div class="apm-row">
+            <div class="apm-field">
+              <label class="apm-label">⛅ Mavsum</label>
+              <input class="apm-input" type="text" id="editProdSeason" placeholder="To'rt fasl" />
+            </div>
+            <div class="apm-field">
+              <label class="apm-label">📍 Ishlab Chiqarilgan Joy</label>
+              <input class="apm-input" type="text" id="editProdOrigin" placeholder="O'zbekiston (Eurotex Factory)" />
+            </div>
+          </div>
+
+          <!-- Rasmlar Linklari -->
+          <div class="apm-field">
+            <label class="apm-label">🖼️ Asosiy Rasm Havolasi</label>
+            <input class="apm-input" type="text" id="editProdImage" placeholder="/images/navy_suit.jpg" />
+          </div>
+
+          <div class="apm-field">
+            <label class="apm-label">🖼️ Galereya Rasmlari Havolalari (Har bir qatorga bittadan)</label>
+            <textarea class="apm-input" id="editProdImages" rows="3" placeholder="/images/navy_suit.jpg&#10;/images/dark_grey_suit.jpg"></textarea>
+          </div>
+
+          <button type="submit" class="apm-submit" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;">
+            💾 Saqlash va Saytda Yangilash
+          </button>
+        </form>
+      </div>
+    </div>
+
     <!-- Custom Professional Confirm Modal (Screenshot 4 design) -->
     <div id="customConfirmModal" class="modal-overlay">
       <div class="confirm-modal-box">
@@ -4014,7 +4232,7 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=287.0.0" defer></script>
-    <script src="/eurotex-engine.js?v=15.4.0" defer></script>
+    <script src="/script.js?v=288.0.0" defer></script>
+    <script src="/eurotex-engine.js?v=15.5.0" defer></script>
   </body>
 </html>
