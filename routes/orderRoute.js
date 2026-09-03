@@ -193,6 +193,14 @@ router.post("/", async (req, res) => {
 
     await newOrder.save();
 
+    // Trigger instant Telegram alert to admin
+    try {
+      const { sendNewOrderNotification } = require("../utils/telegramBot");
+      await sendNewOrderNotification(newOrder);
+    } catch (tgErr) {
+      console.warn("Telegram order alert notice:", tgErr.message);
+    }
+
     console.log(
       `📦 [YANGI BUYURTMA]: #${newOrder.orderId} | User: ${newOrder.userEmail || "guest"} | $${newOrder.totalPriceUsd} / ${newOrder.totalPriceUzs} so'm`,
     );

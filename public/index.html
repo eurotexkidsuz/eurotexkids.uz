@@ -41,7 +41,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/style.css?v=288.0.0" />
+    <link rel="stylesheet" href="/style.css?v=289.0.0" />
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
@@ -1958,10 +1958,50 @@
                   <button
                     type="button"
                     class="admin-nav-tab"
+                    id="btnAdminLeads"
+                    onclick="showAdminSection('leads')"
+                  >
+                    ⚡ 1-Klik &amp; Qo'ng'iroqlar
+                  </button>
+                  <button
+                    type="button"
+                    class="admin-nav-tab"
                     id="btnAdminProducts"
                     onclick="showAdminSection('products')"
                   >
-                    🧥 Mahsulotlar Narxlari
+                    🧥 Mahsulotlar
+                  </button>
+                  <button
+                    type="button"
+                    class="admin-nav-tab"
+                    id="btnAdminUsers"
+                    onclick="showAdminSection('users')"
+                  >
+                    👥 Mijozlar (CRM)
+                  </button>
+                  <button
+                    type="button"
+                    class="admin-nav-tab"
+                    id="btnAdminPromos"
+                    onclick="showAdminSection('promos')"
+                  >
+                    🏷️ Promokodlar
+                  </button>
+                  <button
+                    type="button"
+                    class="admin-nav-tab"
+                    id="btnAdminNasiya"
+                    onclick="showAdminSection('nasiya')"
+                  >
+                    🤝 Nasiya Arizalari
+                  </button>
+                  <button
+                    type="button"
+                    class="admin-nav-tab"
+                    id="btnAdminDelivery"
+                    onclick="showAdminSection('delivery')"
+                  >
+                    🚚 Yetkazib Berish
                   </button>
                   <button
                     type="button"
@@ -1969,15 +2009,7 @@
                     id="btnAdminReturns"
                     onclick="showAdminSection('returns')"
                   >
-                    🔄 Qaytarish Arizalari
-                  </button>
-                  <button
-                    type="button"
-                    class="admin-nav-tab"
-                    id="btnAdminSettings"
-                    onclick="showAdminSection('settings')"
-                  >
-                    ⚙️ Dollar Kursi Sozlamalari
+                    🔄 Qaytarishlar
                   </button>
                   <button
                     type="button"
@@ -1985,7 +2017,7 @@
                     id="btnAdminSizes"
                     onclick="showAdminSection('sizes')"
                   >
-                    📐 O'lchamlar (Razmerlar)
+                    📐 O'lchamlar
                   </button>
                   <button
                     type="button"
@@ -1993,7 +2025,15 @@
                     id="btnAdminReviews"
                     onclick="showAdminSection('reviews')"
                   >
-                    ⭐ Mijozlar Sharhlari
+                    ⭐ Sharhlar
+                  </button>
+                  <button
+                    type="button"
+                    class="admin-nav-tab"
+                    id="btnAdminSettings"
+                    onclick="showAdminSection('settings')"
+                  >
+                    ⚙️ Sozlamalar &amp; Bot
                   </button>
                 </div>
 
@@ -2156,6 +2196,32 @@
                     >
                       💾 Kursni Saqlash &amp; Saytda Yangilash
                     </button>
+
+                    <!-- Telegram Bot Integration Settings -->
+                    <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.08);">
+                      <h4 style="color: #38bdf8; font-size: 17px; font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                        <span>🤖</span> Telegram Bot Bildirishnomalari Sozlamalari
+                      </h4>
+                      <p style="color: rgba(203, 213, 225, 0.85); font-size: 13.5px; line-height: 1.5; margin-bottom: 16px;">
+                        Saytda yangi buyurtma, 1-klikda xarid yoki Nasiya arizasi tushganda shaxsiy Telegramingizga zudlik bilan bildirishnoma borishi uchun Bot Token va Chat ID-ni kiriting:
+                      </p>
+                      <div class="form-group" style="margin-bottom: 14px;">
+                        <label style="font-weight: 700; font-size: 13px; color: #cbd5e1; margin-bottom: 6px; display: block;">Bot Token (BotFather bergan token):</label>
+                        <input type="text" id="adminTgBotToken" placeholder="Masalan: 7123456789:AAHxxxxx..." style="width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: #0b1329; color: #fff; font-size: 14px;" />
+                      </div>
+                      <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="font-weight: 700; font-size: 13px; color: #cbd5e1; margin-bottom: 6px; display: block;">Admin Chat ID (Sizning yoki guruh ID-si):</label>
+                        <input type="text" id="adminTgChatId" placeholder="Masalan: 123456789 yoki -100123456789" style="width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: #0b1329; color: #fff; font-size: 14px;" />
+                      </div>
+                      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <button type="button" class="btn btn-gold" onclick="saveAdminTelegramSettings()" style="flex: 1; height: 46px; border-radius: 12px; font-weight: 800;">
+                          💾 Botni Saqlash
+                        </button>
+                        <button type="button" class="btn btn-outline" onclick="testAdminTelegramAlert()" style="height: 46px; border-radius: 12px; font-weight: 700; border-color: #38bdf8; color: #38bdf8;">
+                          🔔 Test Xabar Yuborish
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -2242,6 +2308,109 @@
                     </button>
                   </div>
                   <div id="adminReviewsContainer">
+                    <!-- Populated dynamically -->
+                  </div>
+                </div>
+
+                <!-- Admin Section: ⚡ 1-Klik va Tezkor Qo'ng'iroqlar (Leads) -->
+                <div id="adminSecLeads" style="display: none">
+                  <div class="admin-sec-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 22px;">
+                    <div class="admin-sec-header-left" style="display: flex; align-items: center; gap: 14px;">
+                      <div class="admin-sec-icon" style="width: 48px; height: 48px; border-radius: 14px; background: rgba(239, 68, 68, 0.15); display: flex; align-items: center; justify-content: center; color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 24px;">
+                        ⚡
+                      </div>
+                      <div>
+                        <h3 class="admin-sec-title">1-Klikda Xarid va Tezkor Qo'ng'iroqlar</h3>
+                        <p class="admin-sec-subtitle">Mijozlar qoldirgan shoshilinch xarid arizalari (Leads)</p>
+                      </div>
+                    </div>
+                    <button type="button" class="btn-admin-refresh" onclick="loadAdminLeads()">
+                      🔄 Yangilash
+                    </button>
+                  </div>
+                  <div id="adminLeadsTableContainer">
+                    <!-- Populated dynamically -->
+                  </div>
+                </div>
+
+                <!-- Admin Section: 👥 Mijozlar Bazasi (CRM) -->
+                <div id="adminSecUsers" style="display: none">
+                  <div class="admin-sec-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 22px;">
+                    <div class="admin-sec-header-left" style="display: flex; align-items: center; gap: 14px;">
+                      <div class="admin-sec-icon" style="width: 48px; height: 48px; border-radius: 14px; background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center; color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 24px;">
+                        👥
+                      </div>
+                      <div>
+                        <h3 class="admin-sec-title">Mijozlar Bazasi (CRM)</h3>
+                        <p class="admin-sec-subtitle">Barcha ro'yxatdan o'tgan mijozlar va ularning xarid statistikasi</p>
+                      </div>
+                    </div>
+                    <input type="text" id="adminUserSearchInput" placeholder="🔍 Qidirish (ism, telefon, shahar)..." oninput="filterAdminUsersTable(this.value)" style="padding: 10px 16px; border-radius: 12px; background: #0b1329; border: 1px solid rgba(255,255,255,0.15); color: #fff; min-width: 250px;" />
+                  </div>
+                  <div id="adminUsersTableContainer">
+                    <!-- Populated dynamically -->
+                  </div>
+                </div>
+
+                <!-- Admin Section: 🏷️ Promokodlar Boshqaruvi -->
+                <div id="adminSecPromos" style="display: none">
+                  <div class="admin-sec-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 22px;">
+                    <div class="admin-sec-header-left" style="display: flex; align-items: center; gap: 14px;">
+                      <div class="admin-sec-icon" style="width: 48px; height: 48px; border-radius: 14px; background: rgba(168, 85, 247, 0.15); display: flex; align-items: center; justify-content: center; color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); font-size: 24px;">
+                        🏷️
+                      </div>
+                      <div>
+                        <h3 class="admin-sec-title">Promokodlar va Chegirmalar Boshqaruvi</h3>
+                        <p class="admin-sec-subtitle">Chegirma foizi, minimal summa, jami limit va 1 kishiga 1 marta cheklovi</p>
+                      </div>
+                    </div>
+                    <button type="button" class="btn btn-gold" style="border-radius: 12px; padding: 10px 20px; font-weight: 700;" onclick="openCreatePromoModal()">
+                      ➕ Yangi Promokod Yaratish
+                    </button>
+                  </div>
+                  <div id="adminPromosTableContainer">
+                    <!-- Populated dynamically -->
+                  </div>
+                </div>
+
+                <!-- Admin Section: 🤝 Nasiya Arizalari -->
+                <div id="adminSecNasiya" style="display: none">
+                  <div class="admin-sec-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 22px;">
+                    <div class="admin-sec-header-left" style="display: flex; align-items: center; gap: 14px;">
+                      <div class="admin-sec-icon" style="width: 48px; height: 48px; border-radius: 14px; background: rgba(34, 197, 94, 0.15); display: flex; align-items: center; justify-content: center; color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); font-size: 24px;">
+                        🤝
+                      </div>
+                      <div>
+                        <h3 class="admin-sec-title">"Eurotex Nasiya" Muddatli To'lov Arizalari</h3>
+                        <p class="admin-sec-subtitle">Xaridorlarning 3, 6, 12 oylik muddatli to'lov arizalarini tasdiqlash</p>
+                      </div>
+                    </div>
+                    <button type="button" class="btn-admin-refresh" onclick="loadAdminNasiya()">
+                      🔄 Yangilash
+                    </button>
+                  </div>
+                  <div id="adminNasiyaTableContainer">
+                    <!-- Populated dynamically -->
+                  </div>
+                </div>
+
+                <!-- Admin Section: 🚚 Viloyatlar va Yetkazib Berish Narxlari -->
+                <div id="adminSecDelivery" style="display: none">
+                  <div class="admin-sec-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 22px;">
+                    <div class="admin-sec-header-left" style="display: flex; align-items: center; gap: 14px;">
+                      <div class="admin-sec-icon" style="width: 48px; height: 48px; border-radius: 14px; background: rgba(245, 158, 11, 0.15); display: flex; align-items: center; justify-content: center; color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); font-size: 24px;">
+                        🚚
+                      </div>
+                      <div>
+                        <h3 class="admin-sec-title">Viloyatlar va Yetkazib Berish Narxlari</h3>
+                        <p class="admin-sec-subtitle">Har bir viloyat bo'yicha yetkazish narxi, muddati va bepul yetkazish chegarasi</p>
+                      </div>
+                    </div>
+                    <button type="button" class="btn btn-gold" style="border-radius: 12px; padding: 10px 20px; font-weight: 700;" onclick="saveAdminDeliverySettings()">
+                      💾 Narxlarni Saqlash
+                    </button>
+                  </div>
+                  <div id="adminDeliveryTableContainer">
                     <!-- Populated dynamically -->
                   </div>
                 </div>
@@ -4072,6 +4241,120 @@
       </div>
     </div>
 
+    <!-- ⚡ 1-KLIKDA XARID QILISH MODAL OYNASI -->
+    <div id="oneClickBuyModal" class="modal-overlay">
+      <div class="apm-card" style="max-width: 460px;">
+        <div class="apm-header">
+          <div class="apm-header-icon" style="background: linear-gradient(135deg, #ef4444, #f97316); color: #fff;">
+            ⚡
+          </div>
+          <div>
+            <h2 class="apm-title">1 Klikda Tezkor Xarid</h2>
+            <p class="apm-subtitle">Ma'lumotlaringizni qoldiring, 10 daqiqada bog'lanamiz</p>
+          </div>
+          <button class="apm-close" onclick="closeModal('oneClickBuyModal')" aria-label="Yopish">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <form id="oneClickBuyForm" onsubmit="submitOneClickBuy(event)" class="apm-body">
+          <!-- Tanlangan mahsulot qisqacha ma'lumoti -->
+          <div style="display: flex; align-items: center; gap: 14px; background: #f8fafc; padding: 12px 14px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 6px;">
+            <img id="ocbImg" src="/images/navy_suit.jpg" style="width: 50px; height: 60px; object-fit: cover; border-radius: 8px;" />
+            <div style="flex: 1; min-width: 0;">
+              <b id="ocbTitle" style="font-size: 13.5px; color: #0f172a; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Kostyum</b>
+              <span id="ocbPrice" style="font-size: 14px; font-weight: 800; color: #88001b;">499.000 so'm</span>
+              <small id="ocbVariant" style="display: block; font-size: 11.5px; color: #64748b;">O'lcham: 36 | Rang: Qora</small>
+            </div>
+          </div>
+
+          <div class="apm-field">
+            <label class="apm-label">Ismingiz *</label>
+            <input class="apm-input" type="text" id="ocbName" placeholder="Masalan: Sardorbek" required />
+          </div>
+
+          <div class="apm-field">
+            <label class="apm-label">Telefon raqamingiz *</label>
+            <input class="apm-input" type="tel" id="ocbPhone" placeholder="+998 (__) ___-__-__" value="+998 " required />
+          </div>
+
+          <div class="apm-field">
+            <label class="apm-label">Qo'shimcha izoh (ixtiyoriy)</label>
+            <input class="apm-input" type="text" id="ocbNotes" placeholder="Masalan: Kechki 18:00 dan keyin qo'ng'iroq qiling" />
+          </div>
+
+          <button type="submit" class="apm-submit" style="background: linear-gradient(135deg, #88001b, #c00028) !important;">
+            ⚡ Buyurtmani Yuborish
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 🏷️ YANGI PROMOKOD YARATISH MODAL OYNASI -->
+    <div id="createPromoModal" class="modal-overlay">
+      <div class="apm-card" style="max-width: 520px;">
+        <div class="apm-header">
+          <div class="apm-header-icon" style="background: linear-gradient(135deg, #a855f7, #6366f1); color: #fff;">
+            🏷️
+          </div>
+          <div>
+            <h2 class="apm-title">Yangi Promokod Yaratish</h2>
+            <p class="apm-subtitle">Cheklovlar, minimal narx va amal qilish muddati</p>
+          </div>
+          <button class="apm-close" onclick="closeModal('createPromoModal')" aria-label="Yopish">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <form id="createPromoForm" onsubmit="handleCreatePromo(event)" class="apm-body">
+          <div class="apm-field">
+            <label class="apm-label">Promokod Nomi (Kodi) *</label>
+            <input class="apm-input" type="text" id="adminNewPromoCodeInput" placeholder="Masalan: BAHOR20" style="text-transform: uppercase; font-weight: 800; letter-spacing: 1px;" required />
+          </div>
+
+          <div class="apm-row">
+            <div class="apm-field">
+              <label class="apm-label">Chegirma Turi</label>
+              <select class="apm-input apm-select" id="promoDiscountType">
+                <option value="percent">Foiz (%)</option>
+                <option value="fixed">Aniq Summa (so'm)</option>
+              </select>
+            </div>
+            <div class="apm-field">
+              <label class="apm-label">Chegirma Qiymati *</label>
+              <input class="apm-input" type="number" id="promoDiscountValue" placeholder="Masalan: 15 yoki 50000" required />
+            </div>
+          </div>
+
+          <div class="apm-row">
+            <div class="apm-field">
+              <label class="apm-label">Minimal Xarid Summasi (so'm)</label>
+              <input class="apm-input" type="number" id="promoMinOrder" placeholder="Masalan: 400000 (0 bo'lsa cheklov yo'q)" value="0" />
+            </div>
+            <div class="apm-field">
+              <label class="apm-label">Jami Ishlatish Limiti (Marta)</label>
+              <input class="apm-input" type="number" id="promoMaxUses" placeholder="Masalan: 50" value="100" />
+            </div>
+          </div>
+
+          <div class="apm-row">
+            <div class="apm-field">
+              <label class="apm-label">1 Kishiga Ishlatish Limiti</label>
+              <input class="apm-input" type="number" id="promoPerUser" value="1" readonly title="1 kishi faqat 1 marta ishlata oladi" />
+            </div>
+            <div class="apm-field">
+              <label class="apm-label">Amal Qilish Muddati (Kun)</label>
+              <input class="apm-input" type="number" id="promoExpiryDays" placeholder="30 kun" value="30" />
+            </div>
+          </div>
+
+          <button type="submit" class="apm-submit" style="background: linear-gradient(135deg, #9333ea, #6366f1) !important;">
+            ➕ Promokodni Saqlash
+          </button>
+        </form>
+      </div>
+    </div>
+
     <!-- Custom Professional Confirm Modal (Screenshot 4 design) -->
     <div id="customConfirmModal" class="modal-overlay">
       <div class="confirm-modal-box">
@@ -4232,7 +4515,7 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=288.0.0" defer></script>
-    <script src="/eurotex-engine.js?v=15.5.0" defer></script>
+    <script src="/script.js?v=289.0.0" defer></script>
+    <script src="/eurotex-engine.js?v=15.6.0" defer></script>
   </body>
 </html>

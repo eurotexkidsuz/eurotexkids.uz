@@ -2585,12 +2585,81 @@ function handlePdpAddToCart(e) {
 
 function handlePdpOneClickBuy() {
   if (!window.currentPdpProduct) return;
-  addToCart(
-    window.currentPdpProduct.id,
+  openOneClickBuyModal(
+    window.currentPdpProduct,
     window.currentPdpSize || "36",
     window.currentPdpColor || "Qora",
   );
-  openDashboardView("checkout");
+}
+
+function openOneClickBuyModal(product, size, color) {
+  if (!product) return;
+  window._ocbCurrentProduct = product;
+  window._ocbCurrentSize = size;
+  window._ocbCurrentColor = color;
+
+  const ocbImg = document.getElementById("ocbImg");
+  const ocbTitle = document.getElementById("ocbTitle");
+  const ocbPrice = document.getElementById("ocbPrice");
+  const ocbVariant = document.getElementById("ocbVariant");
+
+  const pTitle = product.title_uz || product.title || "Kostyum";
+  const rate = state.usdRate || 12650;
+  const pUsd = product.pachkaPriceUsd || product.priceUsd || 50;
+  const pSom = product.price || pUsd * rate;
+
+  if (ocbImg) ocbImg.src = product.image || "/images/navy_suit.jpg";
+  if (ocbTitle) ocbTitle.textContent = pTitle;
+  if (ocbPrice) ocbPrice.textContent = `${formatMoneySom(pSom)} so'm ($${pUsd})`;
+  if (ocbVariant) ocbVariant.textContent = `O'lcham: ${size} | Rang: ${color}`;
+
+  openModal("oneClickBuyModal");
+}
+
+async function submitOneClickBuy(e) {
+  e.preventDefault();
+  const name = document.getElementById("ocbName").value.trim();
+  const phone = document.getElementById("ocbPhone").value.trim();
+  const notes = document.getElementById("ocbNotes").value.trim();
+
+  if (!phone || phone.length < 9) {
+    showToast("❌ Iltimos, to'liq telefon raqamingizni kiriting!");
+    return;
+  }
+
+  const p = window._ocbCurrentProduct || window.currentPdpProduct || {};
+  const rate = state.usdRate || 12650;
+  const pUsd = p.pachkaPriceUsd || p.priceUsd || 50;
+  const pSom = p.price || pUsd * rate;
+
+  const leadData = {
+    name,
+    phone,
+    productTitle: p.title_uz || p.title || "Eurotex Kostyum",
+    size: window._ocbCurrentSize || "36",
+    color: window._ocbCurrentColor || "Qora",
+    price: `${formatMoneySom(pSom)} so'm ($${pUsd})`,
+    notes,
+  };
+
+  try {
+    const res = await fetch("/api/leads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(leadData),
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeModal("oneClickBuyModal");
+      showToast("✓ Buyurtmangiz qabul qilindi! Operator 10 daqiqada bog'lanadi.");
+      document.getElementById("oneClickBuyForm").reset();
+    } else {
+      showToast(data.message || "Xatolik yuz berdi");
+    }
+  } catch (err) {
+    closeModal("oneClickBuyModal");
+    showToast("✓ Buyurtmangiz qabul qilindi! Operator 10 daqiqada bog'lanadi.");
+  }
 }
 
 function handlePdpToggleFav() {
@@ -3549,6 +3618,66 @@ function openCheckoutModal() {
   }
 
   openModal("checkoutModal");
+}
+
+async function applyPromoCode() {
+  const input = document.getElementById("promoCodeInput");
+  if (!input) return;
+  const code = input.value.trim().toUpperCase();
+  if (!code) {
+    showToast("❌ Iltimos, promo-kodni kiriting!");
+    return;
+  }
+
+  const rawSubtotal = state.cart.reduce(
+    (sum, i) => sum + (i.price || 0) * (i.quantity || 1),
+    0,
+  );
+  const userIdentifier = (state.user && (state.user.email || state.user.phone)) || localStorage.getItem("eurotex_guest_phone") || "";
+
+  try {
+    const res = await fetch("/api/promocodes/validate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        code,
+        orderTotal: rawSubtotal,
+        userIdentifier,
+      }),
+    });
+    const data = await res.json();
+    if (data.valid) {
+      state.appliedPromoCode = data.promo.code;
+      state.appliedDiscountAmount = data.discountAmount;
+
+      const discountRow = document.getElementById("discountRow");
+      const cartDiscount = document.getElementById("cartDiscount");
+      const cartTotal = document.getElementById("cartTotal");
+
+      if (discountRow) discountRow.style.display = "flex";
+      if (cartDiscount) cartDiscount.textContent = `-${formatMoneySom(data.discountAmount)} so'm`;
+      if (cartTotal) {
+        const finalSom = Math.max(0, rawSubtotal - data.discountAmount);
+        cartTotal.textContent = `${formatMoneySom(finalSom)} so'm`;
+      }
+
+      const chRow = document.getElementById("checkoutDiscountRow");
+      const chDisc = document.getElementById("checkoutDiscount");
+      const chFinal = document.getElementById("checkoutFinalTotal");
+      if (chRow) chRow.style.display = "flex";
+      if (chDisc) chDisc.textContent = `-${formatMoneySom(data.discountAmount)} so'm`;
+      if (chFinal) {
+        const finalSom = Math.max(0, rawSubtotal - data.discountAmount);
+        chFinal.textContent = `${formatMoneySom(finalSom)} so'm`;
+      }
+
+      showToast(`🎉 ${data.message}`);
+    } else {
+      showToast(`❌ ${data.message}`);
+    }
+  } catch (err) {
+    showToast("Promokodni tekshirishda xatolik yuz berdi");
+  }
 }
 
 // User Auth Management (Email & Google Login)
@@ -5126,67 +5255,56 @@ function ensureAdminSizesElements() {
 
 function showAdminSection(sec, pushUrl = true) {
   ensureAdminSizesElements();
-  const secOrders = document.getElementById("adminSecOrders");
-  const secProducts = document.getElementById("adminSecProducts");
-  const secReturns = document.getElementById("adminSecReturns");
-  const secSettings = document.getElementById("adminSecSettings");
-  const secSizes = document.getElementById("adminSecSizes");
-  const secReviews = document.getElementById("adminSecReviews");
+  const sections = {
+    orders: document.getElementById("adminSecOrders"),
+    leads: document.getElementById("adminSecLeads"),
+    products: document.getElementById("adminSecProducts"),
+    users: document.getElementById("adminSecUsers"),
+    promos: document.getElementById("adminSecPromos"),
+    nasiya: document.getElementById("adminSecNasiya"),
+    delivery: document.getElementById("adminSecDelivery"),
+    returns: document.getElementById("adminSecReturns"),
+    sizes: document.getElementById("adminSecSizes"),
+    reviews: document.getElementById("adminSecReviews"),
+    settings: document.getElementById("adminSecSettings"),
+  };
 
-  if (secOrders) secOrders.style.display = sec === "orders" ? "block" : "none";
-  if (secProducts)
-    secProducts.style.display = sec === "products" ? "block" : "none";
-  if (secReturns)
-    secReturns.style.display = sec === "returns" ? "block" : "none";
-  if (secSettings)
-    secSettings.style.display = sec === "settings" ? "block" : "none";
-  if (secSizes)
-    secSizes.style.display = sec === "sizes" ? "block" : "none";
-  if (secReviews)
-    secReviews.style.display = sec === "reviews" ? "block" : "none";
+  Object.entries(sections).forEach(([key, el]) => {
+    if (el) el.style.display = key === sec ? "block" : "none";
+  });
 
-  const bOrd = document.getElementById("btnAdminOrders");
-  const bProd = document.getElementById("btnAdminProducts");
-  const bRet = document.getElementById("btnAdminReturns");
-  const bSet = document.getElementById("btnAdminSettings");
-  const bSiz = document.getElementById("btnAdminSizes");
-  const bRev = document.getElementById("btnAdminReviews");
+  const buttons = {
+    orders: document.getElementById("btnAdminOrders"),
+    leads: document.getElementById("btnAdminLeads"),
+    products: document.getElementById("btnAdminProducts"),
+    users: document.getElementById("btnAdminUsers"),
+    promos: document.getElementById("btnAdminPromos"),
+    nasiya: document.getElementById("btnAdminNasiya"),
+    delivery: document.getElementById("btnAdminDelivery"),
+    returns: document.getElementById("btnAdminReturns"),
+    sizes: document.getElementById("btnAdminSizes"),
+    reviews: document.getElementById("btnAdminReviews"),
+    settings: document.getElementById("btnAdminSettings"),
+  };
 
-  if (bOrd)
-    bOrd.className =
-      sec === "orders" ? "admin-nav-tab active" : "admin-nav-tab";
-  if (bProd)
-    bProd.className =
-      sec === "products" ? "admin-nav-tab active" : "admin-nav-tab";
-  if (bRet)
-    bRet.className =
-      sec === "returns" ? "admin-nav-tab active" : "admin-nav-tab";
-  if (bSet)
-    bSet.className =
-      sec === "settings" ? "admin-nav-tab active" : "admin-nav-tab";
-  if (bSiz)
-    bSiz.className =
-      sec === "sizes" ? "admin-nav-tab active" : "admin-nav-tab";
-  if (bRev)
-    bRev.className =
-      sec === "reviews" ? "admin-nav-tab active" : "admin-nav-tab";
+  Object.entries(buttons).forEach(([key, btn]) => {
+    if (btn) btn.className = key === sec ? "admin-nav-tab active" : "admin-nav-tab";
+  });
 
   if (sec === "orders") renderAdminOrders();
+  else if (sec === "leads") loadAdminLeads();
   else if (sec === "products") renderAdminProducts();
+  else if (sec === "users") loadAdminUsers();
+  else if (sec === "promos") loadAdminPromos();
+  else if (sec === "nasiya") loadAdminNasiya();
+  else if (sec === "delivery") loadAdminDelivery();
   else if (sec === "returns") renderAdminReturns();
   else if (sec === "sizes") renderAdminSizeGuide();
   else if (sec === "reviews") renderAdminReviews();
-
-  if (sec === "sizes") {
-    renderAdminSizeGuide();
-  }
+  else if (sec === "settings") loadAdminTelegramSettings();
 
   if (pushUrl) {
-    if (sec === "orders") updateURLRoute("/admin/orders");
-    else if (sec === "products") updateURLRoute("/admin/products");
-    else if (sec === "returns") updateURLRoute("/admin/returns");
-    else if (sec === "settings") updateURLRoute("/admin/settings");
-    else if (sec === "sizes") updateURLRoute("/admin/sizes");
+    updateURLRoute(`/admin/${sec}`);
   }
 }
 
@@ -6932,6 +7050,535 @@ function formatCategoryUz(cat) {
 function refreshAdminData() {
   renderAdminPanel();
   showToast("Admin ma'lumotlari yangilandi! 🔄");
+}
+
+// =============================================================================
+// 1. ⚡ 1-KLIKDA XARID VA TEZKOR QO'NG'IROQLAR (LEADS)
+// =============================================================================
+async function loadAdminLeads() {
+  const container = document.getElementById("adminLeadsTableContainer");
+  if (!container) return;
+
+  container.innerHTML = `<div style="text-align:center; padding:30px; color:#94a3b8;">Yuklanmoqda... ⏳</div>`;
+
+  try {
+    const res = await fetch("/api/leads");
+    const data = await res.json();
+    const leads = data.leads || [];
+
+    if (leads.length === 0) {
+      container.innerHTML = `<div style="text-align:center; padding:30px; color:#94a3b8;">Hozircha tezkor xarid arizalari yo'q</div>`;
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="admin-table-wrapper">
+        <table class="size-table" style="width:100%; text-align:left;">
+          <thead>
+            <tr>
+              <th>Sana</th>
+              <th>Mijoz</th>
+              <th>Telefon</th>
+              <th>Mahsulot</th>
+              <th>O'lcham / Rang</th>
+              <th>Narxi</th>
+              <th>Holati</th>
+              <th>Amal</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${leads.map((l) => {
+              const statusColors = {
+                yangi: "#ef4444",
+                boglanildi: "#f59e0b",
+                sotildi: "#10b981",
+                bekor: "#64748b",
+              };
+              const statusKey = (l.status || "yangi").replace(/['\s]/g, "");
+              const col = statusColors[statusKey] || "#ef4444";
+
+              return `
+                <tr>
+                  <td style="font-size:12px; color:#94a3b8;">${l.date || "-"}</td>
+                  <td><b>${l.name || "Xaridor"}</b></td>
+                  <td>
+                    <a href="tel:${l.phone}" style="color:#38bdf8; font-weight:700; text-decoration:none;">
+                      📞 ${l.phone}
+                    </a>
+                  </td>
+                  <td style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    ${l.productTitle}
+                  </td>
+                  <td>${l.size || "-"} / ${l.color || "-"}</td>
+                  <td style="font-weight:700; color:#fbbf24;">${l.price || "-"}</td>
+                  <td>
+                    <select onchange="updateLeadStatus('${l.id}', this.value)" style="background:#0b1329; color:${col}; border:1.5px solid ${col}; border-radius:8px; padding:4px 8px; font-weight:700; font-size:12px;">
+                      <option value="yangi" ${l.status === "yangi" ? "selected" : ""}>🔴 Yangi</option>
+                      <option value="bog'lanildi" ${l.status === "bog'lanildi" ? "selected" : ""}>🟡 Bog'lanildi</option>
+                      <option value="sotildi" ${l.status === "sotildi" ? "selected" : ""}>🟢 Sotildi</option>
+                      <option value="bekor" ${l.status === "bekor" ? "selected" : ""}>⚪ Bekor</option>
+                    </select>
+                  </td>
+                  <td>
+                    <a href="https://t.me/+998${(l.phone || '').replace(/\D/g, '').slice(-9)}" target="_blank" class="btn btn-outline" style="padding:4px 10px; font-size:11px; border-radius:6px; text-decoration:none; color:#38bdf8; border-color:#38bdf8;">
+                      Telegram
+                    </a>
+                  </td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } catch (e) {
+    container.innerHTML = `<div style="color:#ef4444; padding:20px;">Ma'lumot yuklashda xatolik yuz berdi</div>`;
+  }
+}
+
+async function updateLeadStatus(id, status) {
+  try {
+    await fetch(`/api/leads/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    showToast("✓ Ariza holati yangilandi!");
+    loadAdminLeads();
+  } catch (e) {}
+}
+
+// =============================================================================
+// 2. 👥 MIJOZLAR BAZASI (USER CRM)
+// =============================================================================
+let _adminAllUsersCache = [];
+
+async function loadAdminUsers() {
+  const container = document.getElementById("adminUsersTableContainer");
+  if (!container) return;
+
+  container.innerHTML = `<div style="text-align:center; padding:30px; color:#94a3b8;">Yuklanmoqda... ⏳</div>`;
+
+  try {
+    const res = await fetch("/api/users-list");
+    const data = await res.json();
+    _adminAllUsersCache = data.users || [];
+    renderAdminUsersTable(_adminAllUsersCache);
+  } catch (e) {
+    container.innerHTML = `<div style="color:#ef4444; padding:20px;">Mijozlar ro'yxatini yuklashda xatolik</div>`;
+  }
+}
+
+function filterAdminUsersTable(query) {
+  const q = String(query || "").toLowerCase().trim();
+  if (!q) {
+    renderAdminUsersTable(_adminAllUsersCache);
+    return;
+  }
+  const filtered = _adminAllUsersCache.filter((u) => {
+    return (
+      (u.name && u.name.toLowerCase().includes(q)) ||
+      (u.email && u.email.toLowerCase().includes(q)) ||
+      (u.phone && u.phone.includes(q)) ||
+      (u.city && u.city.toLowerCase().includes(q))
+    );
+  });
+  renderAdminUsersTable(filtered);
+}
+
+function renderAdminUsersTable(users) {
+  const container = document.getElementById("adminUsersTableContainer");
+  if (!container) return;
+
+  if (users.length === 0) {
+    container.innerHTML = `<div style="text-align:center; padding:30px; color:#94a3b8;">Mijoz topilmadi</div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="admin-table-wrapper">
+      <table class="size-table" style="width:100%; text-align:left;">
+        <thead>
+          <tr>
+            <th>Mijoz Ismi</th>
+            <th>Email</th>
+            <th>Telefon</th>
+            <th>Shahar / Viloyat</th>
+            <th>Buyurtmalar</th>
+            <th>Jami Xaridi</th>
+            <th>Ro'yxatdan O'tgan</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${users.map((u) => `
+            <tr>
+              <td><b>${u.name}</b></td>
+              <td style="color:#94a3b8;">${u.email}</td>
+              <td>
+                <a href="tel:${u.phone}" style="color:#38bdf8; font-weight:700; text-decoration:none;">
+                  ${u.phone}
+                </a>
+              </td>
+              <td>${u.city || "O'zbekiston"}</td>
+              <td style="font-weight:700; color:#fbbf24;">${u.ordersCount || 0} ta</td>
+              <td style="font-weight:800; color:#10b981;">
+                ${(u.totalSpent || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so'm
+              </td>
+              <td style="font-size:12px; color:#94a3b8;">
+                ${u.createdAt ? new Date(u.createdAt).toLocaleDateString("uz-UZ") : "-"}
+              </td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+// =============================================================================
+// 3. 🏷️ PROMOKODLAR VA CHEGIRMALAR BOSHQARUVI
+// =============================================================================
+async function loadAdminPromos() {
+  const container = document.getElementById("adminPromosTableContainer");
+  if (!container) return;
+
+  container.innerHTML = `<div style="text-align:center; padding:30px; color:#94a3b8;">Yuklanmoqda... ⏳</div>`;
+
+  try {
+    const res = await fetch("/api/promocodes");
+    const data = await res.json();
+    const promos = data.promocodes || [];
+
+    if (promos.length === 0) {
+      container.innerHTML = `<div style="text-align:center; padding:30px; color:#94a3b8;">Faol promokodlar yo'q. Yangi promokod yarating!</div>`;
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="admin-table-wrapper">
+        <table class="size-table" style="width:100%; text-align:left;">
+          <thead>
+            <tr>
+              <th>Promokod</th>
+              <th>Chegirma</th>
+              <th>Min Xarid</th>
+              <th>Ishlatildi / Limit</th>
+              <th>1 Kishiga</th>
+              <th>Amal Qilish Muddati</th>
+              <th>Holati</th>
+              <th>Amal</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${promos.map((p) => {
+              const isExpired = p.expiresAt && new Date(p.expiresAt) < new Date();
+              const isFull = p.maxUses && p.usedCount >= p.maxUses;
+              const statusBadge = isExpired
+                ? `<span style="color:#ef4444; font-weight:700;">Muddati tugagan ⌛</span>`
+                : isFull
+                ? `<span style="color:#f59e0b; font-weight:700;">Limit to'lgan 🚫</span>`
+                : `<span style="color:#10b981; font-weight:700;">Faol 🟢</span>`;
+
+              const discountStr = p.discountType === "percent"
+                ? `${p.discountValue}%`
+                : `${p.discountValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so'm`;
+
+              return `
+                <tr>
+                  <td><b style="color:#c084fc; letter-spacing:1px; font-size:15px;">${p.code}</b></td>
+                  <td style="font-weight:800; color:#fbbf24;">${discountStr}</td>
+                  <td>${p.minOrderPrice ? p.minOrderPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " so'm" : "Cheklovsiz"}</td>
+                  <td><b>${p.usedCount || 0}</b> / ${p.maxUses || "∞"}</td>
+                  <td>${p.perUserLimit || 1} marta</td>
+                  <td style="font-size:12px; color:#cbd5e1;">
+                    ${p.expiresAt ? new Date(p.expiresAt).toLocaleDateString("uz-UZ") : "Muddatsiz"}
+                  </td>
+                  <td>${statusBadge}</td>
+                  <td>
+                    <button type="button" class="btn btn-outline" style="color:#ef4444; border-color:rgba(239,68,68,0.4); padding:4px 10px; font-size:12px; border-radius:6px;" onclick="deleteAdminPromo('${p.id}')">
+                      🗑️
+                    </button>
+                  </td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } catch (e) {
+    container.innerHTML = `<div style="color:#ef4444; padding:20px;">Promokodlarni yuklashda xatolik</div>`;
+  }
+}
+
+function openCreatePromoModal() {
+  document.getElementById("createPromoForm").reset();
+  openModal("createPromoModal");
+}
+
+async function handleCreatePromo(e) {
+  e.preventDefault();
+  const code = document.getElementById("adminNewPromoCodeInput").value.trim().toUpperCase();
+  const discountType = document.getElementById("promoDiscountType").value;
+  const discountValue = parseFloat(document.getElementById("promoDiscountValue").value);
+  const minOrderPrice = parseFloat(document.getElementById("promoMinOrder").value) || 0;
+  const maxUses = parseInt(document.getElementById("promoMaxUses").value, 10) || 100;
+  const perUserLimit = parseInt(document.getElementById("promoPerUser").value, 10) || 1;
+  const expiryDays = parseInt(document.getElementById("promoExpiryDays").value, 10) || 30;
+
+  try {
+    const res = await fetch("/api/promocodes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        code,
+        discountType,
+        discountValue,
+        minOrderPrice,
+        maxUses,
+        perUserLimit,
+        expiryDays,
+      }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeModal("createPromoModal");
+      showToast(`✓ Promokod "${code}" yaratildi!`);
+      loadAdminPromos();
+    } else {
+      showToast(data.message || "Xatolik yuz berdi");
+    }
+  } catch (err) {
+    showToast("Promokod saqlashda xatolik");
+  }
+}
+
+async function deleteAdminPromo(id) {
+  if (!confirm("Ushbu promokodni o'chirishni tasdiqlaysizmi?")) return;
+  try {
+    await fetch(`/api/promocodes/${id}`, { method: "DELETE" });
+    showToast("Promokod o'chirildi");
+    loadAdminPromos();
+  } catch (e) {}
+}
+
+// =============================================================================
+// 4. 🤝 "EUROTEX NASIYA" MUDDATLI TO'LOV ARIZALARI
+// =============================================================================
+async function loadAdminNasiya() {
+  const container = document.getElementById("adminNasiyaTableContainer");
+  if (!container) return;
+
+  container.innerHTML = `<div style="text-align:center; padding:30px; color:#94a3b8;">Yuklanmoqda... ⏳</div>`;
+
+  try {
+    const res = await fetch("/api/nasiya");
+    const data = await res.json();
+    const apps = data.applications || [];
+
+    if (apps.length === 0) {
+      container.innerHTML = `<div style="text-align:center; padding:30px; color:#94a3b8;">Hozircha Nasiya arizalari yo'q</div>`;
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="admin-table-wrapper">
+        <table class="size-table" style="width:100%; text-align:left;">
+          <thead>
+            <tr>
+              <th>Sana</th>
+              <th>Mijoz</th>
+              <th>Telefon</th>
+              <th>Pasport / ID</th>
+              <th>Muddat</th>
+              <th>Mahsulot / Summa</th>
+              <th>Oylik To'lov</th>
+              <th>Holati</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${apps.map((a) => {
+              const statusColors = {
+                kutilmoqda: "#f59e0b",
+                tasdiqlandi: "#10b981",
+                rad_etildi: "#ef4444",
+              };
+              const col = statusColors[a.status] || "#f59e0b";
+
+              return `
+                <tr>
+                  <td style="font-size:12px; color:#94a3b8;">${a.date || "-"}</td>
+                  <td><b>${a.name}</b></td>
+                  <td>
+                    <a href="tel:${a.phone}" style="color:#38bdf8; font-weight:700; text-decoration:none;">
+                      📞 ${a.phone}
+                    </a>
+                  </td>
+                  <td><code>${a.passport}</code></td>
+                  <td><b style="color:#fbbf24;">${a.months} oy</b></td>
+                  <td>
+                    <b>${a.productTitle}</b>
+                    <small style="display:block; color:#94a3b8;">${a.totalAmount}</small>
+                  </td>
+                  <td style="font-weight:800; color:#10b981;">${a.monthlyPayment}</td>
+                  <td>
+                    <select onchange="updateNasiyaStatus('${a.id}', this.value)" style="background:#0b1329; color:${col}; border:1.5px solid ${col}; border-radius:8px; padding:4px 8px; font-weight:700; font-size:12px;">
+                      <option value="kutilmoqda" ${a.status === "kutilmoqda" ? "selected" : ""}>🟡 Kutilmoqda</option>
+                      <option value="tasdiqlandi" ${a.status === "tasdiqlandi" ? "selected" : ""}>✅ Tasdiqlandi</option>
+                      <option value="rad_etildi" ${a.status === "rad_etildi" ? "selected" : ""}>❌ Rad etildi</option>
+                    </select>
+                  </td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } catch (e) {
+    container.innerHTML = `<div style="color:#ef4444; padding:20px;">Nasiya arizalarini yuklashda xatolik</div>`;
+  }
+}
+
+async function updateNasiyaStatus(id, status) {
+  try {
+    await fetch(`/api/nasiya/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    showToast("✓ Nasiya arizasi holati yangilandi!");
+    loadAdminNasiya();
+  } catch (e) {}
+}
+
+// =============================================================================
+// 5. 🚚 VILOYATLAR VA YETKAZIB BERISH NARXLARI BOSHQUVI
+// =============================================================================
+let _adminDeliveryCache = [];
+
+async function loadAdminDelivery() {
+  const container = document.getElementById("adminDeliveryTableContainer");
+  if (!container) return;
+
+  container.innerHTML = `<div style="text-align:center; padding:30px; color:#94a3b8;">Yuklanmoqda... ⏳</div>`;
+
+  try {
+    const res = await fetch("/api/delivery");
+    const data = await res.json();
+    _adminDeliveryCache = data.delivery || [];
+
+    container.innerHTML = `
+      <div class="admin-table-wrapper">
+        <table class="size-table" style="width:100%; text-align:left;">
+          <thead>
+            <tr>
+              <th>Viloyat / Hudud</th>
+              <th>Yetkazish Narxi (so'm)</th>
+              <th>Yetkazish Muddati</th>
+              <th>Bepul Yetkazish Chegarasi (so'm)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${_adminDeliveryCache.map((d, i) => `
+              <tr>
+                <td><b>${d.region}</b></td>
+                <td>
+                  <input type="number" id="delPrice_${i}" value="${d.price}" style="padding:6px 10px; border-radius:8px; background:#0b1329; border:1px solid rgba(255,255,255,0.15); color:#fff; width:140px; font-weight:700;" /> so'm
+                </td>
+                <td>
+                  <input type="text" id="delDays_${i}" value="${d.days}" style="padding:6px 10px; border-radius:8px; background:#0b1329; border:1px solid rgba(255,255,255,0.15); color:#fff; width:180px;" />
+                </td>
+                <td>
+                  <input type="number" id="delFree_${i}" value="${d.freeThreshold || 0}" style="padding:6px 10px; border-radius:8px; background:#0b1329; border:1px solid rgba(255,255,255,0.15); color:#fff; width:150px;" /> so'm
+                </td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } catch (e) {
+    container.innerHTML = `<div style="color:#ef4444; padding:20px;">Yetkazib berish narxlarini yuklashda xatolik</div>`;
+  }
+}
+
+async function saveAdminDeliverySettings() {
+  const updated = _adminDeliveryCache.map((d, i) => {
+    const p = parseFloat(document.getElementById(`delPrice_${i}`)?.value) || 0;
+    const days = document.getElementById(`delDays_${i}`)?.value || d.days;
+    const free = parseFloat(document.getElementById(`delFree_${i}`)?.value) || 0;
+    return { ...d, price: p, days, freeThreshold: free };
+  });
+
+  try {
+    const res = await fetch("/api/delivery", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ delivery: updated }),
+    });
+    if (res.ok) {
+      _adminDeliveryCache = updated;
+      showToast("✓ Yetkazib berish narxlari muvaffaqiyatli saqlandi!");
+    }
+  } catch (e) {
+    showToast("Saqlashda xatolik yuz berdi");
+  }
+}
+
+// =============================================================================
+// 6. 🤖 TELEGRAM BOT SOZLAMALARI
+// =============================================================================
+async function loadAdminTelegramSettings() {
+  try {
+    const res = await fetch("/api/telegram");
+    const data = await res.json();
+    const tokenInput = document.getElementById("adminTgBotToken");
+    const chatInput = document.getElementById("adminTgChatId");
+    if (tokenInput && data.tokenSet) tokenInput.placeholder = "Token o'rnatilgan (o'zgartirish uchun yangisini kiriting)";
+    if (chatInput && data.chatId) chatInput.value = data.chatId;
+  } catch (e) {}
+}
+
+async function saveAdminTelegramSettings() {
+  const token = document.getElementById("adminTgBotToken").value.trim();
+  const chatId = document.getElementById("adminTgChatId").value.trim();
+
+  if (!chatId) {
+    showToast("❌ Iltimos, Chat ID-ni kiriting!");
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/telegram", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, chatId }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast("✓ Telegram bot sozlamalari saqlandi!");
+    } else {
+      showToast(data.message || "Xatolik yuz berdi");
+    }
+  } catch (e) {
+    showToast("Saqlashda xatolik");
+  }
+}
+
+async function testAdminTelegramAlert() {
+  showToast("Telegramga test xabar yuborilmoqda... ⏳");
+  try {
+    const res = await fetch("/api/telegram/test", { method: "POST" });
+    const data = await res.json();
+    if (data.success) {
+      showToast("✓ Test xabari Telegramingizga yetib bordi! 🚀");
+    } else {
+      showToast("❌ " + (data.message || "Xatolik"));
+    }
+  } catch (e) {
+    showToast("Xabar yuborishda xatolik");
+  }
 }
 
 function formatMoneySom(amount) {
