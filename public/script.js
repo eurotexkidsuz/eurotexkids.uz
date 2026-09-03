@@ -1789,20 +1789,20 @@ function toggleWishlist(productId) {
     state.wishlist.splice(index, 1);
     showToast(
       lang === "ru"
-        ? "💔 Удалено из избранного"
+        ? "Удалено из избранного"
         : lang === "en"
-          ? "💔 Removed from wishlist"
-          : "💔 Saralanganlardan olib tashlandi",
+          ? "Removed from wishlist"
+          : "Sevimlilardan olib tashlandi",
       "info",
     );
   } else {
     state.wishlist.push(product || productId);
     showToast(
       lang === "ru"
-        ? "❤️ Добавлено в избранное!"
+        ? "Добавлено в избранное"
         : lang === "en"
-          ? "❤️ Added to wishlist!"
-          : "❤️ Saralanganlarga saqlandi!",
+          ? "Added to wishlist"
+          : "Sevimlilarga qo'shildi",
       "success",
     );
   }
@@ -6538,7 +6538,7 @@ function toUzbekError(msg) {
   return msg;
 }
 
-function showToast(message) {
+function showToast(message, type = "success") {
   // Always translate any technical English messages to professional Uzbek
   const displayMsg = toUzbekError(message);
 
@@ -6553,35 +6553,47 @@ function showToast(message) {
   // Re-append to body to guarantee it's on top of all modals
   document.body.appendChild(container);
 
-  // Force inline position as absolute guarantee (CSS may be overridden)
+  // Top-Center stack guarantee
   container.style.cssText = [
     "position: fixed",
-    "bottom: 24px",
-    "right: 24px",
-    "left: auto",
-    "top: auto",
-    "transform: none",
+    "top: 24px",
+    "left: 50%",
+    "right: auto",
+    "bottom: auto",
+    "transform: translateX(-50%)",
     "z-index: 2147483647",
     "display: flex",
-    "flex-direction: column-reverse",
-    "align-items: flex-end",
+    "flex-direction: column",
+    "align-items: center",
     "gap: 8px",
     "pointer-events: none",
-    "max-width: 340px",
+    "width: max-content",
+    "max-width: 92vw",
   ].join(" !important;") + " !important;";
 
   const toast = document.createElement("div");
-  toast.className = "toast";
+  toast.className = "toast eurotex-top-toast";
   toast.style.pointerEvents = "auto";
-  toast.innerHTML = `<span>✨</span> <div>${displayMsg}</div>`;
+
+  let iconHtml = `<div class="toast-check-icon">✓</div>`;
+  if (type === "error" || String(displayMsg).includes("❌")) {
+    iconHtml = `<div class="toast-check-icon error">✕</div>`;
+  } else if (type === "info" || String(displayMsg).includes("ℹ️") || String(displayMsg).includes("olib tashlandi")) {
+    iconHtml = `<div class="toast-check-icon info">✓</div>`;
+  }
+
+  // Clean redundant leading emojis if any
+  const cleanText = String(displayMsg).replace(/^[✓❤️💔✨🛒🔔🔑👑⚠️❌]+\s*/, "").trim() || displayMsg;
+
+  toast.innerHTML = `${iconHtml} <span class="toast-text">${cleanText}</span>`;
   container.appendChild(toast);
 
   setTimeout(() => {
     toast.style.opacity = "0";
-    toast.style.transform = "translateX(120%)";
-    toast.style.transition = "opacity 0.3s, transform 0.3s";
-    setTimeout(() => toast.remove(), 350);
-  }, 3500);
+    toast.style.transform = "translateY(-22px) scale(0.92)";
+    toast.style.transition = "opacity 0.28s ease, transform 0.28s ease";
+    setTimeout(() => toast.remove(), 320);
+  }, 2800);
 }
 
 // ─── ADMIN HERO BANNER SLIDE EDITING ──────────────────────────────────────────
