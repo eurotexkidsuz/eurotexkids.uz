@@ -2299,8 +2299,10 @@ function applyPromoCode() {
   }
 }
 
-// Quick View Modal
-function openQuickView(productId) {
+// =============================================================================
+// 👑 DEDICATED FULL-PAGE PRODUCT DETAILS VIEW (PDP) — 100% STANDALONE PAGE
+// =============================================================================
+function openProductPage(productId) {
   let pool = [];
   if (typeof EUROTEX_PRODUCTS !== "undefined" && Array.isArray(EUROTEX_PRODUCTS) && EUROTEX_PRODUCTS.length > 0) {
     pool.push(...EUROTEX_PRODUCTS);
@@ -2337,7 +2339,7 @@ function openQuickView(productId) {
       return true;
     }
 
-    // 2. Numeric match (e.g. "etx-002" matches "prod-2" because 2 === 2)
+    // 2. Numeric match
     const pDigits = (pId || pCust).replace(/\D/g, "");
     if (pDigits && targetNum !== null) {
       const pNum = parseInt(pDigits, 10);
@@ -2354,155 +2356,342 @@ function openQuickView(productId) {
     return;
   }
 
+  window.currentPdpProduct = product;
+
+  // 1. Switch Page Views (Hide storefront & dashboard, Show PDP)
+  const homeWrapper = document.getElementById("homePageWrapper");
+  const dashView = document.getElementById("dashboardPageView");
+  const pdpView = document.getElementById("productDetailPageView");
+
+  if (homeWrapper) homeWrapper.style.display = "none";
+  if (dashView) dashView.style.display = "none";
+  if (pdpView) pdpView.style.display = "block";
+
+  closeAllModals();
+  document.body.style.overflow = "auto";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  // 2. Populate Breadcrumbs
   const lang = state.currentLang || "uz";
-  const dict = TRANSLATIONS[lang] || TRANSLATIONS.uz;
-  const title = product[`title_${lang}`] || product.title_uz;
-  const fabric = product[`fabric_${lang}`] || product.fabric_uz || "Turkiya Premium Jun & Viskoza Blend";
+  const title = product[`title_${lang}`] || product.title_uz || product.title || "Klassik Kostyum";
+  const cat = formatCategoryUz(product.category || "suits");
 
-  const modal = document.getElementById("quickViewModal");
-  const content = document.getElementById("quickViewContent");
+  const bcCat = document.getElementById("pdpBreadcrumbCategory");
+  const bcTitle = document.getElementById("pdpBreadcrumbTitle");
+  if (bcCat) bcCat.textContent = cat;
+  if (bcTitle) bcTitle.textContent = title;
 
-  const usdRate = state.usdRate || 12650;
-  const priceUsdVal =
-    product.priceUsd ||
-    Math.round(product.price / usdRate) ||
-    50;
-  const priceSomRaw = priceUsdVal * usdRate;
-  const oldPriceUsdVal = Math.round(priceUsdVal * 1.25);
-  const oldPriceSomRaw = oldPriceUsdVal * usdRate;
-  const priceSomVal = formatMoneySom(priceSomRaw);
-  const oldPriceSomVal = formatMoneySom(oldPriceSomRaw);
-
+  // 3. Populate Gallery
   const imgs =
     product.images && Array.isArray(product.images) && product.images.length > 0
       ? product.images
-      : [product.image || "/images/navy_suit.jpg"];
+      : [product.image || product.img || "/images/navy_suit.jpg"];
 
-  window.qvCurrentImages = imgs;
-  window.qvCurrentIndex = 0;
+  window.currentPdpImages = imgs;
+  window.currentPdpIndex = 0;
 
-  if (content) {
-    content.innerHTML = `
-            <div class="qv-gallery-container">
-                ${
-                  imgs.length > 1
-                    ? `
-                    <div class="qv-thumbs-column" id="qvThumbsColumn">
-                        ${imgs
-                          .map(
-                            (src, idx) => `
-                            <button type="button" class="qv-thumb-item ${idx === 0 ? "active" : ""}" onclick="selectQvGalleryImage(${idx})">
-                                <img src="${src}" alt="thumb-${idx}">
-                            </button>
-                        `,
-                          )
-                          .join("")}
-                    </div>
-                `
-                    : ""
-                }
+  const mainDisplayImg = document.getElementById("pdpMainDisplayImg");
+  const thumbsStrip = document.getElementById("pdpThumbsStrip");
+  const counterEl = document.getElementById("pdpImgCounter");
 
-                <div class="qv-main-stage">
-                    <img id="qvMainDisplayImg" src="${imgs[0]}" alt="${title}">
-                    ${
-                      imgs.length > 1
-                        ? `
-                        <button type="button" class="qv-stage-arrow prev" onclick="navigateQvGallery(-1)" title="Oldingi">
-                            ‹
-                        </button>
-                        <button type="button" class="qv-stage-arrow next" onclick="navigateQvGallery(1)" title="Keyingi">
-                            ›
-                        </button>
-                    `
-                        : ""
-                    }
-                </div>
-            </div>
+  if (mainDisplayImg) mainDisplayImg.src = imgs[0];
+  if (counterEl) counterEl.textContent = `1/${imgs.length}`;
 
-            <div class="qv-details">
-                <h2 class="qv-title">${title}</h2>
-                <div class="qv-price-row">
-                    <span class="current-price" style="font-size: 24px;">$${priceUsdVal} (${priceSomVal} so'm)</span>
-                    <span class="old-price" style="font-size: 16px;">$${oldPriceUsdVal} (${oldPriceSomVal} so'm)</span>
-                </div>
-                
-                <div class="qv-options-block">
-                    <span class="opt-label">Mato tarkibi: <b>${fabric}</b></span>
-
-                    <div style="margin-top: 14px;">
-                        <span class="opt-label">📐 O'lchamni tanlang:</span>
-                        <div class="sizes-row" id="qvSizesRow" style="display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap;">
-                            ${(product.sizes || [46, 48, 50, 52, 54, 56])
-                              .map(
-                                (s, idx) => `
-                                <button type="button" class="size-btn ${idx === 0 ? "active" : ""}" onclick="selectQvSize(this)">${s}</button>
-                            `,
-                              )
-                              .join("")}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="qv-actions" style="margin-top: 24px;">
-                    <button class="btn btn-gold qv-add-cart-btn" onclick="addCurrentQvToCart('${product.id}')">${dict.addToCart || "Savatga qo'shish"}</button>
-                    <button class="btn btn-outline qv-size-guide-btn" onclick="openSizeGuide()">${dict.slide1SizeGuideBtn || "O'lchamlar jadvali"} 📐</button>
-                </div>
-            </div>
-        `;
+  if (thumbsStrip) {
+    thumbsStrip.innerHTML = imgs
+      .map(
+        (src, idx) => `
+        <button type="button" class="pdp-thumb-item ${idx === 0 ? "active" : ""}" onclick="selectPdpGalleryImage(${idx})">
+          <img src="${src}" alt="${title} rasm-${idx + 1}">
+        </button>
+      `,
+      )
+      .join("");
   }
 
-  openModal("quickViewModal");
-  updateURLRoute(`/product/${productId}`);
+  // 4. Populate Info & Prices
+  const titleEl = document.getElementById("pdpTitle");
+  if (titleEl) titleEl.textContent = title;
+
+  const usdRate = state.usdRate || 12650;
+  const priceUsdVal = product.priceUsd || (product.price ? Math.round(product.price / usdRate) : 50);
+  const priceSomRaw = priceUsdVal * usdRate;
+  const oldPriceUsdVal = product.oldPrice || Math.round(priceUsdVal * 1.25);
+  const oldPriceSomRaw = oldPriceUsdVal * usdRate;
+
+  const priceCurrentEl = document.getElementById("pdpPriceCurrent");
+  const priceOldEl = document.getElementById("pdpPriceOld");
+  if (priceCurrentEl) {
+    priceCurrentEl.textContent = `${formatMoneySom(priceSomRaw)} so'm (${priceUsdVal}$)`;
+  }
+  if (priceOldEl) {
+    priceOldEl.textContent = `${formatMoneySom(oldPriceSomRaw)} so'm`;
+  }
+
+  // 5. Populate Colors
+  const colorsList = product.colors || [
+    { name: "Qora", code: "#111827" },
+    { name: "To'q ko'k (Navy)", code: "#1e3a8a" },
+    { name: "Kulrang", code: "#64748b" },
+  ];
+  window.currentPdpColor = typeof colorsList[0] === "string" ? colorsList[0] : colorsList[0].name;
+
+  const selectedColorNameEl = document.getElementById("pdpSelectedColorName");
+  if (selectedColorNameEl) selectedColorNameEl.textContent = window.currentPdpColor;
+
+  const colorSwatchesEl = document.getElementById("pdpColorSwatches");
+  if (colorSwatchesEl) {
+    colorSwatchesEl.innerHTML = colorsList
+      .map((c, idx) => {
+        const cName = typeof c === "string" ? c : c.name;
+        const cCode = typeof c === "object" && c.code ? c.code : (cName.toLowerCase().includes("qora") ? "#111827" : (cName.toLowerCase().includes("ko'k") ? "#1e3a8a" : "#64748b"));
+        return `
+          <button type="button" class="pdp-color-swatch ${idx === 0 ? "active" : ""}" onclick="selectPdpColor('${cName}', this)">
+            <span class="pdp-color-dot" style="background: ${cCode};"></span>
+            <span>${cName}</span>
+          </button>
+        `;
+      })
+      .join("");
+  }
+
+  // 6. Populate Sizes
+  const sizesList = product.sizes && product.sizes.length > 0
+    ? product.sizes
+    : [30, 32, 34, 36, 38, 40, 42, 44];
+  window.currentPdpSize = String(sizesList[0]);
+
+  const sizeBoxesEl = document.getElementById("pdpSizeBoxes");
+  if (sizeBoxesEl) {
+    sizeBoxesEl.innerHTML = sizesList
+      .map(
+        (s, idx) => `
+        <button type="button" class="pdp-size-box ${idx === 0 ? "active" : ""}" onclick="selectPdpSize('${s}', this)">
+          ${s}
+        </button>
+      `,
+      )
+      .join("");
+  }
+
+  // 7. Update Favorite Button state
+  updatePdpFavBtn(product.id);
+
+  // 8. Populate Tabs (Description & Specs)
+  const descTextEl = document.getElementById("pdpDescText");
+  const specBrandEl = document.getElementById("pdpSpecBrand");
+  const specCatEl = document.getElementById("pdpSpecCategory");
+  const specSizesEl = document.getElementById("pdpSpecSizes");
+  const specColorsEl = document.getElementById("pdpSpecColors");
+  const specFabricEl = document.getElementById("pdpSpecFabric");
+
+  if (descTextEl) {
+    descTextEl.textContent =
+      product[`desc_${lang}`] ||
+      product.description ||
+      `Eurotex Kids tomonidan ishlab chiqarilgan premium bolalar kostyum-shimi. 
+      Mato Turkiyaning yuqori sifatli jun va viskoza aralashmasidan tayyorlangan bo'lib, nafas oluvchi, g'ijimlanmaydigan va bolalar harakati uchun juda qulay. 
+      Maktab formasi, bayramlar va tantanalar uchun eng nafis tanlov.`;
+  }
+  if (specBrandEl) specBrandEl.textContent = "EUROTEX KIDS / A-FARID";
+  if (specCatEl) specCatEl.textContent = cat;
+  if (specSizesEl) specSizesEl.textContent = sizesList.join(", ");
+  if (specColorsEl) {
+    specColorsEl.textContent = colorsList.map((c) => (typeof c === "string" ? c : c.name)).join(", ");
+  }
+  if (specFabricEl) {
+    specFabricEl.textContent = product[`fabric_${lang}`] || product.fabric_uz || "Turkiya Premium Jun & Viskoza Blend";
+  }
+
+  // Default to Tab 1 (Tavsif)
+  switchPdpTab("desc");
+
+  // 9. Populate Related Products
+  renderPdpRelatedProducts(product);
+
+  // 10. Sync URL
+  updateURLRoute(`/product/${product.id}`);
 }
 
-function selectQvGalleryImage(idx) {
-  if (!window.qvCurrentImages || !window.qvCurrentImages[idx]) return;
-  window.qvCurrentIndex = idx;
-  const mainImg = document.getElementById("qvMainDisplayImg");
-  if (mainImg) mainImg.src = window.qvCurrentImages[idx];
+function selectPdpGalleryImage(idx) {
+  if (!window.currentPdpImages || !window.currentPdpImages[idx]) return;
+  window.currentPdpIndex = idx;
+  const mainImg = document.getElementById("pdpMainDisplayImg");
+  const counterEl = document.getElementById("pdpImgCounter");
+
+  if (mainImg) mainImg.src = window.currentPdpImages[idx];
+  if (counterEl) counterEl.textContent = `${idx + 1}/${window.currentPdpImages.length}`;
 
   document
-    .querySelectorAll("#qvThumbsColumn .qv-thumb-item")
+    .querySelectorAll("#pdpThumbsStrip .pdp-thumb-item")
     .forEach((item, i) => {
       if (i === idx) item.classList.add("active");
       else item.classList.remove("active");
     });
 }
 
-function navigateQvGallery(direction) {
-  if (!window.qvCurrentImages || window.qvCurrentImages.length <= 1) return;
-  let nextIdx = window.qvCurrentIndex + direction;
-  if (nextIdx < 0) nextIdx = window.qvCurrentImages.length - 1;
-  if (nextIdx >= window.qvCurrentImages.length) nextIdx = 0;
-  selectQvGalleryImage(nextIdx);
+function navigatePdpGallery(step) {
+  if (!window.currentPdpImages || window.currentPdpImages.length <= 1) return;
+  let nextIdx = window.currentPdpIndex + step;
+  if (nextIdx < 0) nextIdx = window.currentPdpImages.length - 1;
+  if (nextIdx >= window.currentPdpImages.length) nextIdx = 0;
+  selectPdpGalleryImage(nextIdx);
 }
 
-function selectQvSize(btn) {
-  document
-    .querySelectorAll("#qvSizesRow .size-btn")
-    .forEach((b) => b.classList.remove("active"));
-  btn.classList.add("active");
+function selectPdpColor(colorName, el) {
+  window.currentPdpColor = colorName;
+  const nameEl = document.getElementById("pdpSelectedColorName");
+  if (nameEl) nameEl.textContent = colorName;
+
+  document.querySelectorAll("#pdpColorSwatches .pdp-color-swatch").forEach((s) => {
+    s.classList.remove("active");
+  });
+  if (el) el.classList.add("active");
 }
 
-function selectQvColor(btn) {
-  document
-    .querySelectorAll("#qvColorsRow .color-btn")
-    .forEach((b) => b.classList.remove("active"));
-  btn.classList.add("active");
+function selectPdpSize(sizeVal, el) {
+  window.currentPdpSize = String(sizeVal);
+  document.querySelectorAll("#pdpSizeBoxes .pdp-size-box").forEach((b) => {
+    b.classList.remove("active");
+  });
+  if (el) el.classList.add("active");
 }
 
-function addCurrentQvToCart(productId) {
-  const activeSizeBtn = document.querySelector("#qvSizesRow .size-btn.active");
-  const activeColorBtn = document.querySelector(
-    "#qvColorsRow .color-btn.active",
+function switchPdpTab(tabName) {
+  const tabs = ["desc", "specs", "reviews"];
+  tabs.forEach((t) => {
+    const btn = document.getElementById(`pdpTabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
+    const pane = document.getElementById(`pdpPane${t.charAt(0).toUpperCase() + t.slice(1)}`);
+    if (btn) {
+      if (t === tabName) btn.classList.add("active");
+      else btn.classList.remove("active");
+    }
+    if (pane) {
+      if (t === tabName) pane.classList.add("active");
+      else pane.classList.remove("active");
+    }
+  });
+}
+
+function handlePdpAddToCart(e) {
+  if (!window.currentPdpProduct) return;
+  addToCart(
+    window.currentPdpProduct.id,
+    window.currentPdpSize || "36",
+    window.currentPdpColor || "Qora",
+    e,
   );
-  const size = activeSizeBtn ? activeSizeBtn.textContent.trim() : "48";
-  const color = activeColorBtn
-    ? activeColorBtn.textContent.trim()
-    : "To'q ko'k (Navy)";
+}
 
-  addToCart(productId, size, color);
-  closeModal("quickViewModal");
+function handlePdpOneClickBuy() {
+  if (!window.currentPdpProduct) return;
+  addToCart(
+    window.currentPdpProduct.id,
+    window.currentPdpSize || "36",
+    window.currentPdpColor || "Qora",
+  );
+  openDashboardView("checkout");
+}
+
+function handlePdpToggleFav() {
+  if (!window.currentPdpProduct) return;
+  toggleWishlist(window.currentPdpProduct.id);
+  updatePdpFavBtn(window.currentPdpProduct.id);
+}
+
+function updatePdpFavBtn(productId) {
+  const favBtn = document.getElementById("pdpFavBtn");
+  if (!favBtn) return;
+  const isFav = state.wishlist.some((w) => {
+    const wId = typeof w === "object" && w ? w.id : w;
+    return String(wId) === String(productId);
+  });
+  favBtn.innerHTML = isFav ? "❤️" : "🤍";
+  favBtn.style.color = isFav ? "#ef4444" : "#1e293b";
+}
+
+function showStorefrontHomePage() {
+  const pdpView = document.getElementById("productDetailPageView");
+  const dashView = document.getElementById("dashboardPageView");
+  const homeWrapper = document.getElementById("homePageWrapper");
+
+  if (pdpView) pdpView.style.display = "none";
+  if (dashView) dashView.style.display = "none";
+  if (homeWrapper) homeWrapper.style.display = "block";
+
+  closeAllModals();
+  document.body.style.overflow = "auto";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (window.location.pathname !== "/" && window.location.pathname !== "/index.html") {
+    history.pushState({}, document.title, "/");
+  }
+}
+
+function showStorefrontCategory(catKey) {
+  showStorefrontHomePage();
+  state.currentCategory = catKey;
+  document.querySelectorAll(".nav-pill").forEach((p) => p.classList.remove("active"));
+  const matchPill = document.querySelector(`.nav-pill[data-category="${catKey}"]`);
+  if (matchPill) matchPill.classList.add("active");
+  renderProducts();
+  const el = document.getElementById("products-section");
+  if (el) el.scrollIntoView({ behavior: "smooth" });
+}
+
+function renderPdpRelatedProducts(currentProduct) {
+  const grid = document.getElementById("pdpRelatedGrid");
+  if (!grid) return;
+  const pool = typeof getGlobalProductsPool === "function" ? getGlobalProductsPool() : EUROTEX_PRODUCTS;
+  const related = pool
+    .filter((p) => p && String(p.id) !== String(currentProduct.id))
+    .slice(0, 4);
+
+  const lang = state.currentLang || "uz";
+  const usdRate = state.usdRate || 12650;
+
+  grid.innerHTML = related
+    .map((p) => {
+      const pTitle = p[`title_${lang}`] || p.title_uz || p.title;
+      const pPriceUsd = p.priceUsd || (p.price ? Math.round(p.price / usdRate) : 50);
+      const pPriceSom = pPriceUsd * usdRate;
+      const pImg = p.image || p.img || "/images/navy_suit.jpg";
+
+      return `
+        <div class="product-card" data-id="${p.id}" onclick="openProductPage('${p.id}')">
+          <div class="card-image-wrap">
+            <img src="${pImg}" alt="${pTitle}" loading="lazy" />
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">${pTitle}</h3>
+            <div class="card-price-row">
+              <span class="price-usd">${formatMoneySom(pPriceSom)} so'm</span>
+            </div>
+            <button type="button" class="btn btn-primary btn-block" style="margin-top: auto; border-radius: 10px;" onclick="event.stopPropagation(); addToCart('${p.id}', '36', 'Qora', event);">
+              Savatga 🛒
+            </button>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function openPdpImgZoom() {
+  if (!window.currentPdpImages || !window.currentPdpImages[window.currentPdpIndex]) return;
+  window.open(window.currentPdpImages[window.currentPdpIndex], "_blank");
+}
+
+function openAddReviewPrompt() {
+  const name = prompt("Ismingizni kiriting:");
+  if (!name) return;
+  const text = prompt("Mahsulot haqida fikringizni yozing:");
+  if (!text) return;
+  showToast("Rahmat! Sharhingiz tekshiruvdan so'ng e'lon qilinadi ⭐");
+}
+
+// Quick View alias redirects to standalone full-page PDP
+function openQuickView(productId) {
+  openProductPage(productId);
 }
 
 function switchMobileNavTab(tab) {
@@ -2900,6 +3089,9 @@ function openDashboardView(tabName = "cart") {
     return;
   }
 
+  const pdpView = document.getElementById("productDetailPageView");
+  if (pdpView) pdpView.style.display = "none";
+
   if (homeWrapper) homeWrapper.style.display = "none";
   dashView.style.display = "block";
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -2914,6 +3106,9 @@ function openDashboardView(tabName = "cart") {
 function closeDashboardView() {
   const homeWrapper = document.getElementById("homePageWrapper");
   const dashView = document.getElementById("dashboardPageView");
+  const pdpView = document.getElementById("productDetailPageView");
+
+  if (pdpView) pdpView.style.display = "none";
   if (dashView) dashView.style.display = "none";
   if (homeWrapper) homeWrapper.style.display = "block";
   closeAllModals();
