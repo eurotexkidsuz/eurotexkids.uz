@@ -3413,6 +3413,16 @@ html[data-theme="dark"] .modal-close:hover {
   box-shadow: 0 6px 18px rgba(0, 136, 204, 0.45);
 }
 
+.social-circles-row a.social-circle-btn.wa:hover {
+  background: #25d366 !important;
+  box-shadow: 0 6px 18px rgba(37, 211, 102, 0.45);
+}
+
+.social-circles-row a.social-circle-btn.taplink:hover {
+  background: linear-gradient(135deg, #00f2fe, #4facfe) !important;
+  box-shadow: 0 6px 18px rgba(0, 242, 254, 0.45);
+}
+
 .social-circles-row a.social-circle-btn.yt:hover {
   background: #ff0000 !important;
   box-shadow: 0 6px 18px rgba(255, 0, 0, 0.45);
