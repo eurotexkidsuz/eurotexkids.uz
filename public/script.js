@@ -2938,14 +2938,22 @@ function handleURLRouting() {
 
   // --- Admin Add Product Modals & Sub-routes ---
   if (raw.startsWith("/admin")) {
+    // 🔒 KIRISHNI TEKSHIRISH — Login qilmagan bo'lsa, login modali ochiladi
+    if (!state.user) {
+      // Admin URL ni saqlash (login bo'lgandan keyin qayta yo'naltirish uchun)
+      state._pendingAdminRoute = raw;
+      closeDashboardView();
+      openAuthModal();
+      showToast("🔒 Admin paneliga kirish uchun avval tizimga kiring!");
+      return;
+    }
+
+    // Login qilgan lekin admin emas
     if (!isUserAdmin()) {
-      state.user = {
-        email: "eurotexkids7775@gmail.com",
-        name: "Eurotex Rasmiy Admin",
-        role: "admin",
-      };
-      localStorage.setItem("eurotex_user", JSON.stringify(state.user));
-      updateUserAuthUI();
+      closeDashboardView();
+      showToast("❌ Sizda admin huquqi yo'q! Faqat vakolatli adminlar kirishi mumkin.");
+      window.history.replaceState({}, "", "/");
+      return;
     }
 
     openDashboardView("admin");
@@ -4187,7 +4195,15 @@ async function handleEmailAuth(e) {
 
         if (isAdmin) {
           showToast("👑 Kod to'g'ri! Admin sifatida muvaffaqiyatli kirdingiz! ✅");
-          openDashboardView("admin");
+          // Agar oldin admin sahifasiga o'tmoqchi bo'lsak, u yerga qayta yo'naltiramiz
+          if (state._pendingAdminRoute) {
+            const pendingRoute = state._pendingAdminRoute;
+            state._pendingAdminRoute = null;
+            updateURLRoute(pendingRoute);
+            handleURLRouting();
+          } else {
+            openDashboardView("admin");
+          }
         } else {
           showToast(`✅ Kod to'g'ri! Xush kelibsiz, ${state.user.name}!`);
         }
@@ -4256,7 +4272,14 @@ function handleGoogleFormSubmit(e) {
     showToast(
       "👑 Google orqali Admin sifatida muvaffaqiyatli kirdingiz! Master Panel faollashtirildi.",
     );
-    openDashboardView("admin");
+    if (state._pendingAdminRoute) {
+      const pendingRoute = state._pendingAdminRoute;
+      state._pendingAdminRoute = null;
+      updateURLRoute(pendingRoute);
+      handleURLRouting();
+    } else {
+      openDashboardView("admin");
+    }
   } else {
     showToast(
       `Xush kelibsiz, ${state.user.name}! Google orqali KODSIZ kirdingiz! ✅`,
