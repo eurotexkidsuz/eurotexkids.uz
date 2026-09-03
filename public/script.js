@@ -6748,10 +6748,10 @@ function showToast(message, type = "success") {
   // Re-append to body to guarantee it's on top of all modals
   document.body.appendChild(container);
 
-  // Top-Center stack guarantee
+  // Top-Center stack guarantee (Immune to CSS cache)
   container.style.cssText = [
     "position: fixed",
-    "top: 24px",
+    "top: 28px",
     "left: 50%",
     "right: auto",
     "bottom: auto",
@@ -6760,7 +6760,7 @@ function showToast(message, type = "success") {
     "display: flex",
     "flex-direction: column",
     "align-items: center",
-    "gap: 8px",
+    "gap: 10px",
     "pointer-events: none",
     "width: max-content",
     "max-width: 92vw",
@@ -6768,27 +6768,53 @@ function showToast(message, type = "success") {
 
   const toast = document.createElement("div");
   toast.className = "toast eurotex-top-toast";
-  toast.style.pointerEvents = "auto";
-
-  let iconHtml = `<div class="toast-check-icon">✓</div>`;
-  if (type === "error" || String(displayMsg).includes("❌")) {
-    iconHtml = `<div class="toast-check-icon error">✕</div>`;
-  } else if (type === "info" || String(displayMsg).includes("ℹ️") || String(displayMsg).includes("olib tashlandi")) {
-    iconHtml = `<div class="toast-check-icon info">✓</div>`;
-  }
 
   // Clean redundant leading emojis if any
   const cleanText = String(displayMsg).replace(/^[✓❤️💔✨🛒🔔🔑👑⚠️❌]+\s*/, "").trim() || displayMsg;
 
-  toast.innerHTML = `${iconHtml} <span class="toast-text">${cleanText}</span>`;
+  let iconHtml = `<span style="display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:#22c55e; color:#ffffff; font-size:14px; font-weight:900; flex-shrink:0; box-shadow:0 0 12px rgba(34,197,94,0.65);">✓</span>`;
+  if (type === "error" || String(displayMsg).includes("❌")) {
+    iconHtml = `<span style="display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:#ef4444; color:#ffffff; font-size:14px; font-weight:900; flex-shrink:0; box-shadow:0 0 12px rgba(239,68,68,0.65);">✕</span>`;
+  }
+
+  // Exact Big Luxury Burgundy Pill Style matching 2nd user image
+  toast.style.cssText = [
+    "background: #5c0018",
+    "color: #ffffff",
+    "padding: 12px 28px 12px 18px",
+    "border-radius: 999px",
+    "box-shadow: 0 14px 40px rgba(92, 0, 24, 0.48), 0 4px 14px rgba(0,0,0,0.35)",
+    "font-size: 15.5px",
+    "font-weight: 700",
+    "letter-spacing: 0.2px",
+    "display: inline-flex",
+    "align-items: center",
+    "justify-content: center",
+    "gap: 12px",
+    "pointer-events: auto",
+    "border: none",
+    "min-width: 270px",
+    "text-align: center",
+    "transform: translateY(-28px) scale(0.9)",
+    "opacity: 0",
+    "transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.32s ease",
+  ].join(" !important;") + " !important;";
+
+  toast.innerHTML = `${iconHtml} <span style="color:#ffffff !important; font-size:15.5px !important; font-weight:700 !important; white-space:nowrap !important;">${cleanText}</span>`;
   container.appendChild(toast);
 
+  // Smooth entrance
+  requestAnimationFrame(() => {
+    toast.style.transform = "translateY(0) scale(1)";
+    toast.style.opacity = "1";
+  });
+
+  // Smooth exit
   setTimeout(() => {
+    toast.style.transform = "translateY(-24px) scale(0.92)";
     toast.style.opacity = "0";
-    toast.style.transform = "translateY(-22px) scale(0.92)";
-    toast.style.transition = "opacity 0.28s ease, transform 0.28s ease";
-    setTimeout(() => toast.remove(), 320);
-  }, 2800);
+    setTimeout(() => toast.remove(), 340);
+  }, 2700);
 }
 
 // ─── ADMIN HERO BANNER SLIDE EDITING ──────────────────────────────────────────
