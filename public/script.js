@@ -1273,7 +1273,7 @@ function renderProducts() {
                         <span>⭐ ${product.rating || 4.9}</span>
                         <span>(${product.reviewsCount || 186} sharhlar)</span>
                     </div>
-                    <button type="button" onclick="event.stopPropagation(); addToCart('${product.id || "prod-1"}', '48', 'Klassik', event); openCartDrawer();" class="btn btn-primary btn-block" style="margin-top: auto; height: 42px; border-radius: 12px; font-weight: 800; font-size: 14px; background: #7000ff; color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(112,0,255,0.25);">
+                    <button type="button" onclick="event.stopPropagation(); addToCart('${product.id || "prod-1"}', '48', 'Klassik', event);" class="btn btn-primary btn-block" style="margin-top: auto; height: 42px; border-radius: 12px; font-weight: 800; font-size: 14px; background: #7000ff; color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(112,0,255,0.25);">
                         Savatga qo'shish 🛒
                     </button>
                 </div>
@@ -1836,9 +1836,9 @@ function updateWishlistUI() {
 }
 
 // =============================================================================
-// 👑 FEATURE 1: FLY TO CART ANIMATION (SAVATGA UCHIB TUSHISH)
+// 👑 FEATURE 1: FLY TO CART ANIMATION (SAVATGA OLIB BORIB SOLISH)
 // =============================================================================
-function animateFlyToCart(sourceEl) {
+function animateFlyToCart(sourceEl, triggerBtn = null) {
   if (!sourceEl) return;
   const targetCartBtn =
     (window.innerWidth <= 768
@@ -1856,6 +1856,20 @@ function animateFlyToCart(sourceEl) {
 
   if (srcRect.width === 0 || srcRect.height === 0) return;
 
+  // 1. Emotive Button Feedback (Qo'shildi ✓)
+  if (triggerBtn && !triggerBtn.dataset.animating) {
+    triggerBtn.dataset.animating = "true";
+    const originalText = triggerBtn.innerHTML;
+    triggerBtn.classList.add("btn-added-success");
+    triggerBtn.innerHTML = `<span>✓ Savatga qo'shildi!</span>`;
+    setTimeout(() => {
+      triggerBtn.classList.remove("btn-added-success");
+      triggerBtn.innerHTML = originalText;
+      delete triggerBtn.dataset.animating;
+    }, 1300);
+  }
+
+  // 2. Parabolic 3D Flying Suit Orb
   const flyer = document.createElement("div");
   flyer.className = "eurotex-flyer-clone";
 
@@ -1869,23 +1883,23 @@ function animateFlyToCart(sourceEl) {
     flyer.style.display = "flex";
     flyer.style.alignItems = "center";
     flyer.style.justifyContent = "center";
-    flyer.style.fontSize = "22px";
+    flyer.style.fontSize = "24px";
     flyer.style.background = "linear-gradient(135deg, #7000ff, #00f2fe)";
   }
 
-  const startX = srcRect.left + srcRect.width / 2 - 25;
-  const startY = srcRect.top + srcRect.height / 2 - 25;
-  const endX = destRect.left + destRect.width / 2 - 12;
-  const endY = destRect.top + destRect.height / 2 - 12;
+  const startX = srcRect.left + srcRect.width / 2 - 28;
+  const startY = srcRect.top + srcRect.height / 2 - 28;
+  const endX = destRect.left + destRect.width / 2 - 14;
+  const endY = destRect.top + destRect.height / 2 - 14;
 
   flyer.style.position = "fixed";
   flyer.style.left = `${startX}px`;
   flyer.style.top = `${startY}px`;
-  flyer.style.width = "52px";
-  flyer.style.height = "52px";
+  flyer.style.width = "56px";
+  flyer.style.height = "56px";
   flyer.style.borderRadius = "50%";
   flyer.style.border = "2.5px solid #00f2fe";
-  flyer.style.boxShadow = "0 0 24px rgba(0, 242, 254, 0.85), 0 4px 16px rgba(0,0,0,0.6)";
+  flyer.style.boxShadow = "0 0 26px rgba(0, 242, 254, 0.9), 0 8px 24px rgba(0,0,0,0.6)";
   flyer.style.zIndex = "9999999";
   flyer.style.pointerEvents = "none";
 
@@ -1900,21 +1914,28 @@ function animateFlyToCart(sourceEl) {
         top: `${startY}px`,
       },
       {
-        transform: "scale(1.25) rotate(35deg)",
-        opacity: 0.95,
-        left: `${startX + (endX - startX) * 0.35}px`,
-        top: `${Math.min(startY, endY) - 55}px`,
+        transform: "scale(1.35) rotate(-15deg)",
+        opacity: 1,
+        left: `${startX + (endX - startX) * 0.25}px`,
+        top: `${Math.min(startY, endY) - 70}px`,
         offset: 0.35,
       },
       {
-        transform: "scale(0.18) rotate(180deg)",
-        opacity: 0.3,
+        transform: "scale(0.85) rotate(120deg)",
+        opacity: 0.85,
+        left: `${startX + (endX - startX) * 0.75}px`,
+        top: `${Math.min(startY, endY) - 30}px`,
+        offset: 0.75,
+      },
+      {
+        transform: "scale(0.12) rotate(360deg)",
+        opacity: 0.2,
         left: `${endX}px`,
         top: `${endY}px`,
       },
     ],
     {
-      duration: 650,
+      duration: 720,
       easing: "cubic-bezier(0.2, 0.8, 0.2, 1)",
       fill: "forwards",
     },
@@ -1922,12 +1943,24 @@ function animateFlyToCart(sourceEl) {
 
   animation.onfinish = () => {
     flyer.remove();
+
+    // 3. Cart Icon Bounce & Shake
     targetCartBtn.classList.remove("cart-icon-bouncing");
     targetCartBtn.offsetHeight; // trigger reflow
     targetCartBtn.classList.add("cart-icon-bouncing");
+
+    // 4. Floating +1 Badge over Cart Icon
+    const plusOne = document.createElement("div");
+    plusOne.className = "eurotex-cart-plus-one";
+    plusOne.textContent = "+1";
+    plusOne.style.left = `${destRect.left + destRect.width / 2}px`;
+    plusOne.style.top = `${destRect.top}px`;
+    document.body.appendChild(plusOne);
+
     setTimeout(() => {
+      plusOne.remove();
       targetCartBtn.classList.remove("cart-icon-bouncing");
-    }, 550);
+    }, 850);
   };
 }
 
@@ -1945,9 +1978,11 @@ function addToCart(
   const product = pool.find((p) => p && String(p.id) === String(productId));
   if (!product) return;
 
-  // Trigger Fly to Cart animation
+  // Trigger Fly to Cart animation and button state
   let srcEl = null;
+  let triggerBtn = null;
   if (sourceEv && sourceEv.target) {
+    triggerBtn = sourceEv.target.closest("button") || sourceEv.target;
     srcEl =
       sourceEv.target.closest(".product-card")?.querySelector("img") ||
       sourceEv.target;
@@ -1958,7 +1993,7 @@ function addToCart(
       document.getElementById("quickViewImg");
   }
   if (srcEl) {
-    animateFlyToCart(srcEl);
+    animateFlyToCart(srcEl, triggerBtn);
   }
 
   const lang = state.currentLang;
@@ -1991,8 +2026,7 @@ function addToCart(
 
   localStorage.setItem("eurotex_cart", JSON.stringify(state.cart));
   updateCartUI();
-  showToast(`"${title.slice(0, 25)}..." savatga qo'shildi 🛒`);
-  openCartDrawer();
+  showToast(`"${title.slice(0, 25)}..." savatga solindi 🛒`);
 }
 
 function clearCart() {
@@ -3130,7 +3164,7 @@ function renderWishlist() {
                     <span style="color: #f59e0b;">⭐</span>
                     <span>${product.rating || 4.9} (${product.reviewsCount || 186} sharhlar)</span>
                 </div>
-                <button type="button" onclick="event.stopPropagation(); addToCart('${product.id}'); openCartDrawer();" class="btn btn-primary btn-block" style="margin-top: auto; height: 42px; border-radius: 12px; font-weight: 800; font-size: 14px; background: #7000ff; color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(112,0,255,0.25);">
+                <button type="button" onclick="event.stopPropagation(); addToCart('${product.id}', '48', 'Klassik', event);" class="btn btn-primary btn-block" style="margin-top: auto; height: 42px; border-radius: 12px; font-weight: 800; font-size: 14px; background: #7000ff; color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(112,0,255,0.25);">
                     Savatga qo'shish 🛒
                 </button>
             </div>
