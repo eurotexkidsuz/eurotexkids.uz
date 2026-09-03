@@ -1273,7 +1273,7 @@ function renderProducts() {
                         <span>⭐ ${product.rating || 4.9}</span>
                         <span>(${product.reviewsCount || 186} sharhlar)</span>
                     </div>
-                    <button type="button" onclick="event.stopPropagation(); addToCart('${product.id || "prod-1"}'); openCartDrawer();" class="btn btn-primary btn-block" style="margin-top: auto; height: 42px; border-radius: 12px; font-weight: 800; font-size: 14px; background: #7000ff; color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(112,0,255,0.25);">
+                    <button type="button" onclick="event.stopPropagation(); addToCart('${product.id || "prod-1"}', '48', 'Klassik', event); openCartDrawer();" class="btn btn-primary btn-block" style="margin-top: auto; height: 42px; border-radius: 12px; font-weight: 800; font-size: 14px; background: #7000ff; color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(112,0,255,0.25);">
                         Savatga qo'shish 🛒
                     </button>
                 </div>
@@ -1835,22 +1835,142 @@ function updateWishlistUI() {
   if (mobileWishlistBadge) mobileWishlistBadge.textContent = count;
 }
 
-// Cart Drawer Operations
+// =============================================================================
+// 👑 FEATURE 1: FLY TO CART ANIMATION (SAVATGA UCHIB TUSHISH)
+// =============================================================================
+function animateFlyToCart(sourceEl) {
+  if (!sourceEl) return;
+  const targetCartBtn =
+    (window.innerWidth <= 768
+      ? document.getElementById("mobileCartBtn")
+      : document.getElementById("headerCartBtn") ||
+        document.getElementById("cartTriggerBtn") ||
+        document.getElementById("cartCount") ||
+        document.querySelector(".cart-btn")) ||
+    document.getElementById("mobileCartBadge");
+
+  if (!targetCartBtn) return;
+
+  const srcRect = sourceEl.getBoundingClientRect();
+  const destRect = targetCartBtn.getBoundingClientRect();
+
+  if (srcRect.width === 0 || srcRect.height === 0) return;
+
+  const flyer = document.createElement("div");
+  flyer.className = "eurotex-flyer-clone";
+
+  const img = sourceEl.tagName === "IMG" ? sourceEl : sourceEl.querySelector("img");
+  if (img && img.src) {
+    flyer.style.backgroundImage = `url('${img.src}')`;
+    flyer.style.backgroundSize = "cover";
+    flyer.style.backgroundPosition = "center";
+  } else {
+    flyer.innerHTML = "👔";
+    flyer.style.display = "flex";
+    flyer.style.alignItems = "center";
+    flyer.style.justifyContent = "center";
+    flyer.style.fontSize = "22px";
+    flyer.style.background = "linear-gradient(135deg, #7000ff, #00f2fe)";
+  }
+
+  const startX = srcRect.left + srcRect.width / 2 - 25;
+  const startY = srcRect.top + srcRect.height / 2 - 25;
+  const endX = destRect.left + destRect.width / 2 - 12;
+  const endY = destRect.top + destRect.height / 2 - 12;
+
+  flyer.style.position = "fixed";
+  flyer.style.left = `${startX}px`;
+  flyer.style.top = `${startY}px`;
+  flyer.style.width = "52px";
+  flyer.style.height = "52px";
+  flyer.style.borderRadius = "50%";
+  flyer.style.border = "2.5px solid #00f2fe";
+  flyer.style.boxShadow = "0 0 24px rgba(0, 242, 254, 0.85), 0 4px 16px rgba(0,0,0,0.6)";
+  flyer.style.zIndex = "9999999";
+  flyer.style.pointerEvents = "none";
+
+  document.body.appendChild(flyer);
+
+  const animation = flyer.animate(
+    [
+      {
+        transform: "scale(1) rotate(0deg)",
+        opacity: 1,
+        left: `${startX}px`,
+        top: `${startY}px`,
+      },
+      {
+        transform: "scale(1.25) rotate(35deg)",
+        opacity: 0.95,
+        left: `${startX + (endX - startX) * 0.35}px`,
+        top: `${Math.min(startY, endY) - 55}px`,
+        offset: 0.35,
+      },
+      {
+        transform: "scale(0.18) rotate(180deg)",
+        opacity: 0.3,
+        left: `${endX}px`,
+        top: `${endY}px`,
+      },
+    ],
+    {
+      duration: 650,
+      easing: "cubic-bezier(0.2, 0.8, 0.2, 1)",
+      fill: "forwards",
+    },
+  );
+
+  animation.onfinish = () => {
+    flyer.remove();
+    targetCartBtn.classList.remove("cart-icon-bouncing");
+    targetCartBtn.offsetHeight; // trigger reflow
+    targetCartBtn.classList.add("cart-icon-bouncing");
+    setTimeout(() => {
+      targetCartBtn.classList.remove("cart-icon-bouncing");
+    }, 550);
+  };
+}
+
 // Cart Drawer Operations
 function addToCart(
   productId,
   selectedSize = "48",
   selectedColor = "To'q ko'k (Navy)",
+  sourceEv = null,
 ) {
-  const product = EUROTEX_PRODUCTS.find((p) => p.id === productId);
+  const pool =
+    typeof getGlobalProductsPool === "function"
+      ? getGlobalProductsPool()
+      : EUROTEX_PRODUCTS;
+  const product = pool.find((p) => p && String(p.id) === String(productId));
   if (!product) return;
 
+  // Trigger Fly to Cart animation
+  let srcEl = null;
+  if (sourceEv && sourceEv.target) {
+    srcEl =
+      sourceEv.target.closest(".product-card")?.querySelector("img") ||
+      sourceEv.target;
+  }
+  if (!srcEl) {
+    srcEl =
+      document.querySelector(`.product-card[data-id="${productId}"] img`) ||
+      document.getElementById("quickViewImg");
+  }
+  if (srcEl) {
+    animateFlyToCart(srcEl);
+  }
+
   const lang = state.currentLang;
-  const title = product[`title_${lang}`] || product.title_uz;
+  const title =
+    product[`title_${lang}`] ||
+    product.title_uz ||
+    product.title ||
+    "Eurotex Kostyum";
 
   const existing = state.cart.find(
     (c) =>
-      c.id === productId &&
+      String(c.id) === String(productId) &&
       c.size === selectedSize &&
       c.color === selectedColor,
   );
@@ -1860,9 +1980,9 @@ function addToCart(
     state.cart.push({
       id: product.id,
       title: title,
-      price: product.price,
-      image: product.image,
-      nasiyaMonthly: product.nasiyaMonthly,
+      price: product.priceUsd || product.price || 120,
+      priceUsd: product.priceUsd || product.price || 120,
+      image: product.image || product.img || "/images/navy_suit.jpg",
       size: selectedSize,
       color: selectedColor,
       quantity: 1,
@@ -1891,12 +2011,26 @@ function removeCartItem(productId, size, color) {
   showToast("Mahsulot savatdan olib tashlandi 🗑️");
 }
 
-function removeCartItemByIndex(index) {
+function removeCartItemByIndex(index, ev) {
   if (index >= 0 && index < state.cart.length) {
-    state.cart.splice(index, 1);
-    localStorage.setItem("eurotex_cart", JSON.stringify(state.cart));
-    updateCartUI();
-    showToast("Mahsulot savatdan olib tashlandi 🗑️");
+    const itemEl = ev?.target
+      ? ev.target.closest(".cart-item-row")
+      : document.querySelector(`[data-cart-idx="${index}"]`);
+
+    if (itemEl) {
+      itemEl.classList.add("cart-item-collapsing");
+      setTimeout(() => {
+        state.cart.splice(index, 1);
+        localStorage.setItem("eurotex_cart", JSON.stringify(state.cart));
+        updateCartUI();
+        showToast("Mahsulot savatdan olib tashlandi 🗑️");
+      }, 320);
+    } else {
+      state.cart.splice(index, 1);
+      localStorage.setItem("eurotex_cart", JSON.stringify(state.cart));
+      updateCartUI();
+      showToast("Mahsulot savatdan olib tashlandi 🗑️");
+    }
   }
 }
 
@@ -1958,16 +2092,13 @@ function updateCartQtyByIndex(index, change, ev) {
     ev.stopPropagation();
   }
   if (index >= 0 && index < state.cart.length) {
-    state.cart[index].quantity += change;
-    if (state.cart[index].quantity <= 0) {
-      state.cart.splice(index, 1);
-      localStorage.setItem("eurotex_cart", JSON.stringify(state.cart));
-      updateCartUI(); // full re-render when item is completely removed
+    if (state.cart[index].quantity + change <= 0) {
+      removeCartItemByIndex(index, ev);
       return;
     }
+    state.cart[index].quantity += change;
     localStorage.setItem("eurotex_cart", JSON.stringify(state.cart));
 
-    // Smooth in-place DOM updates (ZERO page reload, ZERO layout jump!)
     const qtySpan = document.getElementById(`cartItemQtyVal_${index}`);
     if (qtySpan) {
       qtySpan.textContent = state.cart[index].quantity;
@@ -2003,7 +2134,7 @@ function updateCartUI() {
       cartPopItemsList.innerHTML = state.cart
         .map(
           (item, idx) => `
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; margin-bottom: 10px;">
+            <div class="cart-item-row" data-cart-idx="${idx}" style="display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; margin-bottom: 10px;">
               <div style="display: flex; align-items: center; gap: 12px;">
                 <img src="${item.image}" style="width: 60px; height: 75px; object-fit: cover; border-radius: 10px;" alt="${item.title}">
                 <div>
@@ -2018,7 +2149,7 @@ function updateCartUI() {
                   <span id="cartPopQtyVal_${idx}" style="font-weight: 800; font-size: 14px; color: #00f2fe; padding: 0 8px;">${item.quantity}</span>
                   <button type="button" onclick="updateCartQtyByIndex(${idx}, 1, event)" style="background: none; border: none; color: #fff; font-weight: 700; font-size: 16px; width: 24px; cursor: pointer;">+</button>
                 </div>
-                <button type="button" onclick="removeCartItemByIndex(${idx})" style="background: rgba(239,68,68,0.2); border: none; color: #ef4444; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 14px;">🗑️</button>
+                <button type="button" onclick="removeCartItemByIndex(${idx}, event)" style="background: rgba(239,68,68,0.2); border: none; color: #ef4444; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 14px;">🗑️</button>
               </div>
             </div>
           `,
@@ -2057,11 +2188,11 @@ function updateCartUI() {
               const badgeText = item.badge_uz || "LUXURY PACHKA";
 
               return `
-                <div class="product-card cart-product-card" data-id="${item.id}" style="background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 4px 20px rgba(0,0,0,0.06); display: flex; flex-direction: column;">
+                <div class="product-card cart-product-card cart-item-row" data-cart-idx="${idx}" data-id="${item.id}" style="background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 4px 20px rgba(0,0,0,0.06); display: flex; flex-direction: column;">
                   <div class="card-image-wrap" style="position: relative; width: 100%; padding-top: 125%; background: #0f172a; overflow: hidden;">
                     <img src="${item.image}" alt="${item.title}" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center; background: #0f172a;" onerror="this.src='/images/navy_suit.jpg'">
                     <span class="card-badge-tag ${badgeType}" style="position: absolute; top: 10px; left: 10px; z-index: 2;">${badgeText}</span>
-                    <button type="button" onclick="removeCartItemByIndex(${idx})" title="Savatdan o'chirish" style="position: absolute; top: 10px; right: 10px; z-index: 3; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); font-size: 14px;">🗑️</button>
+                    <button type="button" onclick="removeCartItemByIndex(${idx}, event)" title="Savatdan o'chirish" style="position: absolute; top: 10px; right: 10px; z-index: 3; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); font-size: 14px;">🗑️</button>
                   </div>
                   <div class="card-body" style="padding: 14px; display: flex; flex-direction: column; flex: 1; gap: 8px;">
                     <div style="background:#fef08a; color:#854d0e; font-weight:800; font-size:11px; padding:4px 8px; border-radius:6px; display:inline-block; width: fit-content;">
