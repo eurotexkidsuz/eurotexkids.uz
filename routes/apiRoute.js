@@ -454,15 +454,39 @@ router.post("/telegram", requireAdmin, (req, res) => { // #6 — faqat admin
   res.json({ success: true, message: "Telegram bot sozlamalari saqlandi!" });
 });
 
-router.post("/telegram/test", requireAdmin, async (req, res) => { // #6 — faqat admin
-  const ok = await sendTelegramMessage(
-    "🔔 <b>EUROTEX ADMIN TEST:</b> Telegram bot muvaffaqiyatli ulandi! Yangi buyurtmalar shu yerga keladi. 🚀",
-  );
-  if (ok) {
-    res.json({ success: true, message: "Test xabari Telegramga yuborildi! ✅" });
-  } else {
-    res.status(400).json({ success: false, message: "Xabar yuborishda xatolik. Token yoki Chat ID noto'g'ri." });
-  }
+// =============================================================================
+// 7. 🛠️ TEXNIK TANAFFUS REJIMI (MAINTENANCE MODE)
+// =============================================================================
+const DEFAULT_MAINTENANCE = {
+  enabled: false,
+  title: "Saytda texnik yangilanish ketmoqda 🛠️",
+  message: "Hurmatli xaridorlar! EurotexKids tizimida texnik yangilanish va profilaktika ishlari olib borilmoqda. Yangi to'plamlar va qulayliklar bilan tez orada xizmatingizda bo'lamiz!",
+  estimatedTime: "Tez orada (bugun)",
+  contactPhone: "+998 90 123 45 67",
+  telegramUsername: "eurotexkids_admin",
+  updatedAt: new Date().toISOString(),
+};
+
+router.get("/maintenance", (req, res) => {
+  const data = readJsonFile("maintenance.json", DEFAULT_MAINTENANCE);
+  res.json({ success: true, maintenance: data });
+});
+
+router.post("/maintenance", requireAdmin, (req, res) => {
+  const { enabled, title, message, estimatedTime, contactPhone, telegramUsername } = sanitize(req.body);
+  const current = readJsonFile("maintenance.json", DEFAULT_MAINTENANCE);
+  const updated = {
+    ...current,
+    enabled: Boolean(enabled),
+    title: title || current.title,
+    message: message || current.message,
+    estimatedTime: estimatedTime || current.estimatedTime,
+    contactPhone: contactPhone || current.contactPhone,
+    telegramUsername: telegramUsername || current.telegramUsername,
+    updatedAt: new Date().toISOString(),
+  };
+  writeJsonFile("maintenance.json", updated);
+  res.json({ success: true, maintenance: updated });
 });
 
 module.exports = router;
