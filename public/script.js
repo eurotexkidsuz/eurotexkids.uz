@@ -7075,6 +7075,23 @@ function refreshAdminData() {
   showToast("Admin ma'lumotlari yangilandi! 🔄");
 }
 
+/// =============================================================================
+// ADMIN AUTH HEADERS HELPER
+// =============================================================================
+function getAdminAuthHeaders() {
+  const headers = { "Content-Type": "application/json" };
+  const token = state.user?.rememberToken || localStorage.getItem("rememberToken") || "";
+  const email = state.user?.email || "";
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+    headers["x-admin-token"] = token;
+  }
+  if (email) {
+    headers["x-admin-email"] = email;
+  }
+  return headers;
+}
+
 // =============================================================================
 // 1. ⚡ 1-KLIKDA XARID VA TEZKOR QO'NG'IROQLAR (LEADS)
 // =============================================================================
@@ -7085,7 +7102,7 @@ async function loadAdminLeads() {
   container.innerHTML = `<div style="text-align:center; padding:30px; color:#94a3b8;">Yuklanmoqda... ⏳</div>`;
 
   try {
-    const res = await fetch("/api/leads");
+    const res = await fetch("/api/leads", { headers: getAdminAuthHeaders() });
     const data = await res.json();
     const leads = data.leads || [];
 
@@ -7163,7 +7180,7 @@ async function updateLeadStatus(id, status) {
   try {
     await fetch(`/api/leads/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: getAdminAuthHeaders(),
       body: JSON.stringify({ status }),
     });
     showToast("✓ Ariza holati yangilandi!");
@@ -7183,7 +7200,7 @@ async function loadAdminUsers() {
   container.innerHTML = `<div style="text-align:center; padding:30px; color:#94a3b8;">Yuklanmoqda... ⏳</div>`;
 
   try {
-    const res = await fetch("/api/users-list");
+    const res = await fetch("/api/users-list", { headers: getAdminAuthHeaders() });
     const data = await res.json();
     _adminAllUsersCache = data.users || [];
     renderAdminUsersTable(_adminAllUsersCache);
@@ -7268,7 +7285,7 @@ async function loadAdminPromos() {
   container.innerHTML = `<div style="text-align:center; padding:30px; color:#94a3b8;">Yuklanmoqda... ⏳</div>`;
 
   try {
-    const res = await fetch("/api/promocodes");
+    const res = await fetch("/api/promocodes", { headers: getAdminAuthHeaders() });
     const data = await res.json();
     const promos = data.promocodes || [];
 
@@ -7352,7 +7369,7 @@ async function handleCreatePromo(e) {
   try {
     const res = await fetch("/api/promocodes", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAdminAuthHeaders(),
       body: JSON.stringify({
         code,
         discountType,
@@ -7379,7 +7396,7 @@ async function handleCreatePromo(e) {
 async function deleteAdminPromo(id) {
   if (!confirm("Ushbu promokodni o'chirishni tasdiqlaysizmi?")) return;
   try {
-    await fetch(`/api/promocodes/${id}`, { method: "DELETE" });
+    await fetch(`/api/promocodes/${id}`, { method: "DELETE", headers: getAdminAuthHeaders() });
     showToast("Promokod o'chirildi");
     loadAdminPromos();
   } catch (e) {}
@@ -7395,7 +7412,7 @@ async function loadAdminNasiya() {
   container.innerHTML = `<div style="text-align:center; padding:30px; color:#94a3b8;">Yuklanmoqda... ⏳</div>`;
 
   try {
-    const res = await fetch("/api/nasiya");
+    const res = await fetch("/api/nasiya", { headers: getAdminAuthHeaders() });
     const data = await res.json();
     const apps = data.applications || [];
 
@@ -7467,7 +7484,7 @@ async function updateNasiyaStatus(id, status) {
   try {
     await fetch(`/api/nasiya/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: getAdminAuthHeaders(),
       body: JSON.stringify({ status }),
     });
     showToast("✓ Nasiya arizasi holati yangilandi!");
@@ -7487,7 +7504,7 @@ async function loadAdminDelivery() {
   container.innerHTML = `<div style="text-align:center; padding:30px; color:#94a3b8;">Yuklanmoqda... ⏳</div>`;
 
   try {
-    const res = await fetch("/api/delivery");
+    const res = await fetch("/api/delivery", { headers: getAdminAuthHeaders() });
     const data = await res.json();
     _adminDeliveryCache = data.delivery || [];
 
@@ -7537,7 +7554,7 @@ async function saveAdminDeliverySettings() {
   try {
     const res = await fetch("/api/delivery", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAdminAuthHeaders(),
       body: JSON.stringify({ delivery: updated }),
     });
     if (res.ok) {
@@ -7554,7 +7571,7 @@ async function saveAdminDeliverySettings() {
 // =============================================================================
 async function loadAdminTelegramSettings() {
   try {
-    const res = await fetch("/api/telegram");
+    const res = await fetch("/api/telegram", { headers: getAdminAuthHeaders() });
     const data = await res.json();
     const tokenInput = document.getElementById("adminTgBotToken");
     const chatInput = document.getElementById("adminTgChatId");
@@ -7575,7 +7592,7 @@ async function saveAdminTelegramSettings() {
   try {
     const res = await fetch("/api/telegram", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAdminAuthHeaders(),
       body: JSON.stringify({ token, chatId }),
     });
     const data = await res.json();
@@ -7592,7 +7609,7 @@ async function saveAdminTelegramSettings() {
 async function testAdminTelegramAlert() {
   showToast("Telegramga test xabar yuborilmoqda... ⏳");
   try {
-    const res = await fetch("/api/telegram/test", { method: "POST" });
+    const res = await fetch("/api/telegram/test", { method: "POST", headers: getAdminAuthHeaders() });
     const data = await res.json();
     if (data.success) {
       showToast("✓ Test xabari Telegramingizga yetib bordi! 🚀");

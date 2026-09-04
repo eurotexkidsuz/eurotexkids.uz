@@ -2,6 +2,8 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const router = express.Router();
+const sanitize = require("mongo-sanitize"); // #7 MongoDB Injection himoyasi
+const { requireAdmin } = require("../middleware/adminAuth"); // #6 Admin API himoyasi
 const User = require("../models/User");
 const Order = require("../models/Order");
 const {
@@ -11,6 +13,7 @@ const {
   sendQuickLeadNotification,
   sendNasiyaNotification,
 } = require("../utils/telegramBot");
+
 
 const DATA_DIR = path.join(__dirname, "../data");
 if (!fs.existsSync(DATA_DIR)) {
@@ -43,7 +46,7 @@ function writeJsonFile(filename, data) {
 // =============================================================================
 // 1. ⚡ 1-KLIKDA XARID VA TEZKOR QO'NG'IROQLAR (LEADS)
 // =============================================================================
-router.get("/leads", (req, res) => {
+router.get("/leads", requireAdmin, (req, res) => {   // #6 — faqat admin
   const leads = readJsonFile("leads.json", [
     {
       id: "lead_1",
@@ -61,7 +64,8 @@ router.get("/leads", (req, res) => {
 });
 
 router.post("/leads", async (req, res) => {
-  const { name, phone, productTitle, size, color, price } = req.body;
+  // #7 MongoDB sanitize — injection himoyasi
+  const { name, phone, productTitle, size, color, price } = sanitize(req.body);
   if (!phone) {
     return res.status(400).json({ success: false, message: "Telefon raqami kiritilishi shart" });
   }
@@ -75,9 +79,10 @@ router.post("/leads", async (req, res) => {
     size: size || "-",
     color: color || "-",
     price: price || "-",
-    status: "yangi", // yangi, bog'lanildi, sotildi, bekor
+    status: "yangi",
     date: new Date().toLocaleString("uz-UZ", { timeZone: "Asia/Tashkent" }),
   };
+
 
   leads.unshift(newLead);
   writeJsonFile("leads.json", leads);
@@ -90,9 +95,9 @@ router.post("/leads", async (req, res) => {
   res.json({ success: true, lead: newLead });
 });
 
-router.put("/leads/:id", (req, res) => {
+router.put("/leads/:id", requireAdmin, (req, res) => {   // #6 — faqat admin
   const { id } = req.params;
-  const { status } = req.body;
+  const { status } = sanitize(req.body);
   const leads = readJsonFile("leads.json", []);
   const item = leads.find((l) => String(l.id) === String(id));
   if (item) {
@@ -106,7 +111,8 @@ router.put("/leads/:id", (req, res) => {
 // =============================================================================
 // 2. 👥 FOYDALANUVCHILAR BAZASI (USER CRM)
 // =============================================================================
-router.get("/users-list", async (req, res) => {
+router.get("/users-list", requireAdmin, async (req, res) => {   // #6 — faqat admin
+
   try {
     let dbUsers = [];
     try {
@@ -201,12 +207,16 @@ const DEFAULT_PROMOS = [
   },
 ];
 
-router.get("/promocodes", (req, res) => {
+router.get("/promocodes", (req, res) => {   // foydalanuvchilar validate qilishi mumkin
   const promos = readJsonFile("promocodes.json", DEFAULT_PROMOS);
-  res.json({ success: true, promocodes: promos });
+  // Xavfsizlik: foydalanuvchiga faqat zarur maydonlar
+  const safePromos = promos.map(({ id, code, discountType, discountValue, minOrderPrice, expiresAt, active }) =>
+    ({ id, code, discountType, discountValue, minOrderPrice, expiresAt, active })
+  );
+  res.json({ success: true, promocodes: safePromos });
 });
 
-router.post("/promocodes", (req, res) => {
+router.post("/promocodes", requireAdmin, (req, res) => {   // #6 — faqat admin
   const {
     code,
     discountType,
@@ -215,7 +225,8 @@ router.post("/promocodes", (req, res) => {
     maxUses,
     perUserLimit,
     expiryDays,
-  } = req.body;
+  } = sanitize(req.body);   // #7 sanitize
+
 
   if (!code) {
     return res.status(400).json({ success: false, message: "Promokod nomi kiritilmadi" });
@@ -250,7 +261,7 @@ router.post("/promocodes", (req, res) => {
   res.json({ success: true, promocode: newPromo });
 });
 
-router.delete("/promocodes/:id", (req, res) => {
+router.delete("/promocodes/:id", requireAdmin, (req, res) => {   // #6 — faqat admin
   const { id } = req.params;
   let promos = readJsonFile("promocodes.json", DEFAULT_PROMOS);
   promos = promos.filter((p) => String(p.id) !== String(id) && p.code !== id);
@@ -324,7 +335,7 @@ router.post("/promocodes/validate", (req, res) => {
 // =============================================================================
 // 4. 🤝 "EUROTEX NASIYA" MUDDATLI TO'LOV ARIZALARI
 // =============================================================================
-router.get("/nasiya", (req, res) => {
+router.get("/nasiya", requireAdmin, (req, res) => { // #6 — Faqat admin (pasport ma'lumotlari bor)
   const nasiyaList = readJsonFile("nasiya.json", [
     {
       id: "nas_1",
@@ -343,7 +354,7 @@ router.get("/nasiya", (req, res) => {
 });
 
 router.post("/nasiya", async (req, res) => {
-  const { name, phone, passport, months, productTitle, totalAmount, monthlyPayment } = req.body;
+  const { name, phone, passport, months, productTitle, totalAmount, monthlyPayment } = sanitize(req.body); // #7 sanitize
   if (!phone || !name) {
     return res.status(400).json({ success: false, message: "Ism va telefon raqami talab qilinadi" });
   }
@@ -373,9 +384,9 @@ router.post("/nasiya", async (req, res) => {
   res.json({ success: true, application: newApp });
 });
 
-router.put("/nasiya/:id", (req, res) => {
+router.put("/nasiya/:id", requireAdmin, (req, res) => {   // #6 — faqat admin
   const { id } = req.params;
-  const { status } = req.body;
+  const { status } = sanitize(req.body);
   const list = readJsonFile("nasiya.json", []);
   const item = list.find((n) => String(n.id) === String(id));
   if (item) {
@@ -411,8 +422,8 @@ router.get("/delivery", (req, res) => {
   res.json({ success: true, delivery });
 });
 
-router.post("/delivery", (req, res) => {
-  const { delivery } = req.body;
+router.post("/delivery", requireAdmin, (req, res) => { // #6 — faqat admin
+  const { delivery } = sanitize(req.body);
   if (Array.isArray(delivery)) {
     writeJsonFile("delivery.json", delivery);
     return res.json({ success: true, delivery });
@@ -423,7 +434,7 @@ router.post("/delivery", (req, res) => {
 // =============================================================================
 // 6. 🤖 TELEGRAM BOT SOZLAMALARI
 // =============================================================================
-router.get("/telegram", (req, res) => {
+router.get("/telegram", requireAdmin, (req, res) => { // #6 — faqat admin
   const config = getTelegramConfig();
   res.json({
     success: true,
@@ -433,8 +444,8 @@ router.get("/telegram", (req, res) => {
   });
 });
 
-router.post("/telegram", (req, res) => {
-  const { token, chatId } = req.body;
+router.post("/telegram", requireAdmin, (req, res) => { // #6 — faqat admin
+  const { token, chatId } = sanitize(req.body);
   if (!token || !chatId) {
     return res.status(400).json({ success: false, message: "Token va Chat ID talab qilinadi" });
   }
@@ -443,7 +454,7 @@ router.post("/telegram", (req, res) => {
   res.json({ success: true, message: "Telegram bot sozlamalari saqlandi!" });
 });
 
-router.post("/telegram/test", async (req, res) => {
+router.post("/telegram/test", requireAdmin, async (req, res) => { // #6 — faqat admin
   const ok = await sendTelegramMessage(
     "🔔 <b>EUROTEX ADMIN TEST:</b> Telegram bot muvaffaqiyatli ulandi! Yangi buyurtmalar shu yerga keladi. 🚀",
   );

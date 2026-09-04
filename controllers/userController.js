@@ -408,16 +408,25 @@ const verifyCode = async (req, res) => {
         Number.isFinite(parsedDays) ? parsedDays : rememberMe ? 7 : 7,
       ),
     );
-    const rememberToken = jwt.sign({ email }, JWT_SECRET, {
+    if (isAdminEmail(user.email)) {
+      user.role = "admin";
+    }
+    const role = user.role || "user";
+    const rememberToken = jwt.sign({ email, role }, JWT_SECRET, {
       expiresIn: `${days}d`,
     });
     user.rememberToken = rememberToken;
 
-    if (isAdminEmail(user.email)) {
-      user.role = "admin";
-    }
-
     await user.save();
+
+    // ── #9 HttpOnly Session Cookie ──────────────────────────────────────────
+    res.cookie("eurotex_session", rememberToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: days * 24 * 60 * 60 * 1000,
+    });
+
 
     return res.status(200).json({
       message:

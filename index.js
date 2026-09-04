@@ -1,14 +1,38 @@
 const express = require("express");
 const { connect } = require("mongoose");
 const cors = require("cors");
+const helmet = require("helmet");           // #1 — HTTP Security headers
+const rateLimit = require("express-rate-limit"); // #2 — Rate limiting
 require("dotenv").config();
 const app = express();
 
-// Middleware
-app.use(express.json({ limit: "100mb" }));
-app.use(express.urlencoded({ limit: "100mb", extended: true }));
-app.use(cors());
-app.use(express.static("public"));
+// ── #1 HELMET — XSS, Clickjacking, MIME sniffing himoyasi ─────────────────────
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // SPA uchun o'chirildi (inline script bor)
+    crossOriginEmbedderPolicy: false,
+  })
+);
+
+// ── #5 CORS — Faqat eurotexkids.uz ga ruxsat ──────────────────────────────────
+const allowedOrigins = [
+  "https://eurotexkids.uz",
+  "https://www.eurotexkids.uz",
+  ...(process.env.NODE_ENV !== "production" ? ["http://localhost:5000", "http://localhost:3000"] : []),
+];
+app.use(cors({
+  origin: (origin, cb) => {
+    // origin yo'q (curl/postman/server-side) yoki ruxsat berilgan domendan
+    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    return cb(new Error("CORS: Ruxsat berilmagan domen: " + origin));
+  },
+  credentials: true,
+}));
+
+// ── #3 BODY SIZE — 100mb → 2mb (DoS himoyasi) ─────────────────────────────────
+app.use(express.json({ limit: "2mb" }));
+app.use(express.urlencoded({ limit: "2mb", extended: true }));
+
 
 // Database
 const MONGO_URI = process.env.MONGO_URL || "";
@@ -67,14 +91,43 @@ app.use((req, res, next) => {
   next();
 });
 
-// Express Global Error Handler to catch 500/502 errors and return clean fallback JSON
-app.use((err, req, res, next) => {
-  console.error("Global Express Error:", err.message);
-  if (res.headersSent) return next(err);
-  return res.status(200).json({ success: true, products: [], message: err.message });
+// ── #14 Sensitive fayllarni himoyalash ────────────────────────────────────────
+app.use((req, res, next) => {
+  const blockedPaths = [".env", "telegram_config.json", "package.json", "package-lock.json"];
+  if (blockedPaths.some((f) => req.path.includes(f))) {
+    return res.status(403).send("Forbidden");
+  }
+  next();
 });
 
-// Default SPA index.html fallback
+app.use(express.static("public"));
+
+// SPA Fallback
+app.use((req, res, next) => {
+  if (
+    req.method === "GET" &&
+    !req.path.startsWith("/users") &&
+    !req.path.startsWith("/products") &&
+    !req.path.startsWith("/orders") &&
+    !req.path.startsWith("/api") &&
+    !req.path.includes(".")
+  ) {
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+    return res.sendFile(path.join(__dirname, "public", "index.html"));
+  }
+  next();
+});
+
+// ── #10 GLOBAL ERROR HANDLER — ichki xatolar tashqariga chiqmasin ─────────────
+app.use((err, req, res, next) => {
+  console.error("Global Express Error:", err.stack || err.message); // faqat server log
+  if (res.headersSent) return next(err);
+  return res.status(500).json({ success: false, message: "Server xatosi yuz berdi." });
+});
+
+// Default SPA fallback
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
