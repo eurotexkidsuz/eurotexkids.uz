@@ -3550,7 +3550,27 @@ function openAuthModal() {
     const badgeWrap = document.getElementById("userProfileBadgeWrap");
     const adminBtn = document.getElementById("userAdminPanelBtn");
 
-    if (avatarEl) avatarEl.textContent = initial;
+    if (avatarEl) {
+      if (isAdmin) {
+        avatarEl.innerHTML = `<img src="/images/eurotex-logo.png" alt="Eurotex Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block;" />`;
+        avatarEl.style.background = "#ffffff";
+        avatarEl.style.padding = "6px";
+        avatarEl.style.border = "2.5px solid #00f2fe";
+        avatarEl.style.boxShadow = "0 0 20px rgba(0, 242, 254, 0.4)";
+      } else if (state.user.picture) {
+        avatarEl.innerHTML = `<img src="${state.user.picture}" alt="User" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;" />`;
+        avatarEl.style.background = "";
+        avatarEl.style.padding = "";
+        avatarEl.style.border = "";
+        avatarEl.style.boxShadow = "";
+      } else {
+        avatarEl.textContent = initial;
+        avatarEl.style.background = "";
+        avatarEl.style.padding = "";
+        avatarEl.style.border = "";
+        avatarEl.style.boxShadow = "";
+      }
+    }
     if (nameEl) nameEl.textContent = isAdmin ? "Eurotex Rasmiy Admin" : formattedName;
     if (emailEl) emailEl.textContent = email;
     if (badgeWrap) {
@@ -5429,7 +5449,8 @@ function showConfirmDialog({
   confirmText = "Ha, davom etish",
   cancelText = "Bekor qilish",
   icon = "⚠️",
-  iconBg = "rgba(245, 158, 11, 0.15)",
+  iconHtml = null,
+  iconBg = null,
   confirmColor = "danger",
 }) {
   return new Promise((resolve) => {
@@ -5443,10 +5464,42 @@ function showConfirmDialog({
     const cancelBtn = document.getElementById("customConfirmCancelBtn");
     const acceptBtn = document.getElementById("customConfirmAcceptBtn");
 
+    const isLogout = Boolean(title && (title.includes("Chiqish") || title.toLowerCase().includes("chiqish")));
+    const finalIconHtml = iconHtml || (isLogout ? '<img src="/images/eurotex-logo.png" alt="Eurotex Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block;" />' : null);
+    const finalIconBg = iconBg || (isLogout ? "#ffffff" : "rgba(245, 158, 11, 0.15)");
+
     if (titleEl) titleEl.textContent = title;
     if (msgEl) msgEl.textContent = message;
-    if (iconEl) iconEl.textContent = icon;
-    if (iconWrap) iconWrap.style.background = iconBg;
+
+    if (iconWrap) {
+      iconWrap.style.background = finalIconBg;
+      if (finalIconHtml) {
+        iconWrap.style.padding = "6px";
+        iconWrap.style.border = "2.5px solid rgba(245, 158, 11, 0.85)";
+        iconWrap.style.boxShadow = "0 0 25px rgba(245, 158, 11, 0.4)";
+      } else {
+        iconWrap.style.padding = "";
+        iconWrap.style.border = "1px solid rgba(245, 158, 11, 0.35)";
+        iconWrap.style.boxShadow = "0 0 24px rgba(245, 158, 11, 0.35)";
+      }
+    }
+
+    if (iconEl) {
+      if (finalIconHtml) {
+        iconEl.innerHTML = finalIconHtml;
+        iconEl.style.display = "flex";
+        iconEl.style.width = "100%";
+        iconEl.style.height = "100%";
+        iconEl.style.alignItems = "center";
+        iconEl.style.justifyContent = "center";
+      } else {
+        iconEl.textContent = icon;
+        iconEl.style.display = "";
+        iconEl.style.width = "";
+        iconEl.style.height = "";
+      }
+    }
+
     if (cancelBtn) cancelBtn.textContent = cancelText;
 
     if (acceptBtn) {
@@ -6221,16 +6274,22 @@ function showCustomConfirm({
   htmlText,
   text,
   confirmText = "O'chirish",
+  icon,
+  iconHtml,
+  iconBg,
   onConfirm,
   onCancel,
 }) {
+  const isLogout = Boolean(title && (title.includes("Chiqish") || title.toLowerCase().includes("chiqish")));
   const cleanMsg = htmlText ? htmlText.replace(/<[^>]*>/g, " ") : text || "Ushbu amalni bajarishni xohlaysizmi?";
   showConfirmDialog({
     title,
     message: cleanMsg,
     confirmText,
     cancelText: "Bekor qilish",
-    icon: title.includes("Chiqish") ? "🚪" : "⚠️",
+    icon: icon || (isLogout ? "🚪" : "⚠️"),
+    iconHtml: iconHtml || (isLogout ? '<img src="/images/eurotex-logo.png" alt="Eurotex Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block;" />' : null),
+    iconBg: iconBg || (isLogout ? "#ffffff" : "rgba(245, 158, 11, 0.15)"),
     confirmColor: "danger",
   }).then((confirmed) => {
     if (confirmed) {
