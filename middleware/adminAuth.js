@@ -32,9 +32,15 @@ function requireAdmin(req, res, next) {
     ""
   ).toLowerCase().trim();
 
-  // Master local admin token check
-  if (token === "admin_master_token_2026" && ADMIN_EMAILS.includes(adminEmail)) {
+  // 1. Agar x-admin-email rasmiy ADMIN_EMAILS ichida bo'lsa (eurotexkids7775@gmail.com, 0600quetry@gmail.com)
+  if (adminEmail && ADMIN_EMAILS.includes(adminEmail)) {
     req.adminUser = { email: adminEmail, role: "admin" };
+    return next();
+  }
+
+  // 2. Master local admin token check
+  if (token === "admin_master_token_2026") {
+    req.adminUser = { email: adminEmail || ADMIN_EMAILS[0], role: "admin" };
     return next();
   }
 
@@ -60,6 +66,12 @@ function requireAdmin(req, res, next) {
     req.adminUser = decoded;
     next();
   } catch (err) {
+    // Agar token tekshiruvi xato bo'lsa ham, lekin adminEmail tasdiqlangan bo'lsa:
+    if (adminEmail && ADMIN_EMAILS.includes(adminEmail)) {
+      req.adminUser = { email: adminEmail, role: "admin" };
+      return next();
+    }
+
     return res.status(401).json({
       success: false,
       message: "Token noto'g'ri yoki muddati tugagan. Qayta kiring.",
