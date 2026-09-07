@@ -5294,6 +5294,7 @@ function showAdminSection(sec, pushUrl = true) {
     sizes: document.getElementById("adminSecSizes"),
     reviews: document.getElementById("adminSecReviews"),
     settings: document.getElementById("adminSecSettings"),
+    maintenance: document.getElementById("adminSecMaintenance"),
   };
 
   Object.entries(sections).forEach(([key, el]) => {
@@ -5312,6 +5313,7 @@ function showAdminSection(sec, pushUrl = true) {
     sizes: document.getElementById("btnAdminSizes"),
     reviews: document.getElementById("btnAdminReviews"),
     settings: document.getElementById("btnAdminSettings"),
+    maintenance: document.getElementById("btnAdminMaintenance"),
   };
 
   Object.entries(buttons).forEach(([key, btn]) => {
@@ -5330,6 +5332,8 @@ function showAdminSection(sec, pushUrl = true) {
   else if (sec === "reviews") renderAdminReviews();
   else if (sec === "settings") {
     loadAdminTelegramSettings();
+    loadAdminMaintenanceSettings();
+  } else if (sec === "maintenance") {
     loadAdminMaintenanceSettings();
   }
 
@@ -7702,64 +7706,132 @@ async function loadAdminMaintenanceSettings() {
     }
   } catch (e) {}
 
-  const toggle = document.getElementById("adminMaintenanceToggle");
   const title = document.getElementById("adminMaintenanceTitle");
   const msg = document.getElementById("adminMaintenanceMessage");
   const time = document.getElementById("adminMaintenanceTime");
   const phone = document.getElementById("adminMaintenancePhone");
   const tg = document.getElementById("adminMaintenanceTg");
 
-  if (toggle) toggle.checked = Boolean(_maintenanceCache.enabled);
   if (title) title.value = _maintenanceCache.title || "";
   if (msg) msg.value = _maintenanceCache.message || "";
   if (time) time.value = _maintenanceCache.estimatedTime || "";
   if (phone) phone.value = _maintenanceCache.contactPhone || "";
   if (tg) tg.value = _maintenanceCache.telegramUsername || "";
 
-  updateMaintenanceToggleUI();
+  updateMaintenanceUIState();
 }
 
-function updateMaintenanceToggleUI() {
-  const toggle = document.getElementById("adminMaintenanceToggle");
-  const slider = document.getElementById("adminMaintenanceSlider");
-  const badge = document.getElementById("adminMaintenanceStatusBadge");
-  if (!toggle) return;
+function updateMaintenanceUIState() {
+  const isEnabled = Boolean(_maintenanceCache && _maintenanceCache.enabled);
 
-  const isChecked = toggle.checked;
-  if (slider) {
-    slider.style.backgroundColor = isChecked ? "#f59e0b" : "#334155";
-    slider.style.boxShadow = isChecked ? "0 0 12px rgba(245, 158, 11, 0.5)" : "none";
-  }
-  if (badge) {
-    if (isChecked) {
-      badge.style.background = "rgba(245, 158, 11, 0.15)";
-      badge.style.color = "#f59e0b";
-      badge.style.borderColor = "rgba(245, 158, 11, 0.3)";
-      badge.innerHTML = `<span style="width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;"></span> ⚠️ Tanaffusda (Yopiq)`;
+  const actionBtn = document.getElementById("btnToggleMaintenanceAction");
+  const statusBadge = document.getElementById("adminMaintenanceStatusBadge");
+  const statusDot = document.getElementById("adminMaintenanceStatusDot");
+  const statusText = document.getElementById("adminMaintenanceStatusText");
+  const descEl = document.getElementById("adminMaintenanceModeDescription");
+
+  if (actionBtn) {
+    if (isEnabled) {
+      actionBtn.style.background = "linear-gradient(135deg, #10b981, #059669)";
+      actionBtn.style.boxShadow = "0 4px 15px rgba(16, 185, 129, 0.4)";
+      actionBtn.innerHTML = "🟢 Saytni Qayta Ochish (Faollashtirish)";
     } else {
-      badge.style.background = "rgba(16, 185, 129, 0.15)";
-      badge.style.color = "#10b981";
-      badge.style.borderColor = "rgba(16, 185, 129, 0.3)";
-      badge.innerHTML = `<span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span> Sayt Faol (Ochiq)`;
+      actionBtn.style.background = "linear-gradient(135deg, #ef4444, #dc2626)";
+      actionBtn.style.boxShadow = "0 4px 15px rgba(239, 68, 68, 0.4)";
+      actionBtn.innerHTML = "🔴 Saytni Texnik Tanaffusga Tushirish";
+    }
+  }
+
+  if (statusBadge) {
+    if (isEnabled) {
+      statusBadge.style.background = "rgba(245, 158, 11, 0.15)";
+      statusBadge.style.color = "#f59e0b";
+      statusBadge.style.borderColor = "rgba(245, 158, 11, 0.4)";
+    } else {
+      statusBadge.style.background = "rgba(16, 185, 129, 0.15)";
+      statusBadge.style.color = "#10b981";
+      statusBadge.style.borderColor = "rgba(16, 185, 129, 0.4)";
+    }
+  }
+
+  if (statusDot) {
+    statusDot.style.background = isEnabled ? "#f59e0b" : "#10b981";
+  }
+
+  if (statusText) {
+    statusText.textContent = isEnabled
+      ? "⚠️ Sayt Texnik Tanaffusda (Yopiq)"
+      : "Sayt Faol (Barcha uchun ochiq)";
+  }
+
+  if (descEl) {
+    if (isEnabled) {
+      descEl.innerHTML =
+        '<span style="color: #f59e0b; font-weight: 700;">⚠️ DIQQAT: Sayt hozir xaridorlar uchun YOPIQ!</span> Texnik tanaffus sahifasi ko\'rsatilmoqda. Faqat adminlar saytga kira oladi.';
+    } else {
+      descEl.innerHTML =
+        '<span style="color: #10b981; font-weight: 700;">🟢 Sayt hozir barcha xaridorlar uchun OCHIQ.</span> Do\'kon to\'liq faol ishlamoqda.';
     }
   }
 }
 
-async function saveAdminMaintenanceSettings() {
-  const toggle = document.getElementById("adminMaintenanceToggle");
-  const title = document.getElementById("adminMaintenanceTitle");
-  const msg = document.getElementById("adminMaintenanceMessage");
-  const time = document.getElementById("adminMaintenanceTime");
-  const phone = document.getElementById("adminMaintenancePhone");
-  const tg = document.getElementById("adminMaintenanceTg");
+async function toggleMaintenanceActiveState() {
+  const willEnable = !Boolean(_maintenanceCache && _maintenanceCache.enabled);
+
+  const title = (document.getElementById("adminMaintenanceTitle")?.value || _maintenanceCache.title || "").trim();
+  const msg = (document.getElementById("adminMaintenanceMessage")?.value || _maintenanceCache.message || "").trim();
+  const time = (document.getElementById("adminMaintenanceTime")?.value || _maintenanceCache.estimatedTime || "").trim();
+  const phone = (document.getElementById("adminMaintenancePhone")?.value || _maintenanceCache.contactPhone || "").trim();
+  const tg = (document.getElementById("adminMaintenanceTg")?.value || _maintenanceCache.telegramUsername || "").trim();
 
   const payload = {
-    enabled: toggle ? toggle.checked : false,
-    title: title ? title.value.trim() : "",
-    message: msg ? msg.value.trim() : "",
-    estimatedTime: time ? time.value.trim() : "",
-    contactPhone: phone ? phone.value.trim() : "",
-    telegramUsername: tg ? tg.value.trim() : "",
+    enabled: willEnable,
+    title,
+    message: msg,
+    estimatedTime: time,
+    contactPhone: phone,
+    telegramUsername: tg,
+  };
+
+  try {
+    showToast(willEnable ? "Sayt tanaffusga tushirilmoqda... ⏳" : "Sayt qayta ochilmoqda... ⏳");
+    const res = await fetch("/api/maintenance", {
+      method: "POST",
+      headers: getAdminAuthHeaders(),
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (data.success) {
+      _maintenanceCache = data.maintenance;
+      updateMaintenanceUIState();
+      checkMaintenanceStatus();
+      showToast(
+        willEnable
+          ? "🔴 Sayt texnik tanaffus rejimiga o'tkazildi (xaridorlarga yopildi)!"
+          : "✅ Sayt muvaffaqiyatli ochildi (barcha uchun faol)!"
+      );
+    } else {
+      showToast(data.message || "Xatolik yuz berdi");
+    }
+  } catch (e) {
+    showToast("Server bilan bog'lanishda xatolik");
+  }
+}
+
+async function saveAdminMaintenanceTextsOnly() {
+  const title = (document.getElementById("adminMaintenanceTitle")?.value || "").trim();
+  const msg = (document.getElementById("adminMaintenanceMessage")?.value || "").trim();
+  const time = (document.getElementById("adminMaintenanceTime")?.value || "").trim();
+  const phone = (document.getElementById("adminMaintenancePhone")?.value || "").trim();
+  const tg = (document.getElementById("adminMaintenanceTg")?.value || "").trim();
+
+  const payload = {
+    enabled: Boolean(_maintenanceCache && _maintenanceCache.enabled),
+    title,
+    message: msg,
+    estimatedTime: time,
+    contactPhone: phone,
+    telegramUsername: tg,
   };
 
   try {
@@ -7771,15 +7843,71 @@ async function saveAdminMaintenanceSettings() {
     const data = await res.json();
     if (data.success) {
       _maintenanceCache = data.maintenance;
-      showToast(payload.enabled ? "⚠️ Sayt texnik tanaffus rejimiga o'tkazildi!" : "✅ Sayt qayta faollashtirildi (ochildi)!");
+      updateMaintenanceUIState();
       checkMaintenanceStatus();
-      updateMaintenanceToggleUI();
+      showToast("💾 Tanaffus matnlari va ma'lumotlari muvaffaqiyatli saqlandi!");
     } else {
       showToast(data.message || "Xatolik yuz berdi");
     }
   } catch (e) {
     showToast("Saqlashda xatolik yuz berdi");
   }
+}
+
+function previewMaintenanceOverlay() {
+  const overlay = document.getElementById("maintenanceModeOverlay");
+  if (!overlay) return;
+
+  const titleVal = document.getElementById("adminMaintenanceTitle")?.value || _maintenanceCache.title || "Saytda texnik yangilanish ketmoqda 🛠️";
+  const msgVal = document.getElementById("adminMaintenanceMessage")?.value || _maintenanceCache.message || "Tez orada xizmatingizda bo'lamiz!";
+  const timeVal = document.getElementById("adminMaintenanceTime")?.value || _maintenanceCache.estimatedTime || "Tez orada";
+  const phoneVal = (document.getElementById("adminMaintenancePhone")?.value || _maintenanceCache.contactPhone || "").trim();
+  const tgVal = (document.getElementById("adminMaintenanceTg")?.value || _maintenanceCache.telegramUsername || "").trim();
+
+  const titleEl = document.getElementById("maintenanceDisplayTitle");
+  const msgEl = document.getElementById("maintenanceDisplayMessage");
+  const timeEl = document.getElementById("maintenanceDisplayTime");
+  const callBtn = document.getElementById("maintenanceCallBtn");
+  const tgBtn = document.getElementById("maintenanceTgBtn");
+
+  if (titleEl) titleEl.textContent = titleVal;
+  if (msgEl) msgEl.textContent = msgVal;
+  if (timeEl) timeEl.textContent = timeVal;
+  if (callBtn) {
+    callBtn.href = "tel:" + phoneVal.replace(/[^\d+]/g, "");
+    callBtn.style.display = phoneVal ? "inline-flex" : "none";
+  }
+  if (tgBtn) {
+    tgBtn.href = "https://t.me/" + tgVal.replace(/^@/, "");
+    tgBtn.style.display = tgVal ? "inline-flex" : "none";
+  }
+
+  let previewBar = document.getElementById("maintenancePreviewCloseBar");
+  if (!previewBar) {
+    previewBar = document.createElement("div");
+    previewBar.id = "maintenancePreviewCloseBar";
+    previewBar.style.cssText = "position: fixed; top: 16px; right: 16px; z-index: 1000000; background: #dc2626; color: #fff; padding: 10px 20px; border-radius: 30px; font-weight: 800; font-size: 14px; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 8px;";
+    previewBar.innerHTML = "<span>❌</span> Sinovni yopish (Adminga qaytish)";
+    previewBar.onclick = closeMaintenancePreview;
+    document.body.appendChild(previewBar);
+  } else {
+    previewBar.style.display = "flex";
+  }
+
+  overlay.style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+function closeMaintenancePreview() {
+  const overlay = document.getElementById("maintenanceModeOverlay");
+  const previewBar = document.getElementById("maintenancePreviewCloseBar");
+  if (previewBar) previewBar.style.display = "none";
+  if (overlay) overlay.style.display = "none";
+  document.body.style.overflow = "auto";
+}
+
+async function saveAdminMaintenanceSettings() {
+  return saveAdminMaintenanceTextsOnly();
 }
 
 function openMaintenanceAdminLogin() {

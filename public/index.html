@@ -1947,7 +1947,7 @@
               <!-- Admin Maintenance Warning Banner -->
               <div id="adminMaintenanceWarningBanner" style="display: none; background: linear-gradient(90deg, #b45309, #d97706); color: #ffffff; padding: 12px 20px; border-radius: 14px; margin-bottom: 20px; text-align: center; font-size: 14px; font-weight: 700; box-shadow: 0 4px 20px rgba(245, 158, 11, 0.35); align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap;">
                 <span>⚠️ <b>DIQQAT:</b> Sayt hozirda <b>TEXNIK TANAFFUS</b> rejimida! Tashrif buyuruvchilarga faqat tanaffus sahifasi ko'rinmoqda.</span>
-                <button type="button" onclick="showAdminSection('settings')" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.5); color: #ffffff; padding: 4px 12px; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 12px;">
+                <button type="button" onclick="showAdminSection('maintenance')" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.5); color: #ffffff; padding: 4px 12px; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 12px;">
                   Tanaffusni O'chirish ⚙️
                 </button>
               </div>
@@ -2042,6 +2042,15 @@
                     onclick="showAdminSection('settings')"
                   >
                     ⚙️ Sozlamalar &amp; Bot
+                  </button>
+                  <button
+                    type="button"
+                    class="admin-nav-tab"
+                    id="btnAdminMaintenance"
+                    onclick="showAdminSection('maintenance')"
+                    style="border-color: rgba(245, 158, 11, 0.45); background: rgba(245, 158, 11, 0.08);"
+                  >
+                    🛠️ Sayt Holati
                   </button>
                 </div>
 
@@ -2231,61 +2240,97 @@
                       </div>
                     </div>
 
-                    <!-- Maintenance Mode (Texnik Tanaffus Rejimi) -->
-                    <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.08);">
-                      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
-                        <h4 style="color: #f59e0b; font-size: 17px; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px;">
-                          <span>🛠️</span> Sayt Texnik Tanaffus Rejimi (Maintenance Mode)
-                        </h4>
-                        <div id="adminMaintenanceStatusBadge" style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);">
-                          <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span> Sayt Faol (Ochiq)
-                        </div>
+                    <!-- Quick link to Sayt Holati in Settings -->
+                    <div style="margin-top: 28px; padding: 18px 20px; border-radius: 14px; background: rgba(245, 158, 11, 0.08); border: 1.5px solid rgba(245, 158, 11, 0.3); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                      <div>
+                        <strong style="color: #f59e0b; font-size: 15px; display: block; margin-bottom: 2px;">🛠️ Sayt Holati (Texnik Tanaffus Rejimi):</strong>
+                        <span style="color: #94a3b8; font-size: 13px;">Saytni vaqtincha xaridorlarga yopib turish yoki qayta ochish alohida bo'limga ko'chirildi.</span>
                       </div>
-                      <p style="color: rgba(203, 213, 225, 0.85); font-size: 13.5px; line-height: 1.5; margin-bottom: 18px;">
-                        Saytda profilaktika, yangi modellar yuklash yoki texnik yangilanish ketayotgan paytda ushbu rejimni yoqing. Sayt oddiy xaridorlarga yopiladi va chiroyli tanaffus sahifasi chiqadi. <b>Adminlar esa saytga bemalol kirib ishlashi mumkin.</b>
-                      </p>
-
-                      <!-- Toggle Switch Box -->
-                      <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 12px; padding: 16px 20px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                          <strong style="color: #ffffff; font-size: 14.5px; display: block;">Texnik tanaffusni faollashtirish</strong>
-                          <span style="color: #94a3b8; font-size: 12.5px;">Yoqilganda, oddiy foydalanuvchilar savdo qila olmaydi</span>
-                        </div>
-                        <label style="position: relative; display: inline-block; width: 54px; height: 28px; margin: 0; cursor: pointer;">
-                          <input type="checkbox" id="adminMaintenanceToggle" style="opacity: 0; width: 0; height: 0;" onchange="updateMaintenanceToggleUI()" />
-                          <span id="adminMaintenanceSlider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .3s; border-radius: 28px;"></span>
-                        </label>
-                      </div>
-
-                      <div class="form-group" style="margin-bottom: 14px;">
-                        <label style="font-weight: 700; font-size: 13px; color: #cbd5e1; margin-bottom: 6px; display: block;">Tanaffus Sarlavhasi (Title):</label>
-                        <input type="text" id="adminMaintenanceTitle" placeholder="Masalan: Saytda texnik yangilanish ketmoqda 🛠️" style="width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: #0b1329; color: #fff; font-size: 14px;" />
-                      </div>
-
-                      <div class="form-group" style="margin-bottom: 14px;">
-                        <label style="font-weight: 700; font-size: 13px; color: #cbd5e1; margin-bottom: 6px; display: block;">Mijozlarga Ko'rinuvchi Xabar:</label>
-                        <textarea id="adminMaintenanceMessage" rows="3" placeholder="Masalan: Hurmatli xaridorlar! EurotexKids tizimida yangilanish ketmoqda..." style="width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: #0b1329; color: #fff; font-size: 13.5px; resize: vertical; line-height: 1.5;"></textarea>
-                      </div>
-
-                      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px;">
-                        <div class="form-group">
-                          <label style="font-weight: 700; font-size: 13px; color: #cbd5e1; margin-bottom: 6px; display: block;">Kutilayotgan Vaqt:</label>
-                          <input type="text" id="adminMaintenanceTime" placeholder="Masalan: Bugun soat 18:00 gacha" style="width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: #0b1329; color: #fff; font-size: 14px;" />
-                        </div>
-                        <div class="form-group">
-                          <label style="font-weight: 700; font-size: 13px; color: #cbd5e1; margin-bottom: 6px; display: block;">Aloqa Telefoni:</label>
-                          <input type="text" id="adminMaintenancePhone" placeholder="+998 90 123 45 67" style="width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: #0b1329; color: #fff; font-size: 14px;" />
-                        </div>
-                        <div class="form-group">
-                          <label style="font-weight: 700; font-size: 13px; color: #cbd5e1; margin-bottom: 6px; display: block;">Telegram Admin (username):</label>
-                          <input type="text" id="adminMaintenanceTg" placeholder="eurotexkids_admin" style="width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: #0b1329; color: #fff; font-size: 14px;" />
-                        </div>
-                      </div>
-
-                      <button type="button" class="btn btn-gold" onclick="saveAdminMaintenanceSettings()" style="width: 100%; height: 48px; border-radius: 12px; font-weight: 800; font-size: 15px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; border: none; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.35); cursor: pointer;">
-                        💾 Tanaffus Sozlamalarini Saqlash &amp; Qo'llash
+                      <button type="button" class="btn btn-gold" onclick="showAdminSection('maintenance')" style="height: 40px; padding: 0 18px; border-radius: 10px; font-weight: 800; font-size: 13px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; border: none; cursor: pointer;">
+                        🛠️ Sayt Holatini Boshqarish ➔
                       </button>
                     </div>
+                  </div>
+                </div>
+
+                <!-- Admin Section: Sayt Holati & Texnik Tanaffus (Maintenance Mode) -->
+                <div id="adminSecMaintenance" style="display: none">
+                  <div class="admin-settings-box" style="border: 1.5px solid rgba(245, 158, 11, 0.35); background: rgba(15, 23, 42, 0.9);">
+                    
+                    <!-- Header -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 24px; padding-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                      <div>
+                        <h3 class="admin-section-heading" style="margin: 0; color: #f59e0b; font-size: 20px; display: flex; align-items: center; gap: 10px;">
+                          <span>🛠️</span> Sayt Holati va Texnik Tanaffus Boshqaruvi
+                        </h3>
+                        <p style="color: #94a3b8; font-size: 13.5px; margin: 6px 0 0;">
+                          Profilaktika, narxlarni yangilash yoki yangi to'plam yuklayotganda saytni bir bosish bilan xaridorlarga yoping yoki oching
+                        </p>
+                      </div>
+
+                      <!-- Status Badge -->
+                      <div id="adminMaintenanceStatusBadge" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; border-radius: 24px; font-size: 14px; font-weight: 800; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.35);">
+                        <span id="adminMaintenanceStatusDot" style="width: 10px; height: 10px; border-radius: 50%; background: #10b981;"></span>
+                        <span id="adminMaintenanceStatusText">Sayt Faol (Barcha uchun ochiq)</span>
+                      </div>
+                    </div>
+
+                    <!-- 1. QO'LLASH VA FAOL/YOPIQ HOLATNI BOSHQARISH BLOKI -->
+                    <div style="background: rgba(11, 19, 41, 0.75); border: 1.5px solid rgba(245, 158, 11, 0.25); border-radius: 16px; padding: 22px; margin-bottom: 28px;">
+                      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 18px;">
+                        <div style="flex: 1; min-width: 260px;">
+                          <strong style="color: #ffffff; font-size: 16px; display: block; margin-bottom: 4px;">Tezkor Rejim Almashtirgich:</strong>
+                          <span id="adminMaintenanceModeDescription" style="color: #cbd5e1; font-size: 13.5px; line-height: 1.5; display: block;">
+                            🟢 Sayt hozir barcha xaridorlar uchun OCHIQ.
+                          </span>
+                        </div>
+
+                        <!-- ALOHIDA QO'LLASH TUGMALARI -->
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                          <button type="button" id="btnToggleMaintenanceAction" onclick="toggleMaintenanceActiveState()" style="padding: 12px 24px; border-radius: 12px; font-weight: 800; font-size: 14.5px; cursor: pointer; transition: all 0.2s; border: none; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); background: linear-gradient(135deg, #ef4444, #dc2626); color: #ffffff;">
+                            🔴 Saytni Texnik Tanaffusga Tushirish
+                          </button>
+                          <button type="button" onclick="previewMaintenanceOverlay()" class="btn btn-outline" style="padding: 12px 18px; border-radius: 12px; font-weight: 700; font-size: 13.5px; border-color: #38bdf8; color: #38bdf8; cursor: pointer;">
+                            👁️ Xaridorlar ko'rinishini sinash
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 2. MATN VA ALOQA SOZLAMALARINI SAQLASH BLOKI -->
+                    <h4 style="color: #ffffff; font-size: 16px; font-weight: 700; margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;">
+                      📝 Tanaffus Sahifasi Matnlari va Aloqa Ma'lumotlari:
+                    </h4>
+
+                    <div class="form-group" style="margin-bottom: 16px;">
+                      <label style="font-weight: 700; font-size: 13px; color: #cbd5e1; margin-bottom: 6px; display: block;">Tanaffus Sarlavhasi (Title):</label>
+                      <input type="text" id="adminMaintenanceTitle" placeholder="Masalan: Saytda texnik yangilanish ketmoqda 🛠️" style="width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: #0b1329; color: #fff; font-size: 14px;" />
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 16px;">
+                      <label style="font-weight: 700; font-size: 13px; color: #cbd5e1; margin-bottom: 6px; display: block;">Mijozlarga Ko'rinuvchi Xabar (Message):</label>
+                      <textarea id="adminMaintenanceMessage" rows="3" placeholder="Masalan: Hurmatli xaridorlar! EurotexKids tizimida yangilanish ketmoqda..." style="width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: #0b1329; color: #fff; font-size: 13.5px; resize: vertical; line-height: 1.5;"></textarea>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px;">
+                      <div class="form-group">
+                        <label style="font-weight: 700; font-size: 13px; color: #cbd5e1; margin-bottom: 6px; display: block;">Kutilayotgan Vaqt:</label>
+                        <input type="text" id="adminMaintenanceTime" placeholder="Masalan: Bugun soat 18:00 gacha" style="width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: #0b1329; color: #fff; font-size: 14px;" />
+                      </div>
+                      <div class="form-group">
+                        <label style="font-weight: 700; font-size: 13px; color: #cbd5e1; margin-bottom: 6px; display: block;">Aloqa Telefoni:</label>
+                        <input type="text" id="adminMaintenancePhone" placeholder="+998 90 123 45 67" style="width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: #0b1329; color: #fff; font-size: 14px;" />
+                      </div>
+                      <div class="form-group">
+                        <label style="font-weight: 700; font-size: 13px; color: #cbd5e1; margin-bottom: 6px; display: block;">Telegram Admin (username):</label>
+                        <input type="text" id="adminMaintenanceTg" placeholder="eurotexkids_admin" style="width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: #0b1329; color: #fff; font-size: 14px;" />
+                      </div>
+                    </div>
+
+                    <!-- ALOHIDA SAQLASH TUGMASI -->
+                    <button type="button" class="btn btn-gold" onclick="saveAdminMaintenanceTextsOnly()" style="width: 100%; height: 50px; border-radius: 12px; font-weight: 800; font-size: 15px; background: linear-gradient(135deg, #7000ff, #00f2fe); color: #fff; border: none; box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3); cursor: pointer;">
+                      💾 Matn va Aloqa Ma'lumotlarini Saqlash
+                    </button>
                   </div>
                 </div>
 
@@ -4631,7 +4676,7 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=292.0.0" defer></script>
+    <script src="/script.js?v=293.0.0" defer></script>
     <script src="/eurotex-engine.js?v=15.6.0" defer></script>
   </body>
 </html>
