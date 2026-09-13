@@ -2467,6 +2467,24 @@ function openProductPage(productId) {
     priceOldEl.textContent = `${formatMoneySom(oldPriceSomRaw)} so'm`;
   }
 
+  // Populate stage discount pill (Image 2 -17% style)
+  const stageDiscEl = document.getElementById("pdpStageDiscount");
+  const pdpDiscountBadge = document.querySelector(".pdp-discount-badge");
+  if (oldPriceSomRaw > priceSomRaw && priceSomRaw > 0) {
+    const pct = Math.round(((oldPriceSomRaw - priceSomRaw) / oldPriceSomRaw) * 100);
+    if (stageDiscEl) {
+      stageDiscEl.textContent = `-${pct}%`;
+      stageDiscEl.style.display = "inline-flex";
+    }
+    if (pdpDiscountBadge) {
+      pdpDiscountBadge.textContent = `-${pct}%`;
+      pdpDiscountBadge.style.display = "inline-block";
+    }
+  } else {
+    if (stageDiscEl) stageDiscEl.style.display = "none";
+    if (pdpDiscountBadge) pdpDiscountBadge.style.display = "none";
+  }
+
   // 5. Populate Colors (12 ta tayyor rang qo'llab-quvvatlash)
   let colorsList = product.colors;
   if (!colorsList || !Array.isArray(colorsList) || colorsList.length === 0) {
