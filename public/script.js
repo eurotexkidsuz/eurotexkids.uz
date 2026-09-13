@@ -6430,11 +6430,12 @@ function initAdminColorPresets(containerId, inputId) {
   if (!container || !input) return;
 
   container.innerHTML = EUROTEX_12_COLORS.map((c) => {
+    const isLight = c.code === '#f8fafc' || c.code === '#cbd5e1' || c.code === '#d4b996';
+    const checkColor = isLight ? '#0f172a' : '#ffffff';
+    const borderStyle = isLight ? 'border: 1.5px solid #cbd5e1;' : 'border: 1.5px solid rgba(0,0,0,0.15);';
     return `
-      <button type="button" class="apm-color-chip" data-color="${c.name}" onclick="toggleAdminColorPreset('${inputId}', '${containerId}', '${c.name.replace(/'/g, "\\'")}', this)" title="${c.name} rangini qo'shish / o'chirish">
-        <span class="apm-color-chip-dot" style="background: ${c.code}; ${c.code === '#f8fafc' ? 'border: 1.5px solid #cbd5e1;' : ''}"></span>
-        <span>${c.name}</span>
-        <span class="apm-chip-check">✓</span>
+      <button type="button" class="apm-color-circle-chip" data-color="${c.name}" onclick="toggleAdminColorPreset('${inputId}', '${containerId}', '${c.name.replace(/'/g, "\\'")}', this)" title="${c.name}" style="background-color: ${c.code}; ${borderStyle}">
+        <span class="apm-chip-check" style="color: ${checkColor};">✓</span>
       </button>
     `;
   }).join("");
@@ -6448,7 +6449,7 @@ function syncAdminColorChips(inputId, containerId) {
   if (!input || !container) return;
 
   const currentColors = input.value.split(",").map((c) => c.trim().toLowerCase()).filter(Boolean);
-  container.querySelectorAll(".apm-color-chip").forEach((chip) => {
+  container.querySelectorAll(".apm-color-circle-chip, .apm-color-chip").forEach((chip) => {
     const cName = (chip.dataset.color || "").toLowerCase();
     const isActive = currentColors.some((cc) => cc === cName || cc.includes(cName) || cName.includes(cc));
     if (isActive) {
