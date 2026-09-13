@@ -41,7 +41,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/style.css?v=294.0.0" />
+    <link rel="stylesheet" href="/style.css?v=295.0.0" />
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
@@ -4328,16 +4328,9 @@
             </div>
           </div>
 
-          <!-- Rasmlar Linklari -->
-          <div class="apm-field">
-            <label class="apm-label">🖼️ Asosiy Rasm Havolasi</label>
-            <input class="apm-input" type="text" id="editProdImage" placeholder="/images/navy_suit.jpg" />
-          </div>
-
-          <div class="apm-field">
-            <label class="apm-label">🖼️ Galereya Rasmlari Havolalari (Har bir qatorga bittadan)</label>
-            <textarea class="apm-input" id="editProdImages" rows="3" placeholder="/images/navy_suit.jpg&#10;/images/dark_grey_suit.jpg"></textarea>
-          </div>
+          <!-- Rasmlar (Yashirin holda saqlanadi) -->
+          <input type="hidden" id="editProdImage" />
+          <textarea id="editProdImages" style="display: none;"></textarea>
 
           <button type="submit" class="apm-submit" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;">
             💾 Saqlash va Saytda Yangilash
@@ -4665,7 +4658,7 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=299.0.0" defer></script>
+    <script src="/script.js?v=300.0.0" defer></script>
     <script src="/eurotex-engine.js?v=15.6.0" defer></script>
   </body>
 </html>
