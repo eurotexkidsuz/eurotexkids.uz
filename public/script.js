@@ -2323,6 +2323,8 @@ function getEurotexColorCode(colorName) {
   const lower = String(colorName).toLowerCase();
   if (lower.includes("qora") || lower.includes("черн") || lower.includes("black")) return "#111827";
   if (lower.includes("to'q ko'k") || lower.includes("navy") || lower.includes("темно-син")) return "#1e3a8a";
+  if (lower.includes("to'q molochn") || lower.includes("темно-молочн")) return "#a8a294";
+  if (lower.includes("molochn") || lower.includes("молочн") || lower.includes("sutrang") || lower.includes("ivory")) return "#e6ded1";
   if (lower.includes("och kul") || lower.includes("светло-сер") || lower.includes("light grey")) return "#cbd5e1";
   if (lower.includes("grafit") || lower.includes("antratsit") || lower.includes("графит") || lower.includes("dark grey")) return "#334155";
   if (lower.includes("kulrang") || lower.includes("серый") || lower.includes("grey") || lower.includes("gray")) return "#64748b";
@@ -2491,9 +2493,8 @@ function openProductPage(productId) {
         const cName = typeof c === "string" ? c : (c.name || "Qora");
         const cCode = typeof c === "object" && c.code ? c.code : getEurotexColorCode(cName);
         return `
-          <button type="button" class="pdp-color-swatch ${idx === 0 ? "active" : ""}" onclick="selectPdpColor('${cName.replace(/'/g, "\\'")}', this)">
-            <span class="pdp-color-dot" style="background: ${cCode}; ${cCode === '#f8fafc' ? 'border: 1.5px solid #cbd5e1;' : ''}"></span>
-            <span>${cName}</span>
+          <button type="button" class="pdp-color-swatch ${idx === 0 ? "active" : ""}" onclick="selectPdpColor('${cName.replace(/'/g, "\\'")}', this)" title="${cName}" aria-label="${cName}">
+            <span class="pdp-color-dot" style="background: ${cCode}; ${cCode.toLowerCase() === '#f8fafc' || cCode.toLowerCase() === '#ffffff' ? 'border: 1px solid #cbd5e1;' : ''}"></span>
           </button>
         `;
       })
@@ -8195,10 +8196,10 @@ function showToast(message, type = "success") {
   // Re-append to body to guarantee it's on top of all modals
   document.body.appendChild(container);
 
-  // Top-Center stack guarantee (Immune to CSS cache)
+  // Top-Center stack guarantee with safety margins and responsive width
   container.style.cssText = [
     "position: fixed",
-    "top: 28px",
+    "top: 18px",
     "left: 50%",
     "right: auto",
     "bottom: auto",
@@ -8207,10 +8208,12 @@ function showToast(message, type = "success") {
     "display: flex",
     "flex-direction: column",
     "align-items: center",
-    "gap: 10px",
+    "gap: 8px",
     "pointer-events: none",
-    "width: max-content",
-    "max-width: 92vw",
+    "width: 100%",
+    "max-width: min(92vw, 440px)",
+    "padding: 0 12px",
+    "box-sizing: border-box",
   ].join(" !important;") + " !important;";
 
   const toast = document.createElement("div");
@@ -8219,35 +8222,41 @@ function showToast(message, type = "success") {
   // Clean redundant leading emojis if any
   const cleanText = String(displayMsg).replace(/^[✓❤️💔✨🛒🔔🔑👑⚠️❌]+\s*/, "").trim() || displayMsg;
 
-  let iconHtml = `<span style="display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:#22c55e; color:#ffffff; font-size:14px; font-weight:900; flex-shrink:0; box-shadow:0 0 12px rgba(34,197,94,0.65);">✓</span>`;
+  // Refined gradient status icons
+  let iconHtml = `<span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; min-width:22px; border-radius:50%; background:linear-gradient(135deg, #10b981 0%, #059669 100%); color:#ffffff; font-size:12px; font-weight:900; flex-shrink:0; box-shadow:0 2px 8px rgba(16,185,129,0.35);">✓</span>`;
   if (type === "error" || String(displayMsg).includes("❌")) {
-    iconHtml = `<span style="display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:#ef4444; color:#ffffff; font-size:14px; font-weight:900; flex-shrink:0; box-shadow:0 0 12px rgba(239,68,68,0.65);">✕</span>`;
+    iconHtml = `<span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; min-width:22px; border-radius:50%; background:linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color:#ffffff; font-size:11px; font-weight:900; flex-shrink:0; box-shadow:0 2px 8px rgba(239,68,68,0.35);">✕</span>`;
+  } else if (type === "warning" || String(displayMsg).includes("⚠️")) {
+    iconHtml = `<span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; min-width:22px; border-radius:50%; background:linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color:#ffffff; font-size:12px; font-weight:900; flex-shrink:0; box-shadow:0 2px 8px rgba(245,158,11,0.35);">!</span>`;
   }
 
-  // Exact Big Luxury Burgundy Pill Style matching 2nd user image
+  // Ultra-modern Floating Luxury Card / Pill Style
   toast.style.cssText = [
-    "background: #5c0018",
+    "background: rgba(18, 18, 22, 0.96)",
     "color: #ffffff",
-    "padding: 12px 28px 12px 18px",
+    "padding: 9px 18px 9px 12px",
     "border-radius: 999px",
-    "box-shadow: 0 14px 40px rgba(92, 0, 24, 0.48), 0 4px 14px rgba(0,0,0,0.35)",
-    "font-size: 15.5px",
-    "font-weight: 700",
-    "letter-spacing: 0.2px",
+    "border: 1px solid rgba(255, 255, 255, 0.14)",
+    "box-shadow: 0 14px 34px -4px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.06)",
+    "backdrop-filter: blur(16px)",
+    "-webkit-backdrop-filter: blur(16px)",
+    "font-size: 13.5px",
+    "font-weight: 600",
+    "letter-spacing: 0.15px",
     "display: inline-flex",
     "align-items: center",
     "justify-content: center",
-    "gap: 12px",
+    "gap: 10px",
     "pointer-events: auto",
-    "border: none",
-    "min-width: 270px",
+    "max-width: 100%",
+    "box-sizing: border-box",
     "text-align: center",
-    "transform: translateY(-28px) scale(0.9)",
+    "transform: translateY(-20px) scale(0.94)",
     "opacity: 0",
-    "transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.32s ease",
+    "transition: transform 0.28s cubic-bezier(0.2, 1, 0.3, 1), opacity 0.28s ease",
   ].join(" !important;") + " !important;";
 
-  toast.innerHTML = `${iconHtml} <span style="color:#ffffff !important; font-size:15.5px !important; font-weight:700 !important; white-space:nowrap !important;">${cleanText}</span>`;
+  toast.innerHTML = `${iconHtml} <span style="color:#ffffff !important; font-size:13.5px !important; font-weight:600 !important; line-height:1.4 !important; white-space:normal !important; word-break:break-word !important; text-align:center !important;">${cleanText}</span>`;
   container.appendChild(toast);
 
   // Smooth entrance
@@ -8258,10 +8267,10 @@ function showToast(message, type = "success") {
 
   // Smooth exit
   setTimeout(() => {
-    toast.style.transform = "translateY(-24px) scale(0.92)";
+    toast.style.transform = "translateY(-16px) scale(0.95)";
     toast.style.opacity = "0";
-    setTimeout(() => toast.remove(), 340);
-  }, 2700);
+    setTimeout(() => toast.remove(), 300);
+  }, 2800);
 }
 
 // ─── ADMIN HERO BANNER SLIDE EDITING ──────────────────────────────────────────
