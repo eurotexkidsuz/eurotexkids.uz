@@ -6422,66 +6422,53 @@ function resetAddProductForm() {
 }
 
 // =============================================================================
-// 🎨 ADMIN PANEL 12-COLOR PRESETS CONTROLLER
+// 🎨 ADMIN PANEL COLOR GRID CONTROLLER (CIRCULAR CHECKBOXES LIKE SIZES)
 // =============================================================================
-function initAdminColorPresets(containerId, inputId) {
-  const container = document.getElementById(containerId);
-  const input = document.getElementById(inputId);
-  if (!container || !input) return;
+function renderAdminColorGrid(gridId, hiddenInputId, selectedColors = []) {
+  const grid = document.getElementById(gridId);
+  const hiddenInput = document.getElementById(hiddenInputId);
+  if (!grid) return;
 
-  container.innerHTML = EUROTEX_12_COLORS.map((c) => {
+  const normalizedSelected = (selectedColors || []).map((c) =>
+    typeof c === "string" ? c.trim().toLowerCase() : (c.name || "").trim().toLowerCase()
+  );
+
+  grid.innerHTML = EUROTEX_12_COLORS.map((c) => {
     const isLight = c.code === '#f8fafc' || c.code === '#cbd5e1' || c.code === '#d4b996';
     const checkColor = isLight ? '#0f172a' : '#ffffff';
     const borderStyle = isLight ? 'border: 1.5px solid #cbd5e1;' : 'border: 1.5px solid rgba(0,0,0,0.15);';
+    const cLower = c.name.toLowerCase();
+    const isChecked = normalizedSelected.some((sc) => sc === cLower || sc.includes(cLower) || cLower.includes(sc));
+
     return `
-      <button type="button" class="apm-color-circle-chip" data-color="${c.name}" onclick="toggleAdminColorPreset('${inputId}', '${containerId}', '${c.name.replace(/'/g, "\\'")}', this)" title="${c.name}" style="background-color: ${c.code}; ${borderStyle}">
-        <span class="apm-chip-check" style="color: ${checkColor};">✓</span>
-      </button>
+      <label class="apm-color-chip" title="${c.name}">
+        <input type="checkbox" value="${c.name}" onchange="syncColorGridToInput('${gridId}', '${hiddenInputId}')" ${isChecked ? 'checked' : ''} />
+        <span class="apm-color-circle" style="background-color: ${c.code}; ${borderStyle}">
+          <span class="apm-chip-check" style="color: ${checkColor};">✓</span>
+        </span>
+      </label>
     `;
   }).join("");
 
-  syncAdminColorChips(inputId, containerId);
+  syncColorGridToInput(gridId, hiddenInputId);
 }
 
-function syncAdminColorChips(inputId, containerId) {
-  const input = document.getElementById(inputId);
-  const container = document.getElementById(containerId);
-  if (!input || !container) return;
+function syncColorGridToInput(gridId, hiddenInputId) {
+  const grid = document.getElementById(gridId);
+  const hiddenInput = document.getElementById(hiddenInputId);
+  if (!grid || !hiddenInput) return;
 
-  const currentColors = input.value.split(",").map((c) => c.trim().toLowerCase()).filter(Boolean);
-  container.querySelectorAll(".apm-color-circle-chip, .apm-color-chip").forEach((chip) => {
-    const cName = (chip.dataset.color || "").toLowerCase();
-    const isActive = currentColors.some((cc) => cc === cName || cc.includes(cName) || cName.includes(cc));
-    if (isActive) {
-      chip.classList.add("active");
-    } else {
-      chip.classList.remove("active");
-    }
-  });
-}
+  const checkedValues = [
+    ...grid.querySelectorAll("input[type=checkbox]:checked")
+  ].map((cb) => cb.value);
 
-function toggleAdminColorPreset(inputId, containerId, colorName, chipEl) {
-  const input = document.getElementById(inputId);
-  if (!input) return;
-
-  let currentColors = input.value.split(",").map((c) => c.trim()).filter(Boolean);
-  const lowerName = colorName.toLowerCase();
-  const existingIdx = currentColors.findIndex((c) => c.toLowerCase() === lowerName || c.toLowerCase().includes(lowerName));
-
-  if (existingIdx >= 0) {
-    currentColors.splice(existingIdx, 1);
-  } else {
-    currentColors.push(colorName);
-  }
-
-  input.value = currentColors.join(", ");
-  syncAdminColorChips(inputId, containerId);
+  hiddenInput.value = checkedValues.join(", ");
 }
 
 function openAddProductModal() {
   resetAddProductForm();
   updateURLRoute("/admin/addcart");
-  initAdminColorPresets("newProdColorPresets", "newProdColors");
+  renderAdminColorGrid("newProdColorGrid", "newProdColors", ["Qora", "To'q ko'k (Navy)", "Kulrang"]);
   openModal("addProductModal");
 }
 
@@ -7000,12 +6987,16 @@ function openEditProductModal(idx) {
   if (editFabric) editFabric.value = p.fabric_uz || p.fabric || "Turkiya Premium Jun & Viskoza Blend";
   
   if (editColors) {
+    let activeColors = [];
     if (Array.isArray(p.colors) && p.colors.length > 0) {
-      editColors.value = p.colors.map(c => typeof c === "string" ? c : c.name).join(", ");
+      activeColors = p.colors;
+    } else if (p.color_uz) {
+      activeColors = p.color_uz.split(",").map(c => c.trim()).filter(Boolean);
     } else {
-      editColors.value = p.color_uz || "Qora, To'q ko'k (Navy), Kulrang";
+      activeColors = ["Qora", "To'q ko'k (Navy), Kulrang"];
     }
-    initAdminColorPresets("editProdColorPresets", "editProdColors");
+    editColors.value = activeColors.map(c => typeof c === "string" ? c : c.name).join(", ");
+    renderAdminColorGrid("editProdColorGrid", "editProdColors", activeColors);
   }
 
   if (editSizes) {

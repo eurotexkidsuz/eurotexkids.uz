@@ -10508,49 +10508,34 @@ body.dark-mode #sizeGuideModal .size-note,
 }
 
 /* ==========================================================================
-   ADMIN PANEL 12-COLOR PRESETS & TAG CHIPS
+   ADMIN PANEL COLOR GRID (CIRCULAR CHECKBOXES LIKE SIZES)
    ========================================================================== */
-.apm-color-presets-wrap {
-  margin-top: 10px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 10px 12px;
-}
-
-body.dark-mode .apm-color-presets-wrap {
-  background: #1e293b;
-  border-color: #334155;
-}
-
-.apm-color-presets-hint {
-  font-size: 11.5px;
-  font-weight: 700;
-  color: #64748b;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-body.dark-mode .apm-color-presets-hint {
-  color: #94a3b8;
-}
-
-.apm-color-presets-grid {
+.apm-color-grid {
   display: flex;
   flex-direction: row;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
+  padding: 6px 0;
 }
 
-.apm-color-circle-chip {
-  width: 30px;
-  height: 30px;
-  min-width: 30px;
-  border-radius: 50%;
+.apm-color-chip {
   cursor: pointer;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.apm-color-chip input[type="checkbox"] {
+  display: none;
+}
+
+.apm-color-circle {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -10558,34 +10543,34 @@ body.dark-mode .apm-color-presets-hint {
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   padding: 0;
   outline: none;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 }
 
-.apm-color-circle-chip:hover {
-  transform: scale(1.2);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22);
+.apm-color-chip:hover .apm-color-circle {
+  transform: scale(1.18);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.28);
   z-index: 2;
 }
 
-.apm-color-circle-chip.active {
-  box-shadow: 0 0 0 3px #88001b, 0 3px 10px rgba(136, 0, 27, 0.35);
+.apm-color-chip input[type="checkbox"]:checked + .apm-color-circle {
+  box-shadow: 0 0 0 3px #88001b, 0 3px 12px rgba(136, 0, 27, 0.4);
   transform: scale(1.12);
   z-index: 1;
 }
 
-body.dark-mode .apm-color-circle-chip.active {
-  box-shadow: 0 0 0 3px #f43f5e, 0 3px 10px rgba(244, 63, 94, 0.45);
+body.dark-mode .apm-color-chip input[type="checkbox"]:checked + .apm-color-circle {
+  box-shadow: 0 0 0 3px #7c3aed, 0 3px 12px rgba(124, 58, 237, 0.45);
 }
 
-.apm-color-circle-chip .apm-chip-check {
+.apm-color-circle .apm-chip-check {
   display: none;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 900;
   line-height: 1;
   pointer-events: none;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
-.apm-color-circle-chip.active .apm-chip-check {
+.apm-color-chip input[type="checkbox"]:checked + .apm-color-circle .apm-chip-check {
   display: inline-block;
 }
