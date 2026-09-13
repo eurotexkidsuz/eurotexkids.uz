@@ -2538,7 +2538,7 @@ function openProductPage(productId) {
       Mato Turkiyaning yuqori sifatli jun va viskoza aralashmasidan tayyorlangan bo'lib, nafas oluvchi, g'ijimlanmaydigan va bolalar harakati uchun juda qulay. 
       Maktab formasi, bayramlar va tantanalar uchun eng nafis tanlov.`;
   }
-  if (specBrandEl) specBrandEl.textContent = "EUROTEX KIDS / A-FARID";
+  if (specBrandEl) specBrandEl.textContent = "EUROTEX KIDS";
   if (specCatEl) specCatEl.textContent = cat;
   if (specSizesEl) specSizesEl.textContent = sizesList.join(", ");
   if (specColorsEl) {
@@ -5913,7 +5913,7 @@ function renderAdminProducts() {
                         <!-- Top Image Box -->
                         <div class="admin-card-media">
                             <img src="${p.image}" alt="${p.title_uz}" class="admin-card-img">
-                            <span class="admin-card-badge">Pachka: ${p.pachkaQty || 6} dona</span>
+                            <span class="admin-card-badge">📦 Pachka: ${p.pachkaQty || 6} dona</span>
                         </div>
 
                         <!-- Card Content Body -->
@@ -5922,7 +5922,7 @@ function renderAdminProducts() {
                             <div class="admin-card-header-row">
                                 <input type="text" id="pTitle_${idx}" value="${p.title_uz}" class="admin-card-title-input" placeholder="Mahsulot nomi">
                                 <div class="admin-card-actions">
-                                    <button type="button" class="admin-action-btn" onclick="openEditProductModal(${idx})" title="Tavsif, Xususiyatlar va Rasmlarni Tahrirlash ⚙️" style="background: rgba(112, 0, 255, 0.2); border-color: rgba(112, 0, 255, 0.5); color: #c084fc;">
+                                    <button type="button" class="admin-action-btn btn-edit" onclick="openEditProductModal(${idx})" title="Tahrirlash ⚙️">
                                         ⚙️
                                     </button>
                                     <button type="button" class="admin-action-btn btn-save" onclick="saveProductPriceByAdmin(${idx})" title="Saqlash 💾">
@@ -5936,7 +5936,7 @@ function renderAdminProducts() {
 
                             <!-- Category Subtitle Dropdown -->
                             <div class="admin-card-subtitle">
-                                Turkumi: 
+                                <span>Turkumi:</span> 
                                 <select id="pCat_${idx}" class="admin-card-cat-select admin-select-dark">
                                     <option value="suits" ${p.category === "suits" ? "selected" : ""}>Kostyum-Shimlar</option>
                                     <option value="tuxedos" ${p.category === "tuxedos" ? "selected" : ""}>Smoking & To'y liboslari</option>
@@ -5947,7 +5947,7 @@ function renderAdminProducts() {
                                 </select>
                             </div>
 
-                            <!-- Detail Lines (Screenshot 2 Style) -->
+                            <!-- Detail Lines -->
                             <div class="admin-card-details">
                                 <div class="detail-line">
                                     <span class="detail-label">Pachka ($ USD):</span>
@@ -5962,10 +5962,10 @@ function renderAdminProducts() {
                                     <span class="detail-value cyan" id="cardTotalSom_${idx}">${totalSomFormatted} so'm</span>
                                 </div>
 
-                                <div class="detail-line" style="margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 11.5px; color: #94a3b8; display: flex; justify-content: space-between; align-items: center;">
+                                <div class="detail-line" style="margin-top: 4px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); font-size: 11.5px; color: #94a3b8; display: flex; justify-content: space-between; align-items: center;">
                                     <span>Mato: <b>${(p.fabric_uz || p.fabric || "Turkiya Jun").slice(0, 18)}...</b></span>
                                     <button type="button" onclick="openEditProductModal(${idx})" style="background: none; border: none; color: #38bdf8; font-weight: 700; cursor: pointer; text-decoration: underline; font-size: 11.5px; padding: 0;">
-                                        Tavsif &amp; Xususiyatlar ⚙️
+                                        Tahrirlash ⚙️
                                     </button>
                                 </div>
                             </div>
@@ -6873,7 +6873,7 @@ function handleAddNewProduct(e) {
     sizes: sizesArr.length > 0 ? sizesArr : [46, 48, 50],
     fabric_uz: document.getElementById("newProdFabric")?.value.trim() || "Turkiya Premium Jun & Viskoza Blend",
     desc_uz: document.getElementById("newProdDescription")?.value.trim() || "",
-    brand: document.getElementById("newProdBrand")?.value.trim() || "EUROTEX KIDS / A-FARID",
+    brand: document.getElementById("newProdBrand")?.value.trim() || "EUROTEX KIDS",
     colors: (document.getElementById("newProdColors")?.value.trim() || "Qora, To'q ko'k (Navy), Kulrang").split(",").map(c => c.trim()).filter(Boolean),
     season: document.getElementById("newProdSeason")?.value.trim() || "To'rt fasl",
     origin: "O'zbekiston (Eurotex Factory)",
@@ -6978,7 +6978,7 @@ function openEditProductModal(idx) {
   if (editQty) editQty.value = p.pachkaQty || 6;
   if (editCat) editCat.value = p.category || "suits";
   if (editDesc) editDesc.value = p.desc_uz || p.description || "";
-  if (editBrand) editBrand.value = p.brand || "EUROTEX KIDS / A-FARID";
+  if (editBrand) editBrand.value = (p.brand && !p.brand.includes("FARID")) ? p.brand : "EUROTEX KIDS";
   if (editFabric) editFabric.value = p.fabric_uz || p.fabric || "Turkiya Premium Jun & Viskoza Blend";
   
   if (editColors) {

@@ -39,7 +39,7 @@ const productSchema = new mongoose.Schema(
     desc_uz: { type: String, default: "" },
     desc_ru: { type: String, default: "" },
     desc_en: { type: String, default: "" },
-    brand: { type: String, default: "EUROTEX KIDS / A-FARID" },
+    brand: { type: String, default: "EUROTEX KIDS" },
     season: { type: String, default: "To'rt fasl" },
     origin: { type: String, default: "O'zbekiston (Eurotex Factory)" },
     colors: { type: Array, default: ["Qora", "To'q ko'k (Navy)", "Kulrang"] },

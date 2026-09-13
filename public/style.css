@@ -5746,35 +5746,37 @@ body {
 }
 
 .admin-product-card {
-  background: linear-gradient(160deg, #0d1527 0%, #060c16 100%) !important;
-  border: 1px solid rgba(0, 242, 254, 0.18) !important;
-  border-radius: 20px !important;
+  background: linear-gradient(180deg, #111827 0%, #0b1120 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  border-radius: 16px !important;
   overflow: hidden !important;
-  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.45) !important;
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
   display: flex !important;
   flex-direction: column !important;
+  position: relative !important;
 }
 
 .admin-product-card:hover {
-  border-color: rgba(0, 242, 254, 0.5) !important;
-  transform: translateY(-5px) !important;
-  box-shadow: 0 20px 45px rgba(0, 242, 254, 0.2) !important;
+  border-color: rgba(112, 0, 255, 0.4) !important;
+  transform: translateY(-4px) !important;
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.45), 0 0 20px rgba(112, 0, 255, 0.15) !important;
 }
 
 .admin-card-media {
   position: relative !important;
   width: 100% !important;
-  height: 230px !important;
+  height: 220px !important;
   background: radial-gradient(
     circle at center,
-    #111e36 0%,
-    #050a14 100%
+    #1e293b 0%,
+    #0b1120 100%
   ) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   overflow: hidden !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
 .admin-card-img {
@@ -5782,35 +5784,35 @@ body {
   height: 100% !important;
   object-fit: contain !important;
   object-position: center !important;
-  transition: transform 0.4s ease !important;
+  padding: 10px !important;
+  transition: transform 0.35s ease !important;
 }
 
 .admin-product-card:hover .admin-card-img {
-  transform: scale(1.04) !important;
+  transform: scale(1.05) !important;
 }
 
 .admin-card-badge {
   position: absolute !important;
-  top: 12px !important;
-  right: 12px !important;
-  background: linear-gradient(
-    135deg,
-    rgba(0, 242, 254, 0.25),
-    rgba(6, 182, 212, 0.4)
-  ) !important;
-  border: 1px solid #00f2fe !important;
-  color: #00f2fe !important;
-  border-radius: 20px !important;
-  font-size: 11.5px !important;
-  font-weight: 800 !important;
-  padding: 5px 12px !important;
-  backdrop-filter: blur(8px) !important;
-  box-shadow: 0 0 12px rgba(0, 242, 254, 0.3) !important;
+  top: 10px !important;
+  right: 10px !important;
+  background: rgba(15, 23, 42, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #f1f5f9 !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 4px 12px !important;
+  backdrop-filter: blur(10px) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35) !important;
   letter-spacing: 0.3px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
 }
 
 .admin-card-body {
-  padding: 20px !important;
+  padding: 16px 18px 18px !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 12px !important;
@@ -5819,62 +5821,55 @@ body {
 
 .admin-card-header-row {
   display: flex !important;
-  align-items: flex-start !important;
+  align-items: center !important;
   justify-content: space-between !important;
-  gap: 12px !important;
+  gap: 10px !important;
 }
 
 .admin-card-title-input {
-  font-size: 14.5px !important;
-  font-weight: 800 !important;
-  color: #ffffff !important;
-  background: rgba(15, 23, 42, 0.8) !important;
-  border: 1px solid rgba(0, 242, 254, 0.25) !important;
-  border-radius: 10px !important;
-  padding: 8px 12px !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  color: #f8fafc !important;
+  background: #0b1120 !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 9px !important;
+  padding: 7px 11px !important;
   width: 100% !important;
   outline: none !important;
-  transition: all 0.25s ease !important;
+  transition: all 0.2s ease !important;
 }
 
 .admin-card-title-input:focus {
-  border-color: #00f2fe !important;
-  box-shadow: 0 0 10px rgba(0, 242, 254, 0.3) !important;
-  background: rgba(15, 23, 42, 0.95) !important;
+  border-color: #7000ff !important;
+  box-shadow: 0 0 0 3px rgba(112, 0, 255, 0.2) !important;
+  background: #0f172a !important;
 }
 
 .admin-card-cat-select {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
-  color: #00f2fe !important;
-  border: 1.5px solid rgba(0, 242, 254, 0.35) !important;
-  border-radius: 12px !important;
-  padding: 10px 14px !important;
-  font-size: 13px !important;
-  font-weight: 700 !important;
+  background: #0b1120 !important;
+  color: #e2e8f0 !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 9px !important;
+  padding: 6px 12px !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
   outline: none !important;
   cursor: pointer !important;
-  transition: all 0.25s ease !important;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.2s ease !important;
+  flex: 1 !important;
 }
 
 .admin-card-cat-select:focus,
 .admin-card-cat-select:hover {
-  border-color: #00f2fe !important;
-  box-shadow: 0 0 14px rgba(0, 242, 254, 0.4) !important;
+  border-color: #7000ff !important;
+  box-shadow: 0 0 0 3px rgba(112, 0, 255, 0.15) !important;
 }
 
 .admin-card-cat-select option {
-  background-color: #0b1322 !important;
+  background-color: #0f172a !important;
   color: #ffffff !important;
-  padding: 12px 14px !important;
-  font-size: 13.5px !important;
-  font-weight: 700 !important;
-}
-
-.admin-card-cat-select option:checked,
-.admin-card-cat-select option:hover {
-  background-color: #1e293b !important;
-  color: #00f2fe !important;
+  padding: 10px 12px !important;
+  font-size: 13px !important;
 }
 
 .admin-card-title {
@@ -5886,122 +5881,126 @@ body {
 }
 
 .admin-card-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex-shrink: 0 !important;
 }
 
 .admin-action-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-  font-size: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 9px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+  font-size: 14px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+}
+
+.admin-action-btn:hover {
+  transform: translateY(-1px) !important;
 }
 
 .admin-action-btn.btn-save:hover {
-  background: rgba(16, 185, 129, 0.2);
-  border-color: #10b981;
-  color: #10b981;
-  transform: scale(1.08);
+  background: rgba(16, 185, 129, 0.2) !important;
+  border-color: #10b981 !important;
+  color: #10b981 !important;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25) !important;
 }
 
 .admin-action-btn.btn-delete:hover {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: #ef4444;
-  color: #ef4444;
-  transform: scale(1.08);
+  background: rgba(239, 68, 68, 0.2) !important;
+  border-color: #ef4444 !important;
+  color: #ef4444 !important;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25) !important;
 }
 
 .admin-card-subtitle {
-  font-size: 13px;
-  color: #94a3b8;
-  font-weight: 600;
-}
-
-.admin-card-subtitle span {
-  color: #cbd5e1;
-  font-weight: 700;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  font-size: 12.5px !important;
+  color: #94a3b8 !important;
+  font-weight: 600 !important;
 }
 
 .admin-card-details {
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 14px;
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 4px;
+  background: #070b14 !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 12px !important;
+  padding: 12px 14px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  margin-top: 2px !important;
 }
 
 .detail-line {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  font-size: 13.5px;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  font-size: 13px !important;
 }
 
 .detail-label {
-  color: #94a3b8;
-  font-weight: 600;
+  color: #94a3b8 !important;
+  font-weight: 600 !important;
 }
 
 .detail-input-wrap {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
 }
 
 .admin-price-input {
-  width: 80px;
-  padding: 6px 10px;
-  background: #08111e;
-  border: 1.5px solid rgba(0, 229, 255, 0.3);
-  border-radius: 8px;
-  color: #00e5ff;
-  font-size: 15px;
-  font-weight: 800;
-  text-align: center;
-  transition: all 0.2s;
+  width: 76px !important;
+  padding: 5px 8px !important;
+  background: #0f172a !important;
+  border: 1.5px solid #334155 !important;
+  border-radius: 8px !important;
+  color: #fbbf24 !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  text-align: center !important;
+  transition: all 0.2s !important;
 }
 
 .admin-price-input.pachka {
-  border-color: rgba(251, 191, 36, 0.4);
-  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.4) !important;
+  color: #fbbf24 !important;
 }
 
 .admin-price-input:focus {
-  outline: none;
-  border-color: #00e5ff;
-  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+  outline: none !important;
+  border-color: #fbbf24 !important;
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2) !important;
 }
 
 .detail-unit {
-  font-size: 12.5px;
-  font-weight: 700;
-  color: #94a3b8;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: #94a3b8 !important;
 }
 
 .detail-line.total {
-  border-top: 1px dashed rgba(255, 255, 255, 0.1);
-  padding-top: 8px;
-  margin-top: 2px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding-top: 8px !important;
+  margin-top: 2px !important;
 }
 
 .detail-value.cyan {
-  color: #00e5ff;
-  font-size: 16px;
-  font-weight: 800;
+  color: #38bdf8 !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.3px !important;
 }
 
 .admin-add-product-card {
