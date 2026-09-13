@@ -10540,37 +10540,32 @@ body.dark-mode #sizeGuideModal .size-note,
   align-items: center;
   justify-content: center;
   position: relative;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   padding: 0;
   outline: none;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  opacity: 0.32;
+  filter: grayscale(15%);
+  transform: scale(0.92);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  box-shadow: none;
 }
 
 .apm-color-chip:hover .apm-color-circle {
-  transform: scale(1.18);
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.28);
-  z-index: 2;
+  opacity: 0.78;
+  filter: none;
+  transform: scale(1.05);
+  border-color: rgba(255, 255, 255, 0.45);
 }
 
 .apm-color-chip input[type="checkbox"]:checked + .apm-color-circle {
-  box-shadow: 0 0 0 3px #88001b, 0 3px 12px rgba(136, 0, 27, 0.4);
-  transform: scale(1.12);
-  z-index: 1;
+  opacity: 1 !important;
+  filter: none !important;
+  transform: scale(1.15) !important;
+  border: 3px solid #ffffff !important;
+  box-shadow: 0 0 0 3.5px #88001b, 0 0 20px rgba(136, 0, 27, 0.8), 0 4px 14px rgba(0, 0, 0, 0.5) !important;
+  z-index: 2;
 }
 
 body.dark-mode .apm-color-chip input[type="checkbox"]:checked + .apm-color-circle {
-  box-shadow: 0 0 0 3px #7c3aed, 0 3px 12px rgba(124, 58, 237, 0.45);
-}
-
-.apm-color-circle .apm-chip-check {
-  display: none;
-  font-size: 15px;
-  font-weight: 900;
-  line-height: 1;
-  pointer-events: none;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-}
-
-.apm-color-chip input[type="checkbox"]:checked + .apm-color-circle .apm-chip-check {
-  display: inline-block;
+  box-shadow: 0 0 0 3.5px #7c3aed, 0 0 22px rgba(124, 58, 237, 0.9), 0 4px 14px rgba(0, 0, 0, 0.6) !important;
 }

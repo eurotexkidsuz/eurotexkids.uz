@@ -6434,18 +6434,13 @@ function renderAdminColorGrid(gridId, hiddenInputId, selectedColors = []) {
   );
 
   grid.innerHTML = EUROTEX_12_COLORS.map((c) => {
-    const isLight = c.code === '#f8fafc' || c.code === '#cbd5e1' || c.code === '#d4b996';
-    const checkColor = isLight ? '#0f172a' : '#ffffff';
-    const borderStyle = isLight ? 'border: 1.5px solid #cbd5e1;' : 'border: 1.5px solid rgba(0,0,0,0.15);';
     const cLower = c.name.toLowerCase();
     const isChecked = normalizedSelected.some((sc) => sc === cLower || sc.includes(cLower) || cLower.includes(sc));
 
     return `
       <label class="apm-color-chip" title="${c.name}">
         <input type="checkbox" value="${c.name}" onchange="syncColorGridToInput('${gridId}', '${hiddenInputId}')" ${isChecked ? 'checked' : ''} />
-        <span class="apm-color-circle" style="background-color: ${c.code}; ${borderStyle}">
-          <span class="apm-chip-check" style="color: ${checkColor};">✓</span>
-        </span>
+        <span class="apm-color-circle" style="background-color: ${c.code};"></span>
       </label>
     `;
   }).join("");
