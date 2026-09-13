@@ -10204,20 +10204,30 @@ body.dark-mode #sizeGuideModal .size-note,
   font-weight: 700;
   color: #334155;
   background: #ffffff;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.pdp-color-swatch:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+  transform: translateY(-1px);
 }
 
 .pdp-color-swatch.active {
   border-color: #88001b;
-  background: rgba(136, 0, 27, 0.05);
+  background: rgba(136, 0, 27, 0.06);
   color: #88001b;
+  box-shadow: 0 2px 10px rgba(136, 0, 27, 0.16);
+  transform: scale(1.03);
 }
 
 .pdp-color-dot {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  flex-shrink: 0;
 }
 
 .pdp-size-boxes {
@@ -10495,4 +10505,111 @@ body.dark-mode #sizeGuideModal .size-note,
     grid-template-columns: 1fr;
     gap: 12px;
   }
+}
+
+/* ==========================================================================
+   ADMIN PANEL 12-COLOR PRESETS & TAG CHIPS
+   ========================================================================== */
+.apm-color-presets-wrap {
+  margin-top: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+body.dark-mode .apm-color-presets-wrap {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.apm-color-presets-hint {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #64748b;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+body.dark-mode .apm-color-presets-hint {
+  color: #94a3b8;
+}
+
+.apm-color-presets-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.apm-color-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  color: #1e293b;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  user-select: none;
+}
+
+body.dark-mode .apm-color-chip {
+  background: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+.apm-color-chip:hover {
+  border-color: #94a3b8;
+  background: #f1f5f9;
+  transform: translateY(-1px);
+}
+
+body.dark-mode .apm-color-chip:hover {
+  background: #1e293b;
+  border-color: #475569;
+}
+
+.apm-color-chip.active {
+  border-color: #88001b;
+  background: #fff1f2;
+  color: #88001b;
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(136, 0, 27, 0.18);
+}
+
+body.dark-mode .apm-color-chip.active {
+  background: rgba(136, 0, 27, 0.25);
+  border-color: #f43f5e;
+  color: #fda4af;
+}
+
+.apm-color-chip-dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+body.dark-mode .apm-color-chip-dot {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.apm-color-chip .apm-chip-check {
+  font-size: 11px;
+  font-weight: 900;
+  display: none;
+  margin-left: 2px;
+}
+
+.apm-color-chip.active .apm-chip-check {
+  display: inline;
 }

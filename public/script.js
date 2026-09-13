@@ -2301,6 +2301,42 @@ function applyPromoCode() {
 }
 
 // =============================================================================
+// 🎨 EUROTEX 12 PRESET COLORS PALETTE & COLOR CODE RESOLVER
+// =============================================================================
+const EUROTEX_12_COLORS = [
+  { name: "Qora", code: "#111827", label_ru: "Черный", label_en: "Black" },
+  { name: "To'q ko'k (Navy)", code: "#1e3a8a", label_ru: "Темно-синий", label_en: "Navy Blue" },
+  { name: "Kulrang", code: "#64748b", label_ru: "Серый", label_en: "Grey" },
+  { name: "Grafit", code: "#334155", label_ru: "Графит", label_en: "Graphite" },
+  { name: "Och kulrang", code: "#cbd5e1", label_ru: "Светло-серый", label_en: "Light Grey" },
+  { name: "Shokolad", code: "#451a03", label_ru: "Шоколадный", label_en: "Chocolate" },
+  { name: "Qumrang (Bej)", code: "#d4b996", label_ru: "Бежевый", label_en: "Beige" },
+  { name: "Havorang", code: "#38bdf8", label_ru: "Голубой", label_en: "Sky Blue" },
+  { name: "Moviy", code: "#2563eb", label_ru: "Синий", label_en: "Royal Blue" },
+  { name: "Zaytun (Xaki)", code: "#3f4a3c", label_ru: "Хаки", label_en: "Olive / Khaki" },
+  { name: "Bordo", code: "#881337", label_ru: "Бордовый", label_en: "Burgundy" },
+  { name: "Oq / Qaymoqrang", code: "#f8fafc", label_ru: "Белый", label_en: "White" }
+];
+
+function getEurotexColorCode(colorName) {
+  if (!colorName) return "#64748b";
+  const lower = String(colorName).toLowerCase();
+  if (lower.includes("qora") || lower.includes("черн") || lower.includes("black")) return "#111827";
+  if (lower.includes("to'q ko'k") || lower.includes("navy") || lower.includes("темно-син")) return "#1e3a8a";
+  if (lower.includes("och kul") || lower.includes("светло-сер") || lower.includes("light grey")) return "#cbd5e1";
+  if (lower.includes("grafit") || lower.includes("antratsit") || lower.includes("графит") || lower.includes("dark grey")) return "#334155";
+  if (lower.includes("kulrang") || lower.includes("серый") || lower.includes("grey") || lower.includes("gray")) return "#64748b";
+  if (lower.includes("shokolad") || lower.includes("jigarrang") || lower.includes("шоколад") || lower.includes("коричн") || lower.includes("brown")) return "#451a03";
+  if (lower.includes("qum") || lower.includes("bej") || lower.includes("беж") || lower.includes("песоч") || lower.includes("beige") || lower.includes("camel")) return "#d4b996";
+  if (lower.includes("havo") || lower.includes("голуб") || lower.includes("sky")) return "#38bdf8";
+  if (lower.includes("moviy") || lower.includes("ko'k") || lower.includes("син") || lower.includes("blue")) return "#2563eb";
+  if (lower.includes("zaytun") || lower.includes("xaki") || lower.includes("yashil") || lower.includes("хаки") || lower.includes("оливк") || lower.includes("green") || lower.includes("olive")) return "#3f4a3c";
+  if (lower.includes("bordo") || lower.includes("qizil") || lower.includes("бордо") || lower.includes("burgundy") || lower.includes("wine")) return "#881337";
+  if (lower.includes("oq") || lower.includes("qaymoq") || lower.includes("бел") || lower.includes("white") || lower.includes("cream")) return "#f8fafc";
+  return "#64748b";
+}
+
+// =============================================================================
 // 👑 DEDICATED FULL-PAGE PRODUCT DETAILS VIEW (PDP) — 100% STANDALONE PAGE
 // =============================================================================
 function openProductPage(productId) {
@@ -2429,13 +2465,21 @@ function openProductPage(productId) {
     priceOldEl.textContent = `${formatMoneySom(oldPriceSomRaw)} so'm`;
   }
 
-  // 5. Populate Colors
-  const colorsList = product.colors || [
-    { name: "Qora", code: "#111827" },
-    { name: "To'q ko'k (Navy)", code: "#1e3a8a" },
-    { name: "Kulrang", code: "#64748b" },
-  ];
-  window.currentPdpColor = typeof colorsList[0] === "string" ? colorsList[0] : colorsList[0].name;
+  // 5. Populate Colors (12 ta tayyor rang qo'llab-quvvatlash)
+  let colorsList = product.colors;
+  if (!colorsList || !Array.isArray(colorsList) || colorsList.length === 0) {
+    if (product.color_uz && typeof product.color_uz === "string" && product.color_uz.includes(",")) {
+      colorsList = product.color_uz.split(",").map((c) => c.trim()).filter(Boolean);
+    } else if (product.color_uz && typeof product.color_uz === "string" && product.color_uz.trim()) {
+      const primaryCol = product.color_uz.trim();
+      const otherCols = EUROTEX_12_COLORS.filter((c) => c.name.toLowerCase() !== primaryCol.toLowerCase()).map((c) => c.name);
+      colorsList = [primaryCol, ...otherCols];
+    } else {
+      colorsList = EUROTEX_12_COLORS.map((c) => c.name);
+    }
+  }
+
+  window.currentPdpColor = typeof colorsList[0] === "string" ? colorsList[0] : (colorsList[0].name || "Qora");
 
   const selectedColorNameEl = document.getElementById("pdpSelectedColorName");
   if (selectedColorNameEl) selectedColorNameEl.textContent = window.currentPdpColor;
@@ -2444,11 +2488,11 @@ function openProductPage(productId) {
   if (colorSwatchesEl) {
     colorSwatchesEl.innerHTML = colorsList
       .map((c, idx) => {
-        const cName = typeof c === "string" ? c : c.name;
-        const cCode = typeof c === "object" && c.code ? c.code : (cName.toLowerCase().includes("qora") ? "#111827" : (cName.toLowerCase().includes("ko'k") ? "#1e3a8a" : "#64748b"));
+        const cName = typeof c === "string" ? c : (c.name || "Qora");
+        const cCode = typeof c === "object" && c.code ? c.code : getEurotexColorCode(cName);
         return `
-          <button type="button" class="pdp-color-swatch ${idx === 0 ? "active" : ""}" onclick="selectPdpColor('${cName}', this)">
-            <span class="pdp-color-dot" style="background: ${cCode};"></span>
+          <button type="button" class="pdp-color-swatch ${idx === 0 ? "active" : ""}" onclick="selectPdpColor('${cName.replace(/'/g, "\\'")}', this)">
+            <span class="pdp-color-dot" style="background: ${cCode}; ${cCode === '#f8fafc' ? 'border: 1.5px solid #cbd5e1;' : ''}"></span>
             <span>${cName}</span>
           </button>
         `;
@@ -2542,12 +2586,38 @@ function navigatePdpGallery(step) {
 function selectPdpColor(colorName, el) {
   window.currentPdpColor = colorName;
   const nameEl = document.getElementById("pdpSelectedColorName");
-  if (nameEl) nameEl.textContent = colorName;
+  if (nameEl) {
+    nameEl.textContent = colorName;
+    nameEl.style.transition = "all 0.22s cubic-bezier(0.16, 1, 0.3, 1)";
+    nameEl.style.color = "#88001b";
+    nameEl.style.transform = "scale(1.05)";
+    setTimeout(() => {
+      if (nameEl) {
+        nameEl.style.color = "";
+        nameEl.style.transform = "";
+      }
+    }, 300);
+  }
 
   document.querySelectorAll("#pdpColorSwatches .pdp-color-swatch").forEach((s) => {
     s.classList.remove("active");
   });
   if (el) el.classList.add("active");
+
+  // Sync image: If gallery images contain matching color keyword, switch display
+  if (window.currentPdpImages && window.currentPdpImages.length > 1) {
+    const cLower = String(colorName).toLowerCase();
+    const matchIdx = window.currentPdpImages.findIndex((imgSrc) => {
+      const srcLower = String(imgSrc).toLowerCase();
+      if ((cLower.includes("qora") || cLower.includes("black")) && (srcLower.includes("black") || srcLower.includes("qora"))) return true;
+      if ((cLower.includes("ko'k") || cLower.includes("navy")) && (srcLower.includes("navy") || srcLower.includes("blue") || srcLower.includes("kok"))) return true;
+      if ((cLower.includes("kulrang") || cLower.includes("grafit") || cLower.includes("grey") || cLower.includes("gray")) && (srcLower.includes("grey") || srcLower.includes("gray") || srcLower.includes("grafit"))) return true;
+      return false;
+    });
+    if (matchIdx !== -1) {
+      selectPdpGalleryImage(matchIdx);
+    }
+  }
 }
 
 function selectPdpSize(sizeVal, el) {
@@ -6351,9 +6421,66 @@ function resetAddProductForm() {
   if (ct) ct.innerHTML = "";
 }
 
+// =============================================================================
+// 🎨 ADMIN PANEL 12-COLOR PRESETS CONTROLLER
+// =============================================================================
+function initAdminColorPresets(containerId, inputId) {
+  const container = document.getElementById(containerId);
+  const input = document.getElementById(inputId);
+  if (!container || !input) return;
+
+  container.innerHTML = EUROTEX_12_COLORS.map((c) => {
+    return `
+      <button type="button" class="apm-color-chip" data-color="${c.name}" onclick="toggleAdminColorPreset('${inputId}', '${containerId}', '${c.name.replace(/'/g, "\\'")}', this)" title="${c.name} rangini qo'shish / o'chirish">
+        <span class="apm-color-chip-dot" style="background: ${c.code}; ${c.code === '#f8fafc' ? 'border: 1.5px solid #cbd5e1;' : ''}"></span>
+        <span>${c.name}</span>
+        <span class="apm-chip-check">✓</span>
+      </button>
+    `;
+  }).join("");
+
+  syncAdminColorChips(inputId, containerId);
+}
+
+function syncAdminColorChips(inputId, containerId) {
+  const input = document.getElementById(inputId);
+  const container = document.getElementById(containerId);
+  if (!input || !container) return;
+
+  const currentColors = input.value.split(",").map((c) => c.trim().toLowerCase()).filter(Boolean);
+  container.querySelectorAll(".apm-color-chip").forEach((chip) => {
+    const cName = (chip.dataset.color || "").toLowerCase();
+    const isActive = currentColors.some((cc) => cc === cName || cc.includes(cName) || cName.includes(cc));
+    if (isActive) {
+      chip.classList.add("active");
+    } else {
+      chip.classList.remove("active");
+    }
+  });
+}
+
+function toggleAdminColorPreset(inputId, containerId, colorName, chipEl) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+
+  let currentColors = input.value.split(",").map((c) => c.trim()).filter(Boolean);
+  const lowerName = colorName.toLowerCase();
+  const existingIdx = currentColors.findIndex((c) => c.toLowerCase() === lowerName || c.toLowerCase().includes(lowerName));
+
+  if (existingIdx >= 0) {
+    currentColors.splice(existingIdx, 1);
+  } else {
+    currentColors.push(colorName);
+  }
+
+  input.value = currentColors.join(", ");
+  syncAdminColorChips(inputId, containerId);
+}
+
 function openAddProductModal() {
   resetAddProductForm();
   updateURLRoute("/admin/addcart");
+  initAdminColorPresets("newProdColorPresets", "newProdColors");
   openModal("addProductModal");
 }
 
@@ -6875,8 +7002,9 @@ function openEditProductModal(idx) {
     if (Array.isArray(p.colors) && p.colors.length > 0) {
       editColors.value = p.colors.map(c => typeof c === "string" ? c : c.name).join(", ");
     } else {
-      editColors.value = "Qora, To'q ko'k (Navy), Kulrang";
+      editColors.value = p.color_uz || "Qora, To'q ko'k (Navy), Kulrang";
     }
+    initAdminColorPresets("editProdColorPresets", "editProdColors");
   }
 
   if (editSizes) {

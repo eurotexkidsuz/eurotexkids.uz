@@ -41,7 +41,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/style.css?v=290.0.0" />
+    <link rel="stylesheet" href="/style.css?v=291.0.0" />
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
@@ -3980,7 +3980,7 @@
 
           <!-- Xususiyatlar: Ranglar, Mavsum, Joyi -->
           <div class="apm-row">
-            <div class="apm-field">
+            <div class="apm-field" style="flex: 1.2;">
               <label class="apm-label">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0110 10"/></svg>
                 Ranglar (Vergul bilan)
@@ -3991,9 +3991,16 @@
                 id="newProdColors"
                 value="Qora, To'q ko'k (Navy), Kulrang"
                 placeholder="Qora, To'q ko'k (Navy), Kulrang"
+                oninput="syncAdminColorChips('newProdColors', 'newProdColorPresets')"
               />
+              <div class="apm-color-presets-wrap">
+                <div class="apm-color-presets-hint">
+                  <span>⚡ 12 ta tayyor rang (Bosing — mahsulotga qo'shiladi):</span>
+                </div>
+                <div class="apm-color-presets-grid" id="newProdColorPresets"></div>
+              </div>
             </div>
-            <div class="apm-field">
+            <div class="apm-field" style="flex: 0.8;">
               <label class="apm-label">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg>
                 Mavsum
@@ -4310,11 +4317,23 @@
 
           <!-- Xususiyatlar: Ranglar, O'lchamlar -->
           <div class="apm-row">
-            <div class="apm-field">
+            <div class="apm-field" style="flex: 1.2;">
               <label class="apm-label">🎨 Ranglar (Vergul bilan)</label>
-              <input class="apm-input" type="text" id="editProdColors" placeholder="Qora, To'q ko'k, Kulrang" />
+              <input
+                class="apm-input"
+                type="text"
+                id="editProdColors"
+                placeholder="Qora, To'q ko'k, Kulrang"
+                oninput="syncAdminColorChips('editProdColors', 'editProdColorPresets')"
+              />
+              <div class="apm-color-presets-wrap">
+                <div class="apm-color-presets-hint">
+                  <span>⚡ 12 ta tayyor rang (Bosing — mahsulotga qo'shiladi):</span>
+                </div>
+                <div class="apm-color-presets-grid" id="editProdColorPresets"></div>
+              </div>
             </div>
-            <div class="apm-field">
+            <div class="apm-field" style="flex: 0.8;">
               <label class="apm-label">📐 O'lchamlar (Vergul bilan)</label>
               <input class="apm-input" type="text" id="editProdSizes" placeholder="30, 32, 34, 36, 38, 40, 42, 44" />
             </div>
@@ -4669,7 +4688,7 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=295.0.0" defer></script>
+    <script src="/script.js?v=296.0.0" defer></script>
     <script src="/eurotex-engine.js?v=15.6.0" defer></script>
   </body>
 </html>
