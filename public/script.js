@@ -2432,20 +2432,38 @@ function openProductPage(productId) {
   const mainDisplayImg = document.getElementById("pdpMainDisplayImg");
   const thumbsStrip = document.getElementById("pdpThumbsStrip");
   const counterEl = document.getElementById("pdpImgCounter");
+  const prevArrow = document.querySelector(".pdp-stage-arrow.prev");
+  const nextArrow = document.querySelector(".pdp-stage-arrow.next");
 
   if (mainDisplayImg) mainDisplayImg.src = imgs[0];
-  if (counterEl) counterEl.textContent = `1/${imgs.length}`;
 
-  if (thumbsStrip) {
-    thumbsStrip.innerHTML = imgs
-      .map(
-        (src, idx) => `
-        <button type="button" class="pdp-thumb-item ${idx === 0 ? "active" : ""}" onclick="selectPdpGalleryImage(${idx})">
-          <img src="${src}" alt="${title} rasm-${idx + 1}">
-        </button>
-      `,
-      )
-      .join("");
+  if (imgs.length <= 1) {
+    if (prevArrow) prevArrow.style.display = "none";
+    if (nextArrow) nextArrow.style.display = "none";
+    if (counterEl) counterEl.style.display = "none";
+    if (thumbsStrip) {
+      thumbsStrip.style.display = "none";
+      thumbsStrip.innerHTML = "";
+    }
+  } else {
+    if (prevArrow) prevArrow.style.display = "flex";
+    if (nextArrow) nextArrow.style.display = "flex";
+    if (counterEl) {
+      counterEl.textContent = `1/${imgs.length}`;
+      counterEl.style.display = "block";
+    }
+    if (thumbsStrip) {
+      thumbsStrip.style.display = "flex";
+      thumbsStrip.innerHTML = imgs
+        .map(
+          (src, idx) => `
+          <button type="button" class="pdp-thumb-item ${idx === 0 ? "active" : ""}" onclick="selectPdpGalleryImage(${idx})">
+            <img src="${src}" alt="${title} rasm-${idx + 1}">
+          </button>
+        `,
+        )
+        .join("");
+    }
   }
 
   // 4. Populate Info & Prices

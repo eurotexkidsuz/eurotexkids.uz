@@ -9961,7 +9961,7 @@ body.dark-mode #sizeGuideModal .size-note,
 /* 2-Column Product Grid */
 .pdp-main-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(340px, 420px) 1fr;
   gap: 48px;
   align-items: start;
   margin-bottom: 56px;
@@ -9973,30 +9973,36 @@ body.dark-mode #sizeGuideModal .size-note,
   top: 90px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
+  max-width: 420px;
+  width: 100%;
 }
 
 .pdp-main-stage {
   position: relative;
   width: 100%;
-  aspect-ratio: 4/5;
-  border-radius: 20px;
+  max-width: 420px;
+  aspect-ratio: 1 / 1.15;
+  max-height: 480px;
+  border-radius: 18px;
   overflow: hidden;
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px 28px;
+  padding: 22px 36px;
   box-sizing: border-box;
 }
 
 .pdp-main-stage img#pdpMainDisplayImg {
-  width: 100%;
-  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
   object-fit: contain;
-  border-radius: 12px;
+  border-radius: 10px;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   display: block;
 }
@@ -10590,6 +10596,13 @@ body.dark-mode #sizeGuideModal .size-note,
   }
   .pdp-gallery-wrap {
     position: static;
+    max-width: 400px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .pdp-main-stage {
+    max-height: 420px;
+    padding: 16px 28px;
   }
   .pdp-title {
     font-size: 23px;
