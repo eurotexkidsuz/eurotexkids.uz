@@ -5079,6 +5079,16 @@ function updateThemeToggleUI() {
   if (label) label.textContent = isDark ? "Yorug' rejim" : "Tungi rejim";
 }
 
+function getOrderStatusStep(order) {
+  if (typeof order.statusStep === "number") return order.statusStep;
+  const s = String(order.status || "").toLowerCase();
+  if (s.includes("bekor") || s.includes("cancel") || s.includes("❌")) return 0;
+  if (s.includes("yetkazildi") || s.includes("yetkazib berildi") || s.includes("delivered") || s.includes("✅")) return 4;
+  if (s.includes("kuryer") || s.includes("yo'lda") || s.includes("yolda") || s.includes("courier") || s.includes("🚚")) return 3;
+  if (s.includes("tayyor") || s.includes("omborda") || s.includes("processing") || s.includes("📦")) return 2;
+  return 1; // Qabul qilindi
+}
+
 function renderOrdersHistory() {
   const container = document.getElementById("ordersListContainer");
   if (!container) return;
@@ -5091,20 +5101,84 @@ function renderOrdersHistory() {
   const myOrders = state.orders;
 
   container.innerHTML = myOrders
-    .map(
-      (order) => `
-        <div class="checkout-card-box" style="margin-bottom: 16px; background: #ffffff; border: 1px solid var(--border-color); border-radius: 16px; padding: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+    .map((order) => {
+      const step = getOrderStatusStep(order);
+
+      let badgeBg = "#fef3c7";
+      let badgeColor = "#92400e";
+      if (step === 4) {
+        badgeBg = "#dcfce7";
+        badgeColor = "#166534";
+      } else if (step === 3) {
+        badgeBg = "#e0e7ff";
+        badgeColor = "#3730a3";
+      } else if (step === 2) {
+        badgeBg = "#ffedd5";
+        badgeColor = "#9a3412";
+      } else if (step === 0) {
+        badgeBg = "#fee2e2";
+        badgeColor = "#991b1b";
+      }
+
+      let trackerHtml = "";
+      if (step === 0) {
+        trackerHtml = `
+          <div style="margin: 12px 0; padding: 12px 16px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 12px; display: flex; align-items: center; gap: 10px; color: #ef4444; font-weight: 700; font-size: 13px;">
+            <span style="font-size: 17px;">❌</span>
+            <span>Ushbu buyurtma bekor qilingan</span>
+          </div>
+        `;
+      } else {
+        trackerHtml = `
+          <div class="order-live-tracker">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; font-size:12.5px; color:#64748b; font-weight:700;">
+              <span>🚚 Buyurtma Qayerda?</span>
+              <span style="color:${step === 4 ? "#10b981" : "#88001b"};">${step === 4 ? "Muvaffaqiyatli yetkazildi ✅" : (step === 3 ? "Kuryer topshirishga chiqdi 🚚" : (step === 2 ? "Omborda qadoqlanmoqda 📦" : "Buyurtmangiz qabul qilindi 📋"))}</span>
+            </div>
+            <div class="tracker-steps-bar">
+              <div class="tracker-node ${step >= 1 ? (step === 1 ? "current" : "done") : ""}">
+                <div class="node-circle">${step > 1 ? "✓" : "1"}</div>
+                <span class="node-label">Qabul qilindi</span>
+                <span class="node-sub">Tizimda</span>
+              </div>
+              <div class="tracker-connector ${step >= 2 ? "active" : ""}"></div>
+              <div class="tracker-node ${step >= 2 ? (step === 2 ? "current" : "done") : ""}">
+                <div class="node-circle">${step > 2 ? "✓" : "2"}</div>
+                <span class="node-label">Tayyorlanmoqda</span>
+                <span class="node-sub">Omborda</span>
+              </div>
+              <div class="tracker-connector ${step >= 3 ? "active" : ""}"></div>
+              <div class="tracker-node ${step >= 3 ? (step === 3 ? "current" : "done") : ""}">
+                <div class="node-circle">${step > 3 ? "✓" : "3"}</div>
+                <span class="node-label">Kuryer yo'lda</span>
+                <span class="node-sub">Yetkazilmoqda</span>
+              </div>
+              <div class="tracker-connector ${step >= 4 ? "active" : ""}"></div>
+              <div class="tracker-node ${step >= 4 ? "done current" : ""}">
+                <div class="node-circle">${step >= 4 ? "✓" : "4"}</div>
+                <span class="node-label">Yetkazildi</span>
+                <span class="node-sub">Topshirildi</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="checkout-card-box" style="margin-bottom: 18px; background: #ffffff; border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; box-shadow: 0 3px 12px rgba(0,0,0,0.03);">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:12px;">
                 <div>
                     <strong style="font-size:16px; color:var(--color-navy);">Buyurtma #${order.id}</strong>
                     <span style="font-size:13px; color:var(--text-muted); margin-left:8px;">Sana: ${order.date}</span>
                 </div>
-                <span class="uzum-sub-badge" style="background:#dcfce7; color:#166534; font-size:13px; font-weight:700; padding:4px 10px; border-radius:6px;">
-                    ${order.status || "Yetkazib berildi ✅"}
+                <span class="uzum-sub-badge" style="background:${badgeBg}; color:${badgeColor}; font-size:13px; font-weight:700; padding:4px 12px; border-radius:8px;">
+                    ${order.status || "Qabul qilindi 🟡"}
                 </span>
             </div>
             
-            <div style="font-size:13.5px; margin-bottom:10px; color:#334155;">
+            ${trackerHtml}
+
+            <div style="font-size:13.5px; margin:12px 0 10px 0; color:#334155;">
                 ${(order.items || []).map((item) => `<div>• <b>${item.title}</b> (${item.quantity}x) — O'lcham: ${item.size || "46"} / ${item.color || "To'q ko'k (Navy)"}</div>`).join("")}
             </div>
 
@@ -5118,8 +5192,8 @@ function renderOrdersHistory() {
                 <button type="button" onclick="switchDashboardTab('returns'); prefillReturnOrder('${order.id}');" class="btn btn-primary btn-sm" style="font-weight:700; font-size:12.5px; border-radius:8px; background: linear-gradient(135deg, #7000ff, #00f2fe);">🔄 Almashtirish / Qaytarish</button>
             </div>
         </div>
-      `
-    )
+      `;
+    })
     .join("");
 }
 
@@ -7486,34 +7560,214 @@ function renderAdminUsersTable(users) {
             <th>Telefon</th>
             <th>Shahar / Viloyat</th>
             <th>Buyurtmalar</th>
-            <th>Jami Xaridi</th>
-            <th>Ro'yxatdan O'tgan</th>
+            <th>Jami Xaridi (LTV)</th>
+            <th>Mijoz Maqomi</th>
+            <th style="text-align:center;">Amallar</th>
           </tr>
         </thead>
         <tbody>
-          ${users.map((u) => `
+          ${users.map((u) => {
+            const spent = Number(u.totalSpent) || 0;
+            const cnt = Number(u.ordersCount) || 0;
+            let tierClass = "crm-badge-new";
+            let tierLabel = "🟢 Yangi";
+            if (spent >= 1500000 || cnt >= 3) {
+              tierClass = "crm-badge-vip";
+              tierLabel = "👑 VIP Xaridor";
+            } else if (cnt >= 1 || spent > 0) {
+              tierClass = "crm-badge-regular";
+              tierLabel = "🥈 Doimiy";
+            }
+            const uid = u._id || u.id || u.email;
+            return `
             <tr>
-              <td><b>${u.name}</b></td>
+              <td>
+                <b style="cursor:pointer; color:#38bdf8; text-decoration:underline;" onclick="openAdminUserModal('${uid}')" title="Mijoz kartochkasini ochish">
+                  ${u.name}
+                </b>
+              </td>
               <td style="color:#94a3b8;">${u.email}</td>
               <td>
-                <a href="tel:${u.phone}" style="color:#38bdf8; font-weight:700; text-decoration:none;">
+                <a href="tel:${u.phone}" style="color:#10b981; font-weight:700; text-decoration:none;">
                   ${u.phone}
                 </a>
               </td>
               <td>${u.city || "O'zbekiston"}</td>
-              <td style="font-weight:700; color:#fbbf24;">${u.ordersCount || 0} ta</td>
+              <td style="font-weight:700; color:#fbbf24;">${cnt} ta</td>
               <td style="font-weight:800; color:#10b981;">
-                ${(u.totalSpent || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so'm
+                ${spent.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so'm
               </td>
-              <td style="font-size:12px; color:#94a3b8;">
-                ${u.createdAt ? new Date(u.createdAt).toLocaleDateString("uz-UZ") : "-"}
+              <td>
+                <span class="crm-tier-badge ${tierClass}">${tierLabel}</span>
+              </td>
+              <td style="text-align:center;">
+                <button type="button" class="btn-crm-profile" onclick="openAdminUserModal('${uid}')" title="Profil kartochkasi va LTV">
+                  👤 Profil &amp; LTV
+                </button>
               </td>
             </tr>
-          `).join("")}
+            `;
+          }).join("")}
         </tbody>
       </table>
     </div>
   `;
+}
+
+// 👑 7: CRM CUSTOMER PROFILE & LTV MODAL CONTROLLER
+function openAdminUserModal(userIdOrEmail) {
+  const modal = document.getElementById("adminUserDetailModal");
+  if (!modal) return;
+
+  const user = (_adminAllUsersCache || []).find(
+    (u) => String(u._id || u.id || "") === String(userIdOrEmail) || String(u.email || "") === String(userIdOrEmail)
+  ) || {
+    name: "Mijoz",
+    email: userIdOrEmail,
+    phone: "+998 90 000 00 00",
+    city: "Toshkent",
+    totalSpent: 0,
+    ordersCount: 0
+  };
+
+  const spent = Number(user.totalSpent) || 0;
+  const count = Number(user.ordersCount) || 0;
+  const avg = count > 0 ? Math.round(spent / count) : 0;
+
+  // Avatar
+  const avatarEl = document.getElementById("crmModalAvatar");
+  if (avatarEl) {
+    avatarEl.textContent = (user.name || "U").trim().charAt(0).toUpperCase();
+  }
+
+  // Name & Tier
+  const nameEl = document.getElementById("crmModalName");
+  if (nameEl) nameEl.textContent = user.name || "Noma'lum Mijoz";
+
+  const tierEl = document.getElementById("crmModalTierBadge");
+  if (tierEl) {
+    if (spent >= 1500000 || count >= 3) {
+      tierEl.className = "crm-tier-badge crm-badge-vip";
+      tierEl.textContent = "👑 VIP Xaridor";
+    } else if (count >= 1 || spent > 0) {
+      tierEl.className = "crm-tier-badge crm-badge-regular";
+      tierEl.textContent = "🥈 Sadoqatli Mijoz";
+    } else {
+      tierEl.className = "crm-tier-badge crm-badge-new";
+      tierEl.textContent = "🟢 Yangi A'zo";
+    }
+  }
+
+  // Meta
+  const metaEl = document.getElementById("crmModalMeta");
+  if (metaEl) {
+    const regDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString("uz-UZ") : "Noma'lum";
+    metaEl.textContent = `Mijoz ID: #${String(user._id || user.id || "1001").slice(-6)} • Ro'yxatdan o'tgan: ${regDate}`;
+  }
+
+  // 3 KPI Cards
+  const spentEl = document.getElementById("crmModalTotalSpent");
+  if (spentEl) spentEl.textContent = spent.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " so'm";
+
+  const countEl = document.getElementById("crmModalOrderCount");
+  if (countEl) countEl.textContent = `${count} ta xarid`;
+
+  const avgEl = document.getElementById("crmModalAvgOrder");
+  if (avgEl) avgEl.textContent = avg.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " so'm";
+
+  // Contact info
+  const phoneEl = document.getElementById("crmModalPhone");
+  if (phoneEl) phoneEl.textContent = user.phone || "Kiritilmagan";
+
+  const emailEl = document.getElementById("crmModalEmail");
+  if (emailEl) emailEl.textContent = user.email || "Kiritilmagan";
+
+  const cityEl = document.getElementById("crmModalCity");
+  if (cityEl) cityEl.textContent = user.city || "O'zbekiston";
+
+  const addressEl = document.getElementById("crmModalAddress");
+  if (addressEl) addressEl.textContent = user.address || "Asosiy manzil kiritilmagan";
+
+  // Action buttons
+  const callBtn = document.getElementById("crmModalCallBtn");
+  if (callBtn) {
+    callBtn.href = user.phone ? `tel:${user.phone}` : "javascript:void(0)";
+  }
+
+  const tgBtn = document.getElementById("crmModalTgBtn");
+  if (tgBtn) {
+    const cleanPhone = String(user.phone || "").replace(/[^0-9]/g, "");
+    tgBtn.href = cleanPhone ? `https://t.me/+${cleanPhone}` : "https://t.me/";
+  }
+
+  // Orders list for this customer
+  const ordersContainer = document.getElementById("crmModalOrdersList");
+  if (ordersContainer) {
+    const matchedOrders = (state.orders || []).filter((o) => {
+      const oEmail = String(o.email || "").toLowerCase();
+      const uEmail = String(user.email || "").toLowerCase();
+      const oPhone = String(o.phone || "").replace(/[^0-9]/g, "");
+      const uPhone = String(user.phone || "").replace(/[^0-9]/g, "");
+      const oName = String(o.recipient || "").toLowerCase();
+      const uName = String(user.name || "").toLowerCase();
+
+      return (
+        (uEmail && oEmail === uEmail) ||
+        (uPhone && oPhone && (oPhone.includes(uPhone) || uPhone.includes(oPhone))) ||
+        (uName && oName.includes(uName))
+      );
+    });
+
+    if (matchedOrders.length === 0) {
+      ordersContainer.innerHTML = `
+        <div style="text-align:center; padding:20px; color:#94a3b8; font-size:13px; background:#f1f5f9; border-radius:10px;">
+          Ushbu mijoz bo'yicha tizimda buyurtmalar topilmadi.
+        </div>
+      `;
+    } else {
+      ordersContainer.innerHTML = `
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          ${matchedOrders.map((o) => {
+            const step = getOrderStatusStep(o);
+            const stepLabels = {
+              1: "Qabul qilindi 🟡",
+              2: "Tayyorlanmoqda 🟠",
+              3: "Kuryerda 🚚",
+              4: "Yetkazib berildi ✅",
+              0: "Bekor qilindi ❌"
+            };
+            const sLabel = stepLabels[step] || (o.status || "Jarayonda");
+            const totalSom = (parseFloat(o.total) || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+
+            return `
+              <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div>
+                  <div style="font-weight:800; font-size:14px; color:#0f172a;">Buyurtma #${o.id || o.orderId}</div>
+                  <div style="font-size:12px; color:#64748b; margin-top:2px;">Sana: ${o.date || "-"} • Manzil: ${o.address || "Toshkent"}</div>
+                  <div style="font-size:12.5px; color:#334155; margin-top:4px;">
+                    ${(o.items || []).map((it) => `${it.title} (${it.quantity}x, ${it.size || "46"})`).join(", ")}
+                  </div>
+                </div>
+                <div style="text-align:right;">
+                  <span class="uzum-sub-badge" style="font-size:12px; font-weight:700; padding:3px 8px; border-radius:6px; background:#f1f5f9;">
+                    ${sLabel}
+                  </span>
+                  <div style="font-size:15px; font-weight:800; color:#10b981; margin-top:4px;">${totalSom} so'm</div>
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+      `;
+    }
+  }
+
+  modal.style.display = "flex";
+}
+
+function closeAdminUserModal() {
+  const modal = document.getElementById("adminUserDetailModal");
+  if (modal) modal.style.display = "none";
 }
 
 // =============================================================================

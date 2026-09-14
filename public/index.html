@@ -41,7 +41,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/style.css?v=299.0.0" />
+    <link rel="stylesheet" href="/style.css?v=300.0.0" />
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
@@ -4659,10 +4659,87 @@
       </div>
     </div>
 
+    <!-- 👑 7: ADMIN CRM CUSTOMER PROFILE & LTV MODAL -->
+    <div id="adminUserDetailModal" class="modal-overlay" style="display: none;" onclick="if(event.target===this) closeAdminUserModal()">
+      <div class="modal-dialog modal-dialog-lg" style="max-width: 720px; width: 94vw; border-radius: 20px; overflow: hidden; background: #ffffff; box-shadow: 0 25px 60px rgba(0,0,0,0.35); border: 1px solid rgba(0,0,0,0.1);">
+        <!-- Modal Header -->
+        <div style="background: linear-gradient(135deg, #18181b 0%, #2a040e 100%); padding: 20px 24px; color: #ffffff; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #88001b;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div id="crmModalAvatar" style="width: 48px; height: 48px; border-radius: 50%; background: #88001b; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; border: 2px solid rgba(255,255,255,0.3); box-shadow: 0 4px 14px rgba(136,0,27,0.4);">
+              U
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <h3 id="crmModalName" style="font-size: 19px; font-weight: 800; margin: 0; color: #ffffff;">Mijoz Ismi</h3>
+                <span id="crmModalTierBadge" class="crm-tier-badge crm-badge-vip">👑 VIP</span>
+              </div>
+              <div id="crmModalMeta" style="font-size: 12.5px; color: #94a3b8; margin-top: 3px;">
+                Mijoz ID: #0 • A'zo bo'lgan: -
+              </div>
+            </div>
+          </div>
+          <button type="button" onclick="closeAdminUserModal()" style="background: rgba(255,255,255,0.12); border: none; color: #ffffff; width: 34px; height: 34px; border-radius: 50%; font-size: 17px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+            ✕
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div style="padding: 22px; max-height: 75vh; overflow-y: auto; background: #f8fafc;">
+          <!-- 3 KPI Metric Cards: Total Spent, Total Orders, Average Check -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px;">
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+              <div style="font-size: 11.5px; color: #64748b; font-weight: 700; text-transform: uppercase;">Jami Xaridi (LTV)</div>
+              <div id="crmModalTotalSpent" style="font-size: 20px; font-weight: 900; color: #10b981; margin-top: 4px;">0 so'm</div>
+            </div>
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+              <div style="font-size: 11.5px; color: #64748b; font-weight: 700; text-transform: uppercase;">Buyurtmalar Soni</div>
+              <div id="crmModalOrderCount" style="font-size: 20px; font-weight: 900; color: #88001b; margin-top: 4px;">0 ta</div>
+            </div>
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+              <div style="font-size: 11.5px; color: #64748b; font-weight: 700; text-transform: uppercase;">O'rtacha Chek</div>
+              <div id="crmModalAvgOrder" style="font-size: 20px; font-weight: 900; color: #2563eb; margin-top: 4px;">0 so'm</div>
+            </div>
+          </div>
+
+          <!-- Contact and Details Row -->
+          <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px 18px; margin-bottom: 20px;">
+            <div style="font-size: 13px; font-weight: 800; color: #1e293b; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+              <span>📞</span> ALOQA VA MANZIL MA'LUMOTLARI
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; font-size: 13px; color: #334155;">
+              <div>Telefon: <b id="crmModalPhone" style="color: #0f172a;">-</b></div>
+              <div>Email: <b id="crmModalEmail" style="color: #0f172a;">-</b></div>
+              <div>Shahar / Viloyat: <b id="crmModalCity" style="color: #0f172a;">-</b></div>
+              <div>Doimiy manzil: <b id="crmModalAddress" style="color: #0f172a;">-</b></div>
+            </div>
+            <!-- Quick Action Buttons: Call & Telegram -->
+            <div style="display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
+              <a id="crmModalCallBtn" href="tel:" class="btn btn-sm" style="background: #10b981; color: #ffffff; text-decoration: none; border-radius: 8px; padding: 7px 14px; font-weight: 700; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px;">
+                📞 Qo'ng'iroq qilish
+              </a>
+              <a id="crmModalTgBtn" href="https://t.me/" target="_blank" class="btn btn-sm" style="background: #0ea5e9; color: #ffffff; text-decoration: none; border-radius: 8px; padding: 7px 14px; font-weight: 700; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px;">
+                💬 Telegram orqali yozish
+              </a>
+            </div>
+          </div>
+
+          <!-- Purchase History List for this customer -->
+          <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px 18px;">
+            <div style="font-size: 13px; font-weight: 800; color: #1e293b; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+              <span>📦</span> USHBU MIJOZNING XARIDLARI TARIXI
+            </div>
+            <div id="crmModalOrdersList">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=304.0.0" defer></script>
+    <script src="/script.js?v=305.0.0" defer></script>
     <script src="/eurotex-engine.js?v=15.6.0" defer></script>
   </body>
 </html>

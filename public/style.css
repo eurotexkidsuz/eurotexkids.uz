@@ -10675,3 +10675,199 @@ body.dark-mode #sizeGuideModal .size-note,
 body.dark-mode .apm-color-chip input[type="checkbox"]:checked + .apm-color-circle {
   box-shadow: 0 0 0 3.5px #7c3aed, 0 0 22px rgba(124, 58, 237, 0.9), 0 4px 14px rgba(0, 0, 0, 0.6) !important;
 }
+
+/* =============================================================================
+   👑 6.2: LIVE ORDER STATUS TRACKER (USER PANEL)
+   ============================================================================= */
+.order-live-tracker {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px 14px;
+  margin: 14px 0 16px 0;
+}
+
+body.dark-mode .order-live-tracker {
+  background: rgba(30, 41, 59, 0.6);
+  border-color: #334155;
+}
+
+.tracker-steps-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  width: 100%;
+}
+
+.tracker-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+  min-width: 68px;
+}
+
+.tracker-node .node-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  color: #94a3b8;
+  font-weight: 800;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+body.dark-mode .tracker-node .node-circle {
+  background: #1e293b;
+  border-color: #475569;
+}
+
+.tracker-node.done .node-circle {
+  background: #10b981;
+  border-color: #10b981;
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35);
+}
+
+.tracker-node.current .node-circle {
+  background: #88001b;
+  border-color: #88001b;
+  color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(136, 0, 27, 0.2), 0 4px 14px rgba(136, 0, 27, 0.4);
+  transform: scale(1.08);
+}
+
+.tracker-node .node-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  line-height: 1.2;
+}
+
+body.dark-mode .tracker-node .node-label {
+  color: #94a3b8;
+}
+
+.tracker-node.done .node-label,
+.tracker-node.current .node-label {
+  color: #0f172a;
+  font-weight: 800;
+}
+
+body.dark-mode .tracker-node.done .node-label,
+body.dark-mode .tracker-node.current .node-label {
+  color: #f8fafc;
+}
+
+.tracker-node .node-sub {
+  font-size: 10px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.tracker-connector {
+  flex: 1;
+  height: 3px;
+  background: #e2e8f0;
+  margin: 0 -4px;
+  position: relative;
+  top: -12px;
+  z-index: 1;
+  transition: background 0.3s ease;
+}
+
+body.dark-mode .tracker-connector {
+  background: #334155;
+}
+
+.tracker-connector.active {
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+
+@media (max-width: 540px) {
+  .tracker-node {
+    min-width: 52px;
+  }
+  .tracker-node .node-circle {
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
+  }
+  .tracker-node .node-label {
+    font-size: 10.5px;
+  }
+  .tracker-node .node-sub {
+    display: none;
+  }
+  .tracker-connector {
+    top: -8px;
+  }
+}
+
+/* =============================================================================
+   👑 7: ADMIN CRM CUSTOMER PROFILE & LTV MODAL
+   ============================================================================= */
+.crm-tier-badge {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.crm-badge-vip {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+}
+
+.crm-badge-regular {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
+}
+
+.crm-badge-new {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+body.dark-mode .crm-badge-new {
+  background: #334155;
+  color: #cbd5e1;
+}
+
+.btn-crm-profile {
+  background: linear-gradient(135deg, #88001b 0%, #5c0018 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 6px 12px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  box-shadow: 0 2px 8px rgba(136, 0, 27, 0.25) !important;
+  transition: all 0.2s !important;
+}
+
+.btn-crm-profile:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 14px rgba(136, 0, 27, 0.4) !important;
+}
