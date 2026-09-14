@@ -41,7 +41,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/style.css?v=300.0.0" />
+    <link rel="stylesheet" href="/style.css?v=301.0.0" />
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
@@ -135,6 +135,18 @@
           </div>
           <span class="logo-domain-badge">.UZ</span>
         </a>
+
+        <!-- Mobile Quick Theme Toggle (Visible on Mobile) -->
+        <button
+          type="button"
+          class="mobile-theme-toggle"
+          id="mobileThemeToggleBtn"
+          onclick="toggleTheme()"
+          title="Tungi / Yorug' rejim"
+          aria-label="Mavzuni almashtirish"
+        >
+          <span id="mobileThemeToggleIcon">🌙</span>
+        </button>
 
         <!-- Catalog Button -->
         <div class="catalog-dropdown-wrapper">
@@ -1330,13 +1342,23 @@
         style="display: none"
       >
         <div class="container">
-          <div class="dashboard-top-bar">
+          <div class="dashboard-top-bar" style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
             <button
               type="button"
               class="dashboard-back-btn"
               onclick="closeDashboardView()"
             >
               ← Bosh sahifaga qaytish
+            </button>
+            <button
+              type="button"
+              class="theme-toggle-btn dashboard-theme-btn"
+              onclick="toggleTheme()"
+              title="Mavzuni almashtirish"
+              style="background: rgba(112,0,255,0.12); border: 1px solid rgba(112,0,255,0.3); color: inherit; padding: 7px 16px; border-radius: 20px; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;"
+            >
+              <span class="themeToggleIcon">🌙</span>
+              <span class="themeToggleLabel">Tungi rejim</span>
             </button>
           </div>
 
@@ -4739,7 +4761,7 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=305.0.0" defer></script>
+    <script src="/script.js?v=306.0.0" defer></script>
     <script src="/eurotex-engine.js?v=15.6.0" defer></script>
   </body>
 </html>

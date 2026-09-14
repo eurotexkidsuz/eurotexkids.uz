@@ -5051,10 +5051,17 @@ function handleVipBookingSubmit(e) {
 }
 
 // -----------------------------------------------------------------------------
-// FEATURE 16: Dark Mode / Light Mode Theme System
+// FEATURE 16: Dark Mode / Light Mode Theme System (Enhanced Obsidian Engine)
 // -----------------------------------------------------------------------------
 function initTheme() {
-  const savedTheme = localStorage.getItem("eurotex_theme") || "light";
+  let savedTheme = localStorage.getItem("eurotex_theme");
+  if (!savedTheme) {
+    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      savedTheme = "dark";
+    } else {
+      savedTheme = "light";
+    }
+  }
   document.documentElement.setAttribute("data-theme", savedTheme);
   state.currentTheme = savedTheme;
   updateThemeToggleUI();
@@ -5072,11 +5079,25 @@ function toggleTheme() {
 }
 
 function updateThemeToggleUI() {
+  const isDark = state.currentTheme === "dark";
+
+  // Desktop header / utility bar toggle
   const icon = document.getElementById("themeToggleIcon");
   const label = document.getElementById("themeToggleLabel");
-  const isDark = state.currentTheme === "dark";
   if (icon) icon.textContent = isDark ? "☀️" : "🌙";
   if (label) label.textContent = isDark ? "Yorug' rejim" : "Tungi rejim";
+
+  // Mobile header quick toggle
+  const mobileIcon = document.getElementById("mobileThemeToggleIcon");
+  if (mobileIcon) mobileIcon.textContent = isDark ? "☀️" : "🌙";
+
+  // Dashboard top bar and all generic theme indicators
+  document.querySelectorAll(".themeToggleIcon").forEach((el) => {
+    el.textContent = isDark ? "☀️" : "🌙";
+  });
+  document.querySelectorAll(".themeToggleLabel").forEach((el) => {
+    el.textContent = isDark ? "Yorug' rejim" : "Tungi rejim";
+  });
 }
 
 function getOrderStatusStep(order) {
