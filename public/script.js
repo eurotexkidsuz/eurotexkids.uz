@@ -3532,10 +3532,19 @@ function renderWishlist() {
           : product.price) ||
         120;
       const priceSom = priceUsd * usdRate;
-      const oldPriceUsd = product.oldPrice || Math.round(priceUsd * 1.25);
-      const oldPriceSom = oldPriceUsd * usdRate;
+
+      const hasDiscount = (product.discountPercent && product.discountPercent > 0) ||
+                          (product.oldPrice && product.oldPrice > priceSom);
+      let discPct = 0;
+      let formattedOldPrice = "";
+      if (hasDiscount) {
+        const oldPriceSomRaw = product.oldPrice > 5000 ? product.oldPrice : (product.oldPrice * usdRate || Math.round(priceUsd * 1.25) * usdRate);
+        const oldPriceUsdRaw = Math.round(oldPriceSomRaw / usdRate);
+        discPct = product.discountPercent || Math.max(1, Math.round(((oldPriceSomRaw - priceSom) / oldPriceSomRaw) * 100));
+        formattedOldPrice = `$${oldPriceUsdRaw} (${formatMoneySom(oldPriceSomRaw)} so'm)`;
+      }
+
       const formattedPrice = `$${priceUsd} (${formatMoneySom(priceSom)} so'm)`;
-      const formattedOldPrice = `$${oldPriceUsd} (${formatMoneySom(oldPriceSom)} so'm)`;
       const badgeText = (
         product[`badge_${lang}`] ||
         product.badge_uz ||
@@ -3549,7 +3558,13 @@ function renderWishlist() {
         <div class="product-card" data-id="${product.id}" onclick="closeModal('wishlistPopModal'); openQuickView('${product.id}')" style="background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 4px 20px rgba(0,0,0,0.06); display: flex; flex-direction: column; cursor: pointer;">
             <div class="card-image-wrap" style="position: relative; width: 100%; padding-top: 125%; background: #0f172a; overflow: hidden; cursor: pointer;">
                 <img src="${imgSrc}" alt="${title}" loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center; background: #0f172a;" onerror="this.src='/images/navy_suit.jpg'">
-                <span class="card-badge-tag ${badgeType}" style="position: absolute; top: 10px; left: 10px; z-index: 2;">${badgeText}</span>
+                ${hasDiscount && discPct > 0 ? `
+                  <span class="discount-badge-corner" style="position: absolute; top: 10px; left: 10px; z-index: 2; background: #ef4444; color: #ffffff; font-weight: 800; font-size: 12px; padding: 4px 8px; border-radius: 8px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4); display: inline-flex; align-items: center; gap: 2px;">
+                    -${discPct}%
+                  </span>
+                ` : `
+                  <span class="card-badge-tag ${badgeType}" style="position: absolute; top: 10px; left: 10px; z-index: 2;">${badgeText}</span>
+                `}
                 <button class="wishlist-heart-btn active" onclick="event.stopPropagation(); toggleWishlist('${product.id}')" title="Wishlist" style="position: absolute; top: 10px; right: 10px; z-index: 3; background: rgba(255,255,255,0.95); border: none; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">❤️</button>
             </div>
             <div class="card-body" style="padding: 14px; display: flex; flex-direction: column; flex: 1; gap: 8px;">
@@ -3558,8 +3573,10 @@ function renderWishlist() {
                 </div>
                 <div class="card-price-row" style="margin: 0; white-space: nowrap !important;">
                     <div class="price-group" style="display: flex; flex-direction: column; gap: 2px; white-space: nowrap !important;">
-                        <span class="current-price" style="font-size:14px; font-weight:800; color:#0f172a; white-space: nowrap !important; display: inline-block;">${formattedPrice} <small style="font-size:11px; font-weight:600; color:#059669; white-space: nowrap !important;">/pachka</small></span>
-                        <span class="old-price" style="font-size:11px; color:#94a3b8; text-decoration: line-through; white-space: nowrap !important; display: inline-block;">${formattedOldPrice}</span>
+                        <span class="current-price" style="font-size:14px; font-weight:800; color:${hasDiscount && discPct > 0 ? "#ef4444" : "#0f172a"}; white-space: nowrap !important; display: inline-block;">${hasDiscount && discPct > 0 ? `-${formattedPrice}` : formattedPrice} <small style="font-size:11px; font-weight:600; color:#059669; white-space: nowrap !important;">/pachka</small></span>
+                        ${hasDiscount && discPct > 0 ? `
+                          <span class="old-price" style="font-size:11px; color:#94a3b8; text-decoration: line-through; white-space: nowrap !important; display: inline-block;">${formattedOldPrice}</span>
+                        ` : ""}
                     </div>
                 </div>
                 <h3 class="card-title" style="font-size: 13px; font-weight: 700; color: #1e293b; margin: 0; line-height: 1.3; cursor: pointer;">${title}</h3>
@@ -6045,7 +6062,7 @@ function renderAdminProducts() {
                         <!-- Top Image Box -->
                         <div class="admin-card-media">
                             <img src="${p.image}" alt="${p.title_uz}" class="admin-card-img">
-                            <span class="admin-card-badge">📦 Pachka: ${p.pachkaQty || 6} dona</span>
+                            <span class="admin-card-badge">📦 Pachka: ${p.pachkaQty || 6} dona ${p.discountPercent ? `<b style="background:#ef4444; color:#fff; padding:1px 6px; border-radius:6px; margin-left:4px;">-${p.discountPercent}%</b>` : ""}</span>
                         </div>
 
                         <!-- Card Content Body -->
@@ -6091,7 +6108,7 @@ function renderAdminProducts() {
 
                                 <div class="detail-line total">
                                     <span class="detail-label">Jami so'mda:</span>
-                                    <span class="detail-value cyan" id="cardTotalSom_${idx}">${totalSomFormatted} so'm</span>
+                                    <span class="detail-value cyan" id="cardTotalSom_${idx}">${totalSomFormatted} so'm ${p.discountPercent ? `<span style="color:#ef4444; font-size:11.5px; font-weight:800; margin-left:4px;">(-${p.discountPercent}%)</span>` : ""}</span>
                                 </div>
 
                                 <div class="detail-line" style="margin-top: 4px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); font-size: 11.5px; color: #94a3b8; display: flex; justify-content: space-between; align-items: center;">
@@ -6530,9 +6547,56 @@ function deleteProductByAdmin(index) {
   });
 }
 
+function updateNewProdDiscountCalc() {
+  const priceInput = document.getElementById("newProdPachkaPriceUsd");
+  const discInput = document.getElementById("newProdDiscountPercent");
+  const preview = document.getElementById("newProdDiscountPreview");
+  if (!priceInput || !discInput || !preview) return;
+  const price = parseFloat(priceInput.value) || 0;
+  const disc = Math.min(100, Math.max(0, parseFloat(discInput.value) || 0));
+  const rate = (typeof state !== "undefined" && state.usdRate) ? state.usdRate : 12650;
+  if (price > 0 && disc > 0) {
+    const finalPrice = Math.round(price * (1 - disc / 100) * 100) / 100;
+    const finalSom = Math.round(finalPrice * rate).toLocaleString("ru-RU");
+    const origSom = Math.round(price * rate).toLocaleString("ru-RU");
+    preview.style.display = "block";
+    preview.innerHTML = `✨ Chegirma: <s style="color:#94a3b8; margin-right:4px;">$${price} (${origSom} so'm)</s> ➔ <b style="color:#10b981; font-size:13px;">-$${finalPrice} (${finalSom} so'm)</b> <span style="background:#ef4444; color:#fff; padding:1px 6px; border-radius:6px; font-size:11px; margin-left:4px;">-${disc}%</span>`;
+  } else {
+    preview.style.display = "none";
+  }
+}
+
+function updateEditProdDiscountCalc() {
+  const priceInput = document.getElementById("editProdPriceUsd");
+  const discInput = document.getElementById("editProdDiscountPercent");
+  const oldPriceInput = document.getElementById("editProdOldPrice");
+  const preview = document.getElementById("editProdDiscountPreview");
+  if (!priceInput || !discInput) return;
+  const price = parseFloat(priceInput.value) || 0;
+  const disc = Math.min(100, Math.max(0, parseFloat(discInput.value) || 0));
+  const rate = (typeof state !== "undefined" && state.usdRate) ? state.usdRate : 12650;
+  if (price > 0 && disc > 0) {
+    const finalPrice = Math.round(price * (1 - disc / 100) * 100) / 100;
+    if (oldPriceInput) oldPriceInput.value = price;
+    const finalSom = Math.round(finalPrice * rate).toLocaleString("ru-RU");
+    const origSom = Math.round(price * rate).toLocaleString("ru-RU");
+    if (preview) {
+      preview.style.display = "block";
+      preview.innerHTML = `✨ Chegirma: <s style="color:#94a3b8; margin-right:4px;">$${price} (${origSom} so'm)</s> ➔ <b style="color:#10b981; font-size:13px;">-$${finalPrice} (${finalSom} so'm)</b> <span style="background:#ef4444; color:#fff; padding:1px 6px; border-radius:6px; font-size:11px; margin-left:4px;">-${disc}%</span>`;
+    }
+  } else {
+    if (preview) preview.style.display = "none";
+  }
+}
+
 function resetAddProductForm() {
   const form = document.getElementById("addProductForm");
   if (form) form.reset();
+
+  const disc = document.getElementById("newProdDiscountPercent");
+  if (disc) disc.value = "0";
+  const preview = document.getElementById("newProdDiscountPreview");
+  if (preview) preview.style.display = "none";
 
   window._prodImagesArr = [];
   renderProdImagePreviews();
@@ -6987,6 +7051,15 @@ function handleAddNewProduct(e) {
   ].map((t) => parseInt(t.dataset.val));
   const sizesArr = [...new Set([...checked, ...custom])].sort((a, b) => a - b);
 
+  const discountPercent = Math.min(100, Math.max(0, parseFloat(document.getElementById("newProdDiscountPercent")?.value) || 0));
+  const rate = state.usdRate || 12650;
+  let finalPriceUsd = pachkaPriceUsd;
+  let oldPriceSom = null;
+  if (discountPercent > 0) {
+    finalPriceUsd = Math.round(pachkaPriceUsd * (1 - discountPercent / 100) * 100) / 100;
+    oldPriceSom = pachkaPriceUsd * rate;
+  }
+
   const newProd = {
     id: "prod-" + Date.now(),
     isCustom: true,
@@ -6994,12 +7067,14 @@ function handleAddNewProduct(e) {
     title_ru: title,
     title_en: title,
     category: normalizeCategory(category),
-    priceUsd: priceUsd,
-    pachkaPriceUsd: pachkaPriceUsd,
+    priceUsd: finalPriceUsd,
+    pachkaPriceUsd: finalPriceUsd,
+    originalPriceUsd: pachkaPriceUsd,
+    discountPercent: discountPercent,
     pachkaQty: pachkaQty,
-    unitPrice: priceUsd,
-    price: pachkaPriceUsd * (state.usdRate || 12650),
-    oldPrice: Math.round(pachkaPriceUsd * 1.25) * (state.usdRate || 12650),
+    unitPrice: finalPriceUsd,
+    price: finalPriceUsd * rate,
+    oldPrice: oldPriceSom,
     image: imagesArr[0],
     images: imagesArr,
     sizes: sizesArr.length > 0 ? sizesArr : [46, 48, 50],
@@ -7089,6 +7164,7 @@ function openEditProductModal(idx) {
   const editId = document.getElementById("editProdId");
   const editTitle = document.getElementById("editProdTitleUz");
   const editPrice = document.getElementById("editProdPriceUsd");
+  const editDisc = document.getElementById("editProdDiscountPercent");
   const editOldPrice = document.getElementById("editProdOldPrice");
   const editQty = document.getElementById("editProdPachkaQty");
   const editCat = document.getElementById("editProdCategory");
@@ -7102,16 +7178,26 @@ function openEditProductModal(idx) {
   const editImage = document.getElementById("editProdImage");
   const editImages = document.getElementById("editProdImages");
 
+  let discVal = p.discountPercent || 0;
+  if (!discVal && p.oldPrice && p.oldPrice > (p.pachkaPriceUsd * rate)) {
+    discVal = Math.round((1 - (p.pachkaPriceUsd * rate) / p.oldPrice) * 100);
+  }
+  if (editDisc) editDisc.value = discVal;
+
+  const originalUsd = (discVal > 0 && p.oldPrice) ? Math.round(p.oldPrice / rate) : pUsd;
+
   if (editIndex) editIndex.value = idx;
   if (editId) editId.value = p.id || p.customId || "";
   if (editTitle) editTitle.value = p.title_uz || p.title || "";
-  if (editPrice) editPrice.value = pUsd;
-  if (editOldPrice) editOldPrice.value = p.oldPrice ? Math.round(p.oldPrice / rate) : Math.round(pUsd * 1.25);
+  if (editPrice) editPrice.value = originalUsd;
+  if (editOldPrice) editOldPrice.value = p.oldPrice ? Math.round(p.oldPrice / rate) : "";
   if (editQty) editQty.value = p.pachkaQty || 6;
   if (editCat) editCat.value = p.category || "suits";
   if (editDesc) editDesc.value = p.desc_uz || p.description || "";
   if (editBrand) editBrand.value = (p.brand && !p.brand.includes("FARID")) ? p.brand : "EUROTEX KIDS";
   if (editFabric) editFabric.value = p.fabric_uz || p.fabric || "Turkiya Premium Jun & Viskoza Blend";
+
+  updateEditProdDiscountCalc();
   
   if (editColors) {
     let activeColors = [];
@@ -7159,7 +7245,7 @@ function handleSaveProductDetails(e) {
   const rate = state.usdRate || 12650;
   const newTitle = document.getElementById("editProdTitleUz").value.trim();
   const newPriceUsd = parseFloat(document.getElementById("editProdPriceUsd").value) || p.pachkaPriceUsd || 50;
-  const newOldPriceUsd = parseFloat(document.getElementById("editProdOldPrice").value) || Math.round(newPriceUsd * 1.25);
+  const newDisc = Math.min(100, Math.max(0, parseFloat(document.getElementById("editProdDiscountPercent")?.value) || 0));
   const newQty = parseInt(document.getElementById("editProdPachkaQty").value, 10) || p.pachkaQty || 6;
   const newCat = document.getElementById("editProdCategory").value;
   const newDesc = document.getElementById("editProdDescription").value.trim();
@@ -7172,14 +7258,28 @@ function handleSaveProductDetails(e) {
   const newImage = document.getElementById("editProdImage").value.trim() || p.image;
   const newImages = document.getElementById("editProdImages").value.split("\n").map(u => u.trim()).filter(Boolean);
 
+  let sellingPriceUsd = newPriceUsd;
+  let oldPriceVal = null;
+  if (newDisc > 0) {
+    sellingPriceUsd = Math.round(newPriceUsd * (1 - newDisc / 100) * 100) / 100;
+    oldPriceVal = newPriceUsd * rate;
+  } else {
+    const manualOldPriceUsd = parseFloat(document.getElementById("editProdOldPrice")?.value);
+    if (manualOldPriceUsd && manualOldPriceUsd > newPriceUsd) {
+      oldPriceVal = manualOldPriceUsd * rate;
+    }
+  }
+
   // Update object
   p.title_uz = newTitle;
   p.title = newTitle;
-  p.pachkaPriceUsd = newPriceUsd;
-  p.priceUsd = Math.round(newPriceUsd / newQty);
+  p.pachkaPriceUsd = sellingPriceUsd;
+  p.priceUsd = Math.round(sellingPriceUsd / newQty);
   p.pachkaQty = newQty;
-  p.price = newPriceUsd * rate;
-  p.oldPrice = newOldPriceUsd * rate;
+  p.price = sellingPriceUsd * rate;
+  p.oldPrice = oldPriceVal;
+  p.discountPercent = newDisc;
+  p.originalPriceUsd = newPriceUsd;
   p.category = newCat;
   p.desc_uz = newDesc;
   p.description = newDesc;

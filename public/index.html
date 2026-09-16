@@ -41,7 +41,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/style.css?v=301.0.0" />
+    <link rel="stylesheet" href="/style.css?v=302.0.0" />
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
@@ -3905,7 +3905,7 @@
             </div>
           </div>
 
-          <!-- Pachka row -->
+          <!-- Pachka & Discount row -->
           <div class="apm-row">
             <div class="apm-field">
               <label class="apm-label">
@@ -3921,7 +3921,7 @@
                   <rect x="2" y="7" width="20" height="14" rx="2" />
                   <path d="M16 7V5a2 2 0 00-4 0v2M8 7V5a2 2 0 00-4 0v2" />
                 </svg>
-                1 Pachka Jami Narxi ($)
+                Asl Narxi ($ USD)
               </label>
               <div class="apm-input-prefix">
                 <span class="apm-prefix">$</span>
@@ -3930,6 +3930,26 @@
                   type="number"
                   id="newProdPachkaPriceUsd"
                   placeholder="45"
+                  oninput="updateNewProdDiscountCalc()"
+                />
+              </div>
+            </div>
+            <div class="apm-field">
+              <label class="apm-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+                Chegirma (Skidka %)
+              </label>
+              <div class="apm-input-prefix">
+                <span class="apm-prefix">%</span>
+                <input
+                  class="apm-input apm-with-prefix"
+                  type="number"
+                  min="0"
+                  max="100"
+                  id="newProdDiscountPercent"
+                  placeholder="0 (masalan: 15)"
+                  value="0"
+                  oninput="updateNewProdDiscountCalc()"
                 />
               </div>
             </div>
@@ -3959,6 +3979,7 @@
               />
             </div>
           </div>
+          <div id="newProdDiscountPreview" style="margin-top: -8px; margin-bottom: 14px; padding: 8px 12px; background: rgba(16, 185, 129, 0.08); border: 1px dashed rgba(16, 185, 129, 0.35); border-radius: 8px; font-size: 12.5px; color: #10b981; font-weight: 700; display: none;"></div>
 
           <!-- Tavsif (Description) -->
           <div class="apm-field">
@@ -4282,21 +4303,26 @@
             <input class="apm-input" type="text" id="editProdTitleUz" required />
           </div>
 
-          <!-- Narx & Pachka -->
+          <!-- Narx, Chegirma & Pachka -->
           <div class="apm-row">
             <div class="apm-field">
-              <label class="apm-label">Pachka Narxi ($)</label>
-              <input class="apm-input" type="number" id="editProdPriceUsd" required />
+              <label class="apm-label">Asl Narxi ($ USD)</label>
+              <input class="apm-input" type="number" id="editProdPriceUsd" oninput="updateEditProdDiscountCalc()" required />
+            </div>
+            <div class="apm-field">
+              <label class="apm-label">Chegirma (Skidka %)</label>
+              <input class="apm-input" type="number" min="0" max="100" id="editProdDiscountPercent" placeholder="0 (masalan: 15)" value="0" oninput="updateEditProdDiscountCalc()" />
             </div>
             <div class="apm-field">
               <label class="apm-label">Eski Narxi ($)</label>
-              <input class="apm-input" type="number" id="editProdOldPrice" placeholder="Masalan: 60" />
+              <input class="apm-input" type="number" id="editProdOldPrice" placeholder="Avtomatik" />
             </div>
             <div class="apm-field">
               <label class="apm-label">Pachka (Dona)</label>
               <input class="apm-input" type="number" id="editProdPachkaQty" value="6" />
             </div>
           </div>
+          <div id="editProdDiscountPreview" style="margin-top: -8px; margin-bottom: 14px; padding: 8px 12px; background: rgba(16, 185, 129, 0.08); border: 1px dashed rgba(16, 185, 129, 0.35); border-radius: 8px; font-size: 12.5px; color: #10b981; font-weight: 700; display: none;"></div>
 
           <!-- Turkumi -->
           <div class="apm-field">
@@ -4761,7 +4787,7 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=306.0.0" defer></script>
+    <script src="/script.js?v=307.0.0" defer></script>
     <script src="/eurotex-engine.js?v=15.6.0" defer></script>
   </body>
 </html>
