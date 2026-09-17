@@ -8,7 +8,7 @@ const fs = require("fs");
 const path = require("path");
 const router = express.Router();
 const Order = require("../models/Order");
-const { parseCookies } = require("../middleware/adminAuth");
+const { requireAdmin, parseCookies } = require("../middleware/adminAuth");
 const ADMIN_EMAILS = ["0600quetry@gmail.com", "eurotexkids7775@gmail.com"];
 
 const ORDERS_FILE = path.join(__dirname, "../data/orders.json");
@@ -314,7 +314,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.put("/:id/status", async (req, res) => {
+router.put("/:id/status", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { statusStep, status, adminNotes } = req.body;
@@ -383,7 +383,7 @@ router.put("/:id/status", async (req, res) => {
   }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = { ...req.body };
@@ -438,7 +438,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 

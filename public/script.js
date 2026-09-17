@@ -1344,11 +1344,12 @@ function renderProducts() {
           const imgSrc =
             product.image || product.img || "/images/navy_suit.jpg";
 
-          return `
-            <div class="product-card" data-id="${product.id || "prod-1"}" onclick="openQuickView('${product.id || "prod-1"}')">
+                    const isOutOfStock = product.inStock === false || (product.stockQty !== undefined && Number(product.stockQty) <= 0);
+                    return `
+            <div class="product-card ${isOutOfStock ? "out-of-stock-card" : ""}" data-id="${product.id || "prod-1"}" onclick="openQuickView('${product.id || "prod-1"}')">
                 <div class="card-image-wrap">
                     <img src="${imgSrc}" alt="${title}" loading="lazy" onerror="this.src='/images/navy_suit.jpg'">
-                    ${badgeText ? `<span class="card-badge-tag ${badgeType}">${badgeText}</span>` : ""}
+                    ${isOutOfStock ? `<span class="card-badge-tag" style="background:#ef4444; color:#fff; font-weight:800;">Sotuvda yo'q</span>` : (badgeText ? `<span class="card-badge-tag ${badgeType}">${badgeText}</span>` : "")}
                     <button class="wishlist-heart-btn ${isWishlisted ? "active" : ""}" 
                             onclick="event.stopPropagation(); toggleWishlist('${product.id || "prod-1"}')" 
                             title="Wishlist">
@@ -1370,9 +1371,13 @@ function renderProducts() {
                         <span>⭐ ${product.rating || 4.9}</span>
                         <span>(${product.reviewsCount || 186} sharhlar)</span>
                     </div>
+                    ${isOutOfStock ? `
+                    <button type="button" disabled class="btn btn-secondary btn-block" style="margin-top: auto; height: 42px; border-radius: 12px; font-weight: 700; font-size: 13px; background: #94a3b8; color: #fff; border: none; cursor: not-allowed; opacity: 0.8;">
+                        Sotuvda qolmagan ❌
+                    </button>` : `
                     <button type="button" onclick="event.stopPropagation(); addToCart('${product.id || "prod-1"}', '48', 'Klassik', event);" class="btn btn-primary btn-block" style="margin-top: auto; height: 42px; border-radius: 12px; font-weight: 800; font-size: 14px; background: #7000ff; color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(112,0,255,0.25);">
                         Savatga qo'shish 🛒
-                    </button>
+                    </button>`}
                 </div>
             </div>
         `;
@@ -2097,6 +2102,11 @@ function addToCart(
       : EUROTEX_PRODUCTS;
   const product = pool.find((p) => p && String(p.id) === String(productId));
   if (!product) return;
+
+  if (product.inStock === false || (product.stockQty !== undefined && Number(product.stockQty) <= 0)) {
+    showToast("⚠️ Kechirasiz, ushbu tovar hozirda omborda qolmagan.", "error");
+    return;
+  }
 
   // Trigger Fly to Cart animation and button state
   let srcEl = null;
@@ -3427,7 +3437,14 @@ function handleURLRouting() {
   }
 }
 
-window.addEventListener("popstate", handleURLRouting);
+window.addEventListener("popstate", (e) => {
+  const activeModal = document.querySelector(".modal-overlay.show, .modal-overlay.active");
+  if (activeModal && activeModal.id) {
+    closeModal(activeModal.id);
+    return;
+  }
+  handleURLRouting();
+});
 
 function openDashboardView(tabName = "cart") {
   if (tabName === "admin" && !isUserAdmin()) {
@@ -3652,6 +3669,12 @@ function openModal(modalId) {
   modal.classList.add("show");
   modal.classList.add("active");
   document.body.style.overflow = "hidden";
+
+  try {
+    if (!history.state || history.state.eurotexModal !== modalId) {
+      history.pushState({ eurotexModal: modalId }, "");
+    }
+  } catch (e) {}
 }
 
 function closeModal(modalId) {
@@ -5008,11 +5031,67 @@ function skipProfileOnboarding() {
   showToast("Profilni xohlagan paytda to'ldirishingiz mumkin. Xush kelibsiz! 👍");
 }
 
+function syncUserCartAndWishlist() {
+  if (!state.user || !state.user.email) return;
+  const userKey = state.user.email.toLowerCase().trim();
+  const savedCartKey = `eurotex_cart_${userKey}`;
+  const savedWishlistKey = `eurotex_wishlist_${userKey}`;
+
+  // 1. Merge Cart
+  try {
+    const userSavedCart = JSON.parse(localStorage.getItem(savedCartKey) || "[]");
+    const currentCart = state.cart || [];
+    const mergedCart = [...currentCart];
+
+    userSavedCart.forEach((userItem) => {
+      if (!userItem) return;
+      const existing = mergedCart.find((c) =>
+        String(c.id) === String(userItem.id) &&
+        String(c.size) === String(userItem.size) &&
+        String(c.color) === String(userItem.color)
+      );
+      if (existing) {
+        existing.quantity = Math.max(existing.quantity || 1, userItem.quantity || 1);
+      } else {
+        mergedCart.push(userItem);
+      }
+    });
+
+    state.cart = mergedCart;
+    safeSetLocalStorage("eurotex_cart", JSON.stringify(state.cart));
+    safeSetLocalStorage(savedCartKey, JSON.stringify(state.cart));
+    if (typeof updateCartUI === "function") updateCartUI();
+  } catch (e) {}
+
+  // 2. Merge Wishlist
+  try {
+    const userSavedWishlist = JSON.parse(localStorage.getItem(savedWishlistKey) || "[]");
+    const currentWishlist = state.wishlist || [];
+    const mergedWishlist = [...currentWishlist];
+
+    userSavedWishlist.forEach((wItem) => {
+      if (!wItem) return;
+      const wId = typeof wItem === "object" && wItem ? wItem.id : wItem;
+      const exists = mergedWishlist.some((m) => {
+        const mId = typeof m === "object" && m ? m.id : m;
+        return String(mId) === String(wId);
+      });
+      if (!exists) mergedWishlist.push(wItem);
+    });
+
+    state.wishlist = mergedWishlist;
+    safeSetLocalStorage("eurotex_wishlist", JSON.stringify(state.wishlist));
+    safeSetLocalStorage(savedWishlistKey, JSON.stringify(state.wishlist));
+    if (typeof updateWishlistUI === "function") updateWishlistUI();
+  } catch (e) {}
+}
+
 function updateUserAuthUI() {
   const userAuthLabel = document.getElementById("userAuthLabel");
   const mobileAuthLabel = document.getElementById("mobileAuthLabel");
 
   if (state.user && state.user.name) {
+    syncUserCartAndWishlist();
     const displayName = state.user.name.split("@")[0];
     const formatted =
       displayName.charAt(0).toUpperCase() + displayName.slice(1);
@@ -5433,9 +5512,21 @@ function calculateSmartSize(e) {
 
 function filterBySmartSize() {
   closeModal("smartSizeModal");
-  showToast(
-    "Filtrlandi: Sizga mos keluvchi o'lchamdagi kostyumlar namoyish etilmoqda! 🤵",
-  );
+  const codeEl = document.getElementById("smartSizeCode");
+  const rawText = codeEl ? codeEl.textContent : "";
+  const match = rawText.match(/\d+/);
+  const detectedSize = match ? match[0] : "";
+
+  if (detectedSize) {
+    state.activeSearch = detectedSize;
+    const searchInput = document.getElementById("navSearchInput");
+    if (searchInput) searchInput.value = detectedSize;
+    renderProducts();
+    showToast(`Filtrlandi: Sizga mos ${detectedSize}-o'lchamdagi mahsulotlar saralandi! 🤵`);
+  } else {
+    showToast("Filtrlandi: Sizga mos keluvchi o'lchamdagi kostyumlar namoyish etilmoqda! 🤵");
+  }
+
   const el = document.getElementById("products-section");
   if (el) el.scrollIntoView({ behavior: "smooth" });
 }
@@ -5684,6 +5775,118 @@ function renderOrdersHistory() {
       `;
     })
     .join("");
+}
+
+// Rasmiy chek/kvitansiya shakllantirish va PDF sifatida yuklab berish
+function downloadReceiptPdf(orderId) {
+  const pool = state.orders || [];
+  const order = pool.find((o) => String(o.id || o.orderId) === String(orderId));
+  if (!order) {
+    showToast("⚠️ Buyurtma ma'lumotlari topilmadi!", "error");
+    return;
+  }
+
+  const printWindow = window.open("", "_blank", "width=820,height=900");
+  if (!printWindow) {
+    showToast("⚠️ Brauzer yangi oyna ochishni blokladi. Ruxsat bering.", "error");
+    return;
+  }
+
+  const itemsHtml = (order.items || []).map((item, idx) => `
+    <tr>
+      <td style="padding:10px; border-bottom:1px solid #e2e8f0; text-align:center;">${idx + 1}</td>
+      <td style="padding:10px; border-bottom:1px solid #e2e8f0;">
+        <strong>${escapeHtml(item.title || "Eurotex Mahsulot")}</strong><br>
+        <small style="color:#64748b;">O'lcham: ${escapeHtml(item.size || "-")} | Rangi: ${escapeHtml(item.color || "-")}</small>
+      </td>
+      <td style="padding:10px; border-bottom:1px solid #e2e8f0; text-align:center;">${item.quantity || 1}</td>
+      <td style="padding:10px; border-bottom:1px solid #e2e8f0; text-align:right; font-weight:bold;">${safeFormatMoney(item.price || 0)}</td>
+    </tr>
+  `).join("");
+
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html lang="uz">
+    <head>
+      <meta charset="utf-8">
+      <title>Eurotex Chek #${escapeHtml(order.id || orderId)}</title>
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 32px; color: #0f172a; max-width: 720px; margin: 0 auto; line-height: 1.5; }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #88001b; padding-bottom: 20px; margin-bottom: 20px; }
+        .brand { font-size: 26px; font-weight: 900; color: #88001b; letter-spacing: 0.5px; }
+        .sub { font-size: 13px; color: #64748b; margin-top: 4px; }
+        .meta-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 18px; margin: 20px 0; font-size: 13.5px; }
+        table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px; }
+        th { background: #f1f5f9; padding: 10px; text-align: left; border-bottom: 2px solid #cbd5e1; font-weight: 700; color: #334155; }
+        .total-row { text-align: right; margin-top: 20px; font-size: 17px; }
+        .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px dashed #cbd5e1; padding-top: 18px; }
+        @media print { .no-print { display: none !important; } body { padding: 15px; } }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <div>
+          <div class="brand">EUROTEX KIDS</div>
+          <div class="sub">Bolalar va o'smirlar kiyimlari fabrikasi</div>
+          <div class="sub">Toshkent sh., Abu Saxiy Centir A48 / Giper Market 297</div>
+          <div class="sub">Tel: +998 90 000 77 75</div>
+        </div>
+        <div style="text-align:right;">
+          <h2 style="margin:0; color:#1e293b; font-size:20px;">RASMIY KVITANSIYA</h2>
+          <div class="sub" style="margin-top:6px;">Buyurtma: <strong style="color:#0f172a;">#${escapeHtml(order.id || orderId)}</strong></div>
+          <div class="sub">Sana: ${escapeHtml(order.date || new Date().toLocaleDateString())}</div>
+          <div class="sub">Status: <strong style="color:#10b981;">${escapeHtml(order.status || "Qabul qilingan")}</strong></div>
+        </div>
+      </div>
+      <div class="meta-box">
+        <div><strong>Xaridor:</strong> ${escapeHtml(order.customerName || (state.user && state.user.name) || "Hurmatli Mijoz")}</div>
+        <div style="margin-top:4px;"><strong>Telefon:</strong> ${escapeHtml(order.phone || "-")}</div>
+        <div style="margin-top:4px;"><strong>Yetkazish manzili:</strong> ${escapeHtml(order.address || "-")}</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:40px; text-align:center;">№</th>
+            <th>Mahsulot nomi</th>
+            <th style="width:60px; text-align:center;">Soni</th>
+            <th style="width:140px; text-align:right;">Summa</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${itemsHtml || '<tr><td colspan="4" style="padding:15px; text-align:center;">Buyurtma tovarlari mavjud</td></tr>'}
+        </tbody>
+      </table>
+      <div class="total-row">
+        <div style="font-size:20px; font-weight:900; color:#88001b;">JAMI SUMMA: ${safeFormatMoney(order.total || 0)}</div>
+      </div>
+      <div class="footer">
+        <p>Eurotex Kids mahsulotlarini tanlaganingiz uchun tashakkur! Savollar bo'lsa: @eurotex_support_bot</p>
+        <button class="no-print" onclick="window.print()" style="background:#88001b; color:#fff; border:none; padding:10px 24px; font-size:14px; font-weight:700; border-radius:8px; cursor:pointer; margin-top:10px; box-shadow:0 4px 12px rgba(136,0,27,0.3);">🖨️ Chop etish / PDF Saqlash</button>
+      </div>
+      <script>
+        window.onload = function() {
+          setTimeout(function() { window.print(); }, 400);
+        };
+      <\/script>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+}
+
+// Almashtirish / qaytarish formasini avtomatik buyurtma ID si bilan to'ldirish
+function prefillReturnOrder(orderId) {
+  renderReturnRequests();
+  const select = document.getElementById("returnOrderSelect");
+  if (select) {
+    select.value = orderId;
+  }
+  const comment = document.getElementById("returnComment");
+  if (comment) {
+    comment.focus();
+    comment.placeholder = `Buyurtma #${orderId} bo'yicha sababni yozing...`;
+  }
+  showToast(`Qaytarish arizasi #${orderId} uchun tayyorlandi! ✍️`);
 }
 
 // -----------------------------------------------------------------------------
@@ -9188,6 +9391,11 @@ function showToast(message, type = "success") {
   // Re-append to body to guarantee it's on top of all modals
   document.body.appendChild(container);
 
+  // Stack cap: limit visible toasts to maximum 3 to prevent mobile screen collision
+  while (container.children.length >= 3) {
+    container.removeChild(container.firstChild);
+  }
+
   // Top-Center stack guarantee with safety margins and responsive width
   container.style.cssText = [
     "position: fixed",
@@ -9277,11 +9485,15 @@ function handleSlideImageUpload(event, slideIndex) {
 
   const reader = new FileReader();
   reader.onload = async function (e) {
-    const imgData = e.target.result;
+    let imgData = e.target.result;
+    try {
+      imgData = await compressBase64Image(imgData, 1280, 0.8);
+    } catch (err) {}
+
     const slideImg = document.getElementById("heroSlideImg_" + slideIndex);
     if (slideImg) slideImg.src = imgData;
 
-    localStorage.setItem("eurotex_hero_slide_img_" + slideIndex, imgData);
+    safeSetLocalStorage("eurotex_hero_slide_img_" + slideIndex, imgData);
 
     // Upload to server so ALL users see the updated banner
     try {

@@ -49,6 +49,7 @@ const productSchema = new mongoose.Schema(
     color_ru: { type: String, default: "" },
     color_en: { type: String, default: "" },
     inStock: { type: Boolean, default: true, index: true },
+    stockQty: { type: Number, default: 50, min: 0 },
     isFeatured: { type: Boolean, default: false, index: true },
     isNewArrival: { type: Boolean, default: false, index: true },
     wholesaleOnly: { type: Boolean, default: true },

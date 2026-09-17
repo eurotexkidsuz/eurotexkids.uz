@@ -4,6 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const router = express.Router();
 const Product = require("../models/Product");
+const { requireAdmin } = require("../middleware/adminAuth");
 
 const PRODUCTS_FILE = path.join(__dirname, "../products_db.json");
 
@@ -100,8 +101,8 @@ router.get("/", async (req, res) => {
   return res.json({ success: true, products: fileProds });
 });
 
-// Add new product
-router.post("/", async (req, res) => {
+// Add new product (Faqat Admin)
+router.post("/", requireAdmin, async (req, res) => {
   try {
     await ensureDbConnected();
     const pData = { ...req.body };
@@ -145,8 +146,8 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Update product
-router.put("/:id", async (req, res) => {
+// Update product (Faqat Admin)
+router.put("/:id", requireAdmin, async (req, res) => {
   try {
     await ensureDbConnected();
     const id = String(req.params.id);
@@ -193,8 +194,8 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// Delete product
-router.delete("/:id", async (req, res) => {
+// Delete product (Faqat Admin)
+router.delete("/:id", requireAdmin, async (req, res) => {
   try {
     await ensureDbConnected();
     const id = String(req.params.id);

@@ -47,6 +47,25 @@ function writeJsonFile(filename, data) {
   }
 }
 
+// Anti-spam rate limiter for Telegram lead/nasiya alerts (har 2 daqiqada max 3 ta so'rov)
+const spamCooldownMap = new Map();
+function checkSpamLimit(req, keyPrefix = "lead") {
+  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "ip_unknown";
+  const key = `${keyPrefix}_${ip}`;
+  const now = Date.now();
+  const record = spamCooldownMap.get(key) || { count: 0, firstTime: now };
+
+  if (now - record.firstTime > 120000) {
+    record.count = 0;
+    record.firstTime = now;
+  }
+
+  record.count++;
+  spamCooldownMap.set(key, record);
+
+  return record.count <= 3;
+}
+
 // =============================================================================
 // 1. ⚡ 1-KLIKDA XARID VA TEZKOR QO'NG'IROQLAR (LEADS)
 // =============================================================================
@@ -68,6 +87,13 @@ router.get("/leads", requireAdmin, (req, res) => {   // #6 — faqat admin
 });
 
 router.post("/leads", async (req, res) => {
+  if (!checkSpamLimit(req, "lead")) {
+    return res.status(429).json({
+      success: false,
+      message: "Iltimos, ozroq kuting. Arizangiz allaqachon qabul qilingan.",
+    });
+  }
+
   // #7 MongoDB sanitize — injection himoyasi
   const { name, phone, productTitle, size, color, price } = sanitize(req.body);
   if (!phone) {
@@ -565,6 +591,13 @@ router.get("/nasiya", requireAdmin, (req, res) => { // #6 — Faqat admin (paspo
 });
 
 router.post("/nasiya", async (req, res) => {
+  if (!checkSpamLimit(req, "nasiya")) {
+    return res.status(429).json({
+      success: false,
+      message: "Iltimos, ozroq kuting. Nasiya arizangiz allaqachon qabul qilingan.",
+    });
+  }
+
   const { name, phone, passport, months, productTitle, totalAmount, monthlyPayment } = sanitize(req.body); // #7 sanitize
   if (!phone || !name) {
     return res.status(400).json({ success: false, message: "Ism va telefon raqami talab qilinadi" });
