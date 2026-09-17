@@ -3697,25 +3697,13 @@ function openAuthModal() {
     const adminBtn = document.getElementById("userAdminPanelBtn");
 
     if (avatarEl) {
-      if (isAdmin) {
-        avatarEl.innerHTML = `<img src="/images/eurotex_icon.png" alt="Eurotex Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block;" onerror="this.src='/images/eurotex_icon.png'" />`;
-        avatarEl.style.background = "#0f172a";
-        avatarEl.style.padding = "4px";
-        avatarEl.style.border = "2.5px solid #00f2fe";
-        avatarEl.style.boxShadow = "0 0 20px rgba(0, 242, 254, 0.4)";
-      } else if (state.user.picture) {
-        avatarEl.innerHTML = `<img src="${state.user.picture}" alt="User" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;" onerror="this.src='/images/eurotex_icon.png'" />`;
-        avatarEl.style.background = "#0f172a";
-        avatarEl.style.padding = "2px";
-        avatarEl.style.border = "2px solid #88001b";
-        avatarEl.style.boxShadow = "0 4px 16px rgba(136, 0, 27, 0.4)";
-      } else {
-        avatarEl.innerHTML = `<img src="/images/eurotex_icon.png" alt="Eurotex Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block;" onerror="this.src='/images/eurotex_icon.png'" />`;
-        avatarEl.style.background = "#0f172a";
-        avatarEl.style.padding = "4px";
-        avatarEl.style.border = "2px solid #88001b";
-        avatarEl.style.boxShadow = "0 4px 16px rgba(136, 0, 27, 0.4)";
-      }
+      avatarEl.innerHTML = `<img src="/images/eurotex_icon.png" alt="Eurotex Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block;" onerror="this.onerror=null;this.src='/images/eurotex_icon.png'" />`;
+      avatarEl.style.background = "#0f172a";
+      avatarEl.style.padding = "4px";
+      avatarEl.style.border = isAdmin ? "2.5px solid #00f2fe" : "2px solid #88001b";
+      avatarEl.style.boxShadow = isAdmin
+        ? "0 0 20px rgba(0, 242, 254, 0.4)"
+        : "0 4px 16px rgba(136, 0, 27, 0.4)";
     }
     if (nameEl) nameEl.textContent = isAdmin ? "Eurotex Rasmiy Admin" : formattedName;
     if (emailEl) emailEl.textContent = email;
