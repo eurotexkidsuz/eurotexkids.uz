@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const productSchema = new mongoose.Schema(
   {
     customId: { type: String, unique: true, index: true },
+    id: { type: String, index: true },
     title_uz: { type: String, required: true, trim: true },
     title_ru: { type: String, trim: true, default: "" },
     title_en: { type: String, trim: true, default: "" },

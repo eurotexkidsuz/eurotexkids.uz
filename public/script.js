@@ -1250,15 +1250,27 @@ function renderProducts() {
           ).toString();
           const usdRate = state.usdRate || 12650;
           const priceUsd =
-            product.priceUsd ||
             product.pachkaPriceUsd ||
+            product.priceUsd ||
             (product.price > 5000
               ? Math.round(product.price / usdRate)
               : product.price) ||
             120;
           const priceSom = priceUsd * usdRate;
-          const oldPriceUsd = product.oldPrice || Math.round(priceUsd * 1.25);
-          const oldPriceSom = oldPriceUsd * usdRate;
+          let oldPriceUsd = 0;
+          let oldPriceSom = 0;
+          if (product.oldPrice) {
+            if (product.oldPrice > 5000) {
+              oldPriceSom = Math.round(product.oldPrice);
+              oldPriceUsd = Math.round(oldPriceSom / usdRate);
+            } else {
+              oldPriceUsd = Math.round(product.oldPrice);
+              oldPriceSom = oldPriceUsd * usdRate;
+            }
+          } else {
+            oldPriceUsd = Math.round(priceUsd * 1.25);
+            oldPriceSom = oldPriceUsd * usdRate;
+          }
           const formattedPrice = `$${priceUsd} (${formatMoneySom(priceSom)} so'm)`;
           const formattedOldPrice = `$${oldPriceUsd} (${formatMoneySom(oldPriceSom)} so'm)`;
           const badgeType = product.badgeType || "gold";
@@ -2475,10 +2487,22 @@ function openProductPage(productId) {
   if (titleEl) titleEl.textContent = title;
 
   const usdRate = state.usdRate || 12650;
-  const priceUsdVal = product.priceUsd || (product.price ? Math.round(product.price / usdRate) : 50);
+  const priceUsdVal = product.pachkaPriceUsd || product.priceUsd || (product.price ? Math.round(product.price / usdRate) : 50);
   const priceSomRaw = priceUsdVal * usdRate;
-  const oldPriceUsdVal = product.oldPrice || Math.round(priceUsdVal * 1.25);
-  const oldPriceSomRaw = oldPriceUsdVal * usdRate;
+  let oldPriceUsdVal = 0;
+  let oldPriceSomRaw = 0;
+  if (product.oldPrice) {
+    if (product.oldPrice > 5000) {
+      oldPriceSomRaw = Math.round(product.oldPrice);
+      oldPriceUsdVal = Math.round(oldPriceSomRaw / usdRate);
+    } else {
+      oldPriceUsdVal = Math.round(product.oldPrice);
+      oldPriceSomRaw = oldPriceUsdVal * usdRate;
+    }
+  } else {
+    oldPriceUsdVal = Math.round(priceUsdVal * 1.25);
+    oldPriceSomRaw = oldPriceUsdVal * usdRate;
+  }
 
   const priceCurrentEl = document.getElementById("pdpPriceCurrent");
   const priceOldEl = document.getElementById("pdpPriceOld");
@@ -6635,33 +6659,38 @@ async function syncProductsWithBackendAndStorage(isIntervalSync = false) {
         Array.isArray(data.products) &&
         data.products.length > 0
       ) {
-        const dbProds = data.products.map((p) => ({
-          id: p.customId || String(p._id || p.id),
-          dbId: p._id,
-          isCustom: true,
-          title_uz: p.title_uz,
-          title_ru: p.title_ru || p.title_uz,
-          title_en: p.title_en || p.title_uz,
-          category: normalizeCategory(p.category || "suits"),
-          priceUsd: p.priceUsd || 50,
-          pachkaPriceUsd: p.pachkaPriceUsd || 45,
-          pachkaQty: p.pachkaQty || 6,
-          price: p.price || (p.priceUsd || 50) * (state.usdRate || 12650),
-          oldPrice:
-            p.oldPrice ||
-            Math.round((p.priceUsd || 50) * 1.25) * (state.usdRate || 12650),
-          image: p.image || "/images/navy_suit.jpg",
-          images:
-            p.images && p.images.length > 0
-              ? p.images
-              : [p.image || "/images/navy_suit.jpg"],
-          sizes:
-            p.sizes && p.sizes.length > 0 ? p.sizes : [46, 48, 50, 52, 54, 56],
-          fabric_uz: p.fabric_uz || "Turkiya Premium Jun & Viskoza Blend",
-          inStock: p.inStock !== false,
-          rating: p.rating || 5.0,
-          reviewsCount: p.reviewsCount || 12,
-        }));
+        const dbProds = data.products.map((p) => {
+          const pUsd = p.pachkaPriceUsd || p.priceUsd || 50;
+          return {
+            id: p.customId || String(p._id || p.id),
+            customId: p.customId || String(p._id || p.id),
+            dbId: p._id,
+            isCustom: true,
+            title_uz: p.title_uz,
+            title_ru: p.title_ru || p.title_uz,
+            title_en: p.title_en || p.title_uz,
+            category: normalizeCategory(p.category || "suits"),
+            priceUsd: pUsd,
+            pachkaPriceUsd: pUsd,
+            pachkaQty: p.pachkaQty || 6,
+            price: (p.price && p.price > 5000) ? p.price : pUsd * (state.usdRate || 12650),
+            oldPrice:
+              p.oldPrice && p.oldPrice < 50000000
+                ? p.oldPrice
+                : Math.round(pUsd * 1.25) * (state.usdRate || 12650),
+            image: p.image || "/images/navy_suit.jpg",
+            images:
+              p.images && p.images.length > 0
+                ? p.images
+                : [p.image || "/images/navy_suit.jpg"],
+            sizes:
+              p.sizes && p.sizes.length > 0 ? p.sizes : [46, 48, 50, 52, 54, 56],
+            fabric_uz: p.fabric_uz || "Turkiya Premium Jun & Viskoza Blend",
+            inStock: p.inStock !== false,
+            rating: p.rating || 5.0,
+            reviewsCount: p.reviewsCount || 12,
+          };
+        });
 
         const customProds = [];
         const defaultMap = new Map();
@@ -6678,7 +6707,7 @@ async function syncProductsWithBackendAndStorage(isIntervalSync = false) {
 
         const mergedProds = [...customProds, ...Array.from(defaultMap.values())];
         const newHash = mergedProds.map(
-          (p) => `${p.id}:${p.title_uz}:${p.price}:${p.category}:${p.image}`,
+          (p) => `${p.id}:${p.title_uz}:${p.price}:${p.pachkaPriceUsd || p.priceUsd}:${p.category}:${p.image}`,
         ).join("|");
 
         // ONLY update & re-render if product data has ACTUALLY changed!
@@ -6741,23 +6770,32 @@ function saveProductPriceByAdmin(index) {
   renderAdminProducts();
   showToast(`Mahsulot "${newTitle}" ma'lumotlari saqlandi! 💾`);
 
-  // Sync PUT with backend
-  const targetId = EUROTEX_PRODUCTS[index].id || EUROTEX_PRODUCTS[index].dbId;
+  // Sync with backend (PUT and POST)
+  const targetId = EUROTEX_PRODUCTS[index].customId || EUROTEX_PRODUCTS[index].id || EUROTEX_PRODUCTS[index].dbId;
   if (targetId) {
+    const payload = {
+      customId: String(targetId),
+      id: String(targetId),
+      title_uz: newTitle,
+      title_ru: newTitle,
+      title_en: newTitle,
+      category: newCat,
+      priceUsd: newPachkaUsd,
+      pachkaPriceUsd: newPachkaUsd,
+      price: EUROTEX_PRODUCTS[index].price,
+      oldPrice: EUROTEX_PRODUCTS[index].oldPrice,
+    };
     fetch(`/products/${targetId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        customId: String(targetId),
-        title_uz: newTitle,
-        title_ru: newTitle,
-        title_en: newTitle,
-        category: newCat,
-        priceUsd: newPachkaUsd,
-        pachkaPriceUsd: newPachkaUsd,
-        price: EUROTEX_PRODUCTS[index].price,
-      }),
-    }).catch((err) => console.error("Server PUT error:", err));
+      body: JSON.stringify(payload),
+    }).catch(() => {});
+
+    fetch("/products", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }).catch((err) => console.error("Server save error:", err));
   }
 }
 
@@ -7547,7 +7585,8 @@ function handleSaveProductDetails(e) {
   p.title_uz = newTitle;
   p.title = newTitle;
   p.pachkaPriceUsd = sellingPriceUsd;
-  p.priceUsd = Math.round(sellingPriceUsd / newQty);
+  p.priceUsd = sellingPriceUsd;
+  p.unitPriceUsd = Math.round((sellingPriceUsd / newQty) * 100) / 100;
   p.pachkaQty = newQty;
   p.price = sellingPriceUsd * rate;
   p.oldPrice = oldPriceVal;
@@ -7573,29 +7612,42 @@ function handleSaveProductDetails(e) {
   } catch (err) {}
   notifyProductChange();
 
-  // Send to backend
+  // Send to backend (PUT and POST)
+  const targetId = String(p.customId || p.id || "");
+  const payload = {
+    customId: targetId,
+    id: targetId,
+    title_uz: p.title_uz,
+    category: p.category,
+    pachkaPriceUsd: p.pachkaPriceUsd,
+    priceUsd: p.priceUsd,
+    unitPriceUsd: p.unitPriceUsd,
+    pachkaQty: p.pachkaQty,
+    price: p.price,
+    oldPrice: p.oldPrice,
+    desc_uz: p.desc_uz,
+    brand: p.brand,
+    fabric_uz: p.fabric_uz,
+    colors: p.colors,
+    sizes: p.sizes,
+    season: p.season,
+    origin: p.origin,
+    image: p.image,
+    images: p.images,
+  };
+
+  if (targetId) {
+    fetch(`/products/${targetId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }).catch(() => {});
+  }
+
   fetch("/products", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      customId: String(p.id || p.customId),
-      title_uz: p.title_uz,
-      category: p.category,
-      pachkaPriceUsd: p.pachkaPriceUsd,
-      priceUsd: p.priceUsd,
-      pachkaQty: p.pachkaQty,
-      price: p.price,
-      oldPrice: p.oldPrice,
-      desc_uz: p.desc_uz,
-      brand: p.brand,
-      fabric_uz: p.fabric_uz,
-      colors: p.colors,
-      sizes: p.sizes,
-      season: p.season,
-      origin: p.origin,
-      image: p.image,
-      images: p.images,
-    }),
+    body: JSON.stringify(payload),
   }).catch((err) => console.error("Update error:", err));
 
   closeModal("editProductModal");

@@ -53,6 +53,12 @@ router.get("/", async (req, res) => {
         fileProds.forEach((p) => map.set(String(p.id || p.customId), p));
         dbProds.forEach((p) => {
           const obj = p.toObject ? p.toObject() : p;
+          if (obj.pachkaPriceUsd && obj.pachkaPriceUsd > 0) {
+            obj.priceUsd = obj.pachkaPriceUsd;
+          }
+          if (obj.oldPrice && obj.oldPrice > 50000000) {
+            obj.oldPrice = Math.round((obj.price || (obj.priceUsd || 50) * 12650) * 1.25);
+          }
           map.set(String(obj.customId || obj.id || obj._id), obj);
         });
         const merged = Array.from(map.values());
@@ -69,9 +75,13 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     await ensureDbConnected();
-    const pData = req.body;
+    const pData = { ...req.body };
     if (!pData.customId) pData.customId = pData.id || "prod_" + Date.now();
     if (!pData.id) pData.id = pData.customId;
+    if (pData.pachkaPriceUsd && pData.pachkaPriceUsd > 0) {
+      pData.priceUsd = pData.pachkaPriceUsd;
+    }
+    delete pData._id;
 
     // 1. Save to MongoDB Atlas FIRST (Primary Database)
     let dbResult = null;
@@ -111,7 +121,13 @@ router.put("/:id", async (req, res) => {
   try {
     await ensureDbConnected();
     const id = String(req.params.id);
-    const pData = req.body;
+    const pData = { ...req.body };
+    if (!pData.customId) pData.customId = id;
+    if (!pData.id) pData.id = id;
+    if (pData.pachkaPriceUsd && pData.pachkaPriceUsd > 0) {
+      pData.priceUsd = pData.pachkaPriceUsd;
+    }
+    delete pData._id;
 
     // 1. Save to MongoDB Atlas FIRST (Primary Database)
     const queryConditions = [{ customId: id }, { id: id }];
