@@ -1131,7 +1131,7 @@ function safeFormatMoney(priceVal) {
     let uzs = 0;
     const num = parseFloat(priceVal) || 45;
 
-    if (num > 5000) {
+    if (num >= 100000) {
       uzs = Math.round(num);
       usd = Math.round(uzs / rate);
     } else {
@@ -2078,6 +2078,10 @@ function addToCart(
 
 function clearCart() {
   state.cart = [];
+  state.appliedPromoCode = null;
+  state.appliedDiscountAmount = 0;
+  state.appliedDiscountUsd = 0;
+  state.discountRate = 0;
   localStorage.setItem("eurotex_cart", JSON.stringify(state.cart));
   updateCartUI();
   showToast("Savat tozalandi");
@@ -2147,14 +2151,32 @@ function updateCartTotalsOnly() {
   const dashCartCount = document.getElementById("dashCartCount");
   const cartPopHeaderCount = document.getElementById("cartPopHeaderCount");
   const cartPopTotal = document.getElementById("cartPopTotal");
+  const discountRow = document.getElementById("discountRow");
+  const cartDiscount = document.getElementById("cartDiscount");
 
   const totalCount = state.cart.reduce((sum, i) => sum + i.quantity, 0);
-  const rawSubtotal = state.cart.reduce(
+  const rawSubtotalUsd = state.cart.reduce(
     (sum, i) => sum + (i.priceUsd || i.price || 120) * i.quantity,
     0,
   );
-  const discountAmount = Math.round(rawSubtotal * (state.discountRate || 0));
-  const finalTotal = rawSubtotal - discountAmount;
+
+  const rate = state.usdRate || 12650;
+  let discountUsd = 0;
+  let discountSom = 0;
+
+  if (state.discountRate && state.discountRate > 0) {
+    discountUsd = Math.round(rawSubtotalUsd * state.discountRate);
+    discountSom = Math.round(discountUsd * rate);
+  } else if (state.appliedDiscountUsd && state.appliedDiscountUsd > 0) {
+    discountUsd = Math.min(state.appliedDiscountUsd, rawSubtotalUsd);
+    discountSom = state.appliedDiscountAmount || Math.round(discountUsd * rate);
+  } else if (state.appliedDiscountAmount && state.appliedDiscountAmount > 0) {
+    discountSom = state.appliedDiscountAmount;
+    discountUsd = Math.min(rawSubtotalUsd, Math.round(discountSom / rate));
+  }
+
+  discountUsd = Math.min(discountUsd, rawSubtotalUsd);
+  const finalTotalUsd = Math.max(0, rawSubtotalUsd - discountUsd);
 
   if (cartCount) cartCount.textContent = totalCount;
   if (mobileCartBadge) mobileCartBadge.textContent = totalCount;
@@ -2162,9 +2184,22 @@ function updateCartTotalsOnly() {
   if (cartHeaderCount) cartHeaderCount.textContent = `${totalCount} ta mahsulot`;
   if (cartItemQty) cartItemQty.textContent = totalCount;
   if (cartPopHeaderCount) cartPopHeaderCount.textContent = `${totalCount} ta mahsulot`;
-  if (cartSubtotal) cartSubtotal.textContent = formatMoney(rawSubtotal);
-  if (cartTotal) cartTotal.textContent = formatMoney(finalTotal);
-  if (cartPopTotal) cartPopTotal.textContent = safeFormatMoney(finalTotal);
+  if (cartSubtotal) cartSubtotal.textContent = formatMoney(rawSubtotalUsd);
+  if (cartTotal) cartTotal.textContent = formatMoney(finalTotalUsd);
+  if (cartPopTotal) cartPopTotal.textContent = safeFormatMoney(finalTotalUsd);
+
+  if (discountUsd > 0 || discountSom > 0) {
+    if (discountRow) discountRow.style.display = "flex";
+    if (cartDiscount) {
+      if (discountUsd > 0) {
+        cartDiscount.textContent = `-${formatMoney(discountUsd)}`;
+      } else {
+        cartDiscount.textContent = `-${formatMoneySom(discountSom)} so'm`;
+      }
+    }
+  } else if (discountRow) {
+    discountRow.style.display = "none";
+  }
 }
 
 function updateCartQtyByIndex(index, change, ev) {
@@ -2311,27 +2346,7 @@ function updateCartUI() {
   }
 }
 
-// Promo Code Logic
-function applyPromoCode() {
-  const promoInput = document.getElementById("promoCodeInput");
-  if (!promoInput) return;
-  const code = promoInput.value.trim().toUpperCase();
-
-  if (code === "EUROTEX2026" || code === "EUROTEX20") {
-    state.appliedPromo = code;
-    state.discountRate = 0.2; // 20% discount
-    const discountRow = document.getElementById("discountRow");
-    const cartDiscount = document.getElementById("cartDiscount");
-    if (discountRow && cartDiscount) {
-      discountRow.style.display = "flex";
-      cartDiscount.textContent = `-20% promo`;
-    }
-    updateCartUI();
-    showToast("Tabriklaymiz! 20% Chegirma promo-kodi qo'llandi! 🎉");
-  } else {
-    showToast("Noto'g me'yoriy promo-kod kiritildi ❌");
-  }
-}
+// Promo Code Logic is handled below by async applyPromoCode()
 
 // =============================================================================
 // 🎨 EUROTEX 12 PRESET COLORS PALETTE & COLOR CODE RESOLVER
@@ -3450,21 +3465,39 @@ function updateCheckoutData() {
   const checkoutDiscountRow = document.getElementById("checkoutDiscountRow");
   const checkoutDiscount = document.getElementById("checkoutDiscount");
 
-  const rawSubtotal = state.cart.reduce(
-    (sum, i) => sum + i.price * i.quantity,
+  const rawSubtotalUsd = state.cart.reduce(
+    (sum, i) => sum + (i.priceUsd || i.price || 120) * i.quantity,
     0,
   );
-  const discountAmount = Math.round(rawSubtotal * state.discountRate);
-  const finalTotal = rawSubtotal - discountAmount;
-  const dict = TRANSLATIONS[state.currentLang];
+  const rate = state.usdRate || 12650;
+  let discountUsd = 0;
+  let discountSom = 0;
 
-  if (checkoutSubtotal) checkoutSubtotal.textContent = formatMoney(rawSubtotal);
+  if (state.discountRate && state.discountRate > 0) {
+    discountUsd = Math.round(rawSubtotalUsd * state.discountRate);
+    discountSom = Math.round(discountUsd * rate);
+  } else if (state.appliedDiscountUsd && state.appliedDiscountUsd > 0) {
+    discountUsd = Math.min(state.appliedDiscountUsd, rawSubtotalUsd);
+    discountSom = state.appliedDiscountAmount || Math.round(discountUsd * rate);
+  } else if (state.appliedDiscountAmount && state.appliedDiscountAmount > 0) {
+    discountSom = state.appliedDiscountAmount;
+    discountUsd = Math.min(rawSubtotalUsd, Math.round(discountSom / rate));
+  }
+
+  discountUsd = Math.min(discountUsd, rawSubtotalUsd);
+  const finalTotalUsd = Math.max(0, rawSubtotalUsd - discountUsd);
+
+  if (checkoutSubtotal) checkoutSubtotal.textContent = formatMoney(rawSubtotalUsd);
   if (checkoutFinalTotal)
-    checkoutFinalTotal.textContent = formatMoney(finalTotal);
+    checkoutFinalTotal.textContent = formatMoney(finalTotalUsd);
 
-  if (discountAmount > 0 && checkoutDiscountRow && checkoutDiscount) {
+  if ((discountUsd > 0 || discountSom > 0) && checkoutDiscountRow && checkoutDiscount) {
     checkoutDiscountRow.style.display = "flex";
-    checkoutDiscount.textContent = `-${formatMoney(discountAmount)}`;
+    if (discountUsd > 0) {
+      checkoutDiscount.textContent = `-${formatMoney(discountUsd)}`;
+    } else {
+      checkoutDiscount.textContent = `-${formatMoneySom(discountSom)} so'm`;
+    }
   } else if (checkoutDiscountRow) {
     checkoutDiscountRow.style.display = "none";
   }
@@ -3812,32 +3845,7 @@ function openCheckoutModal() {
     return;
   }
   closeModal("cartModal");
-
-  const checkoutSubtotal = document.getElementById("checkoutSubtotal");
-  const checkoutFinalTotal = document.getElementById("checkoutFinalTotal");
-  const checkoutDiscountRow = document.getElementById("checkoutDiscountRow");
-  const checkoutDiscount = document.getElementById("checkoutDiscount");
-
-  const rawSubtotal = state.cart.reduce(
-    (sum, i) => sum + i.price * i.quantity,
-    0,
-  );
-  const discountAmount = Math.round(rawSubtotal * state.discountRate);
-  const finalTotal = rawSubtotal - discountAmount;
-  const dict = TRANSLATIONS[state.currentLang];
-
-  if (checkoutSubtotal)
-    checkoutSubtotal.textContent = `${formatMoney(rawSubtotal)} ${dict.currency}`;
-  if (checkoutFinalTotal)
-    checkoutFinalTotal.textContent = `${formatMoney(finalTotal)} ${dict.currency}`;
-
-  if (discountAmount > 0 && checkoutDiscountRow && checkoutDiscount) {
-    checkoutDiscountRow.style.display = "flex";
-    checkoutDiscount.textContent = `-${formatMoney(discountAmount)} ${dict.currency}`;
-  } else if (checkoutDiscountRow) {
-    checkoutDiscountRow.style.display = "none";
-  }
-
+  updateCheckoutData();
   openModal("checkoutModal");
 }
 
@@ -3850,10 +3858,12 @@ async function applyPromoCode() {
     return;
   }
 
-  const rawSubtotal = state.cart.reduce(
-    (sum, i) => sum + (i.price || 0) * (i.quantity || 1),
+  const rawSubtotalUsd = state.cart.reduce(
+    (sum, i) => sum + (i.priceUsd || i.price || 120) * (i.quantity || 1),
     0,
   );
+  const rate = state.usdRate || 12650;
+  const rawSubtotalSom = Math.round(rawSubtotalUsd * rate);
   const userIdentifier = (state.user && (state.user.email || state.user.phone)) || localStorage.getItem("eurotex_guest_phone") || "";
 
   try {
@@ -3862,35 +3872,25 @@ async function applyPromoCode() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         code,
-        orderTotal: rawSubtotal,
+        orderTotal: rawSubtotalSom,
+        orderTotalSom: rawSubtotalSom,
+        orderTotalUsd: rawSubtotalUsd,
         userIdentifier,
       }),
     });
     const data = await res.json();
     if (data.valid) {
       state.appliedPromoCode = data.promo.code;
-      state.appliedDiscountAmount = data.discountAmount;
-
-      const discountRow = document.getElementById("discountRow");
-      const cartDiscount = document.getElementById("cartDiscount");
-      const cartTotal = document.getElementById("cartTotal");
-
-      if (discountRow) discountRow.style.display = "flex";
-      if (cartDiscount) cartDiscount.textContent = `-${formatMoneySom(data.discountAmount)} so'm`;
-      if (cartTotal) {
-        const finalSom = Math.max(0, rawSubtotal - data.discountAmount);
-        cartTotal.textContent = `${formatMoneySom(finalSom)} so'm`;
+      state.appliedDiscountAmount = data.discountAmountSom || data.discountAmount || 0;
+      state.appliedDiscountUsd = data.discountAmountUsd || Math.round(state.appliedDiscountAmount / rate);
+      if (data.promo.discountType === "percent") {
+        state.discountRate = data.promo.discountValue / 100;
+      } else {
+        state.discountRate = 0;
       }
 
-      const chRow = document.getElementById("checkoutDiscountRow");
-      const chDisc = document.getElementById("checkoutDiscount");
-      const chFinal = document.getElementById("checkoutFinalTotal");
-      if (chRow) chRow.style.display = "flex";
-      if (chDisc) chDisc.textContent = `-${formatMoneySom(data.discountAmount)} so'm`;
-      if (chFinal) {
-        const finalSom = Math.max(0, rawSubtotal - data.discountAmount);
-        chFinal.textContent = `${formatMoneySom(finalSom)} so'm`;
-      }
+      updateCartTotalsOnly();
+      updateCheckoutData();
 
       showToast(`🎉 ${data.message}`);
     } else {
@@ -4990,21 +4990,25 @@ function handleOrderSubmit(e) {
     ? addrInput.value.trim()
     : (addrInput && addrInput.options ? addrInput.options[addrInput.selectedIndex]?.text : "Toshkent sh., Markaz");
 
-  const rawSubtotal = state.cart.reduce(
-    (sum, i) => sum + i.price * i.quantity,
+  const rawSubtotalUsd = state.cart.reduce(
+    (sum, i) => sum + (i.priceUsd || i.price || 120) * (i.quantity || 1),
     0,
   );
-  const discountAmount = Math.round(rawSubtotal * state.discountRate);
-  const finalTotal = rawSubtotal - discountAmount;
-  const orderId = `EUR-${Math.floor(100000 + Math.random() * 900000)}`;
-
   const rateApplied = state.usdRate || 12650;
-  let totalPriceUsd = finalTotal;
-  let totalPriceUzs = Math.round(finalTotal * rateApplied);
-  if (finalTotal > 5000) {
-    totalPriceUzs = Math.round(finalTotal);
-    totalPriceUsd = Math.round(totalPriceUzs / rateApplied);
+  let discountUsd = 0;
+  if (state.discountRate && state.discountRate > 0) {
+    discountUsd = Math.round(rawSubtotalUsd * state.discountRate);
+  } else if (state.appliedDiscountUsd && state.appliedDiscountUsd > 0) {
+    discountUsd = Math.min(state.appliedDiscountUsd, rawSubtotalUsd);
+  } else if (state.appliedDiscountAmount && state.appliedDiscountAmount > 0) {
+    discountUsd = Math.min(rawSubtotalUsd, Math.round(state.appliedDiscountAmount / rateApplied));
   }
+  discountUsd = Math.min(discountUsd, rawSubtotalUsd);
+  const finalTotalUsd = Math.max(0, rawSubtotalUsd - discountUsd);
+  const totalPriceUsd = finalTotalUsd;
+  const totalPriceUzs = Math.round(finalTotalUsd * rateApplied);
+  const finalTotal = finalTotalUsd;
+  const orderId = `EUR-${Math.floor(100000 + Math.random() * 900000)}`;
 
   const currentUserEmail = state.user?.email || "";
   const newOrder = {
@@ -8977,12 +8981,20 @@ function formatMoneySom(amount) {
 }
 
 function formatMoney(usdAmount) {
-  const numUsd =
+  const num =
     typeof usdAmount === "number" ? usdAmount : parseFloat(usdAmount) || 0;
-  const formattedUsd = `$${numUsd.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")}`;
   const rate =
     typeof state !== "undefined" && state.usdRate ? state.usdRate : 12650;
-  const uzs = Math.round(numUsd * rate);
+  let usd = 0;
+  let uzs = 0;
+  if (num >= 100000) {
+    uzs = Math.round(num);
+    usd = Math.round(uzs / rate);
+  } else {
+    usd = Math.round(num);
+    uzs = Math.round(usd * rate);
+  }
+  const formattedUsd = `$${usd.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")}`;
   const formattedUzs = uzs.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
   return `${formattedUsd} (${formattedUzs} so'm)`;
 }
@@ -9033,7 +9045,13 @@ function toUzbekError(msg) {
   if (lower.includes("invalid code") || lower.includes("wrong code") || lower.includes("noto'g'ri kod")) {
     return "❌ Tasdiqlash kodi noto'g'ri kiritildi. Iltimos, pochtangizga kelgan 6 xonali kodni tekshiring.";
   }
-  if (lower.includes("internal server error") || lower.includes("500")) {
+  if (
+    lower.includes("internal server error") ||
+    lower.includes("status 500") ||
+    lower.includes("error 500") ||
+    lower.includes("http 500") ||
+    lower.trim() === "500"
+  ) {
     return "⚠️ Serverda vaqtincha texnik xatolik yuz berdi. Iltimos, 1 daqiqadan so'ng qayta urinib ko'ring.";
   }
   return msg;

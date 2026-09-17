@@ -473,13 +473,39 @@ router.post("/promocodes/validate", (req, res) => {
     return res.json({ valid: false, message: "Ushbu promokoddan foydalanish limiti tugagan" });
   }
 
-  // 3. Minimal buyurtma summasini tekshirish
-  const total = Number(orderTotal) || 0;
-  if (promo.minOrderPrice && total < promo.minOrderPrice) {
+  // 3. Minimal buyurtma summasini tekshirish (USD va UZS ni to'g'ri tekshirish)
+  const rate = 12650;
+  const { orderTotalSom, orderTotalUsd } = req.body;
+  let totalSom = Number(orderTotalSom) || 0;
+  let totalUsd = Number(orderTotalUsd) || 0;
+  const rawInput = Number(orderTotal) || 0;
+
+  if (!totalSom && !totalUsd) {
+    if (rawInput >= 100000) {
+      totalSom = rawInput;
+      totalUsd = Math.round(rawInput / rate);
+    } else {
+      totalUsd = rawInput;
+      totalSom = Math.round(rawInput * rate);
+    }
+  } else if (!totalSom && totalUsd) {
+    totalSom = Math.round(totalUsd * rate);
+  } else if (totalSom && !totalUsd) {
+    totalUsd = Math.round(totalSom / rate);
+  }
+
+  // Agar mijoz USD yuborgan bo'lsa (masalan 4500 USD), uni so'mga aylantirib tekshiramiz
+  if (promo.minOrderPrice && totalSom < promo.minOrderPrice && rawInput < 100000 && (rawInput * rate) >= promo.minOrderPrice) {
+    totalSom = Math.round(rawInput * rate);
+    totalUsd = rawInput;
+  }
+
+  if (promo.minOrderPrice && totalSom < promo.minOrderPrice) {
     const minFormatted = promo.minOrderPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    const minUsd = Math.round(promo.minOrderPrice / rate);
     return res.json({
       valid: false,
-      message: `Ushbu promokod faqat kamida ${minFormatted} so'mlik xaridlar uchun amal qiladi`,
+      message: `Ushbu promokod faqat kamida ${minFormatted} so'mlik ($${minUsd}) xaridlar uchun amal qiladi`,
     });
   }
 
@@ -496,18 +522,24 @@ router.post("/promocodes/validate", (req, res) => {
   }
 
   // Chegirma summasini hisoblash
-  let discountAmount = 0;
+  let discountAmountSom = 0;
+  let discountAmountUsd = 0;
   if (promo.discountType === "percent") {
-    discountAmount = Math.round((total * promo.discountValue) / 100);
+    discountAmountSom = Math.round((totalSom * promo.discountValue) / 100);
+    discountAmountUsd = Math.round((totalUsd * promo.discountValue) / 100);
   } else {
-    discountAmount = Math.min(promo.discountValue, total);
+    discountAmountSom = Math.min(promo.discountValue, totalSom);
+    discountAmountUsd = Math.max(1, Math.round(discountAmountSom / rate));
   }
 
   res.json({
     valid: true,
     promo,
-    discountAmount,
-    message: `${promo.discountType === "percent" ? promo.discountValue + "%" : promo.discountValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " so'm"} chegirma qo'llandi! 🎉`,
+    discountAmount: discountAmountSom,
+    discountAmountSom,
+    discountAmountUsd,
+    discountPercent: promo.discountType === "percent" ? promo.discountValue : 0,
+    message: `${promo.discountType === "percent" ? promo.discountValue + "%" : discountAmountSom.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " so'm"} chegirma muvaffaqiyatli qo'llandi! 🎉`,
   });
 });
 
