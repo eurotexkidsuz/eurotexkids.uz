@@ -903,11 +903,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     handleURLRouting();
   }
 
-  // Auto-sync products & orders in background gently every 15s (only re-renders on actual DB changes)
+  // Auto-sync products & orders in background silently every 30s (zero DOM flicker, completely invisible to user)
   setInterval(() => {
     syncProductsWithBackendAndStorage(true);
     fetchOrdersFromServer();
-  }, 15000);
+  }, 30000);
   loadCustomSizesFromStorage();
   setLanguage(state.currentLang);
   setupEventListeners();
@@ -4944,6 +4944,15 @@ function handleOrderSubmit(e) {
   state.orders.unshift(newOrder);
   localStorage.setItem("eurotex_orders", JSON.stringify(state.orders));
 
+  // Store this order's ID in this device's personal orders list
+  try {
+    let myOrderIds = JSON.parse(localStorage.getItem("eurotex_my_order_ids") || "[]");
+    if (!myOrderIds.includes(orderId)) {
+      myOrderIds.unshift(orderId);
+      localStorage.setItem("eurotex_my_order_ids", JSON.stringify(myOrderIds));
+    }
+  } catch (e) {}
+
   // Save order to MongoDB Atlas live server & notify broadcast channel
   try {
     fetch("/orders", {
@@ -5023,6 +5032,7 @@ function playOrderNotificationSound() {
 
 let _seenOrderIds = new Set();
 let _isFirstOrderFetch = true;
+let _lastOrdersHash = "";
 
 async function fetchOrdersFromServer() {
   try {
@@ -5097,11 +5107,36 @@ async function fetchOrdersFromServer() {
         });
 
         _isFirstOrderFetch = false;
+
+        // Hash checking: Only update state & DOM if orders actually changed!
+        const currentHash = newOrders
+          .map((o) => `${o.id}:${o.statusStep}:${o.status}:${o.totalPriceUzs || o.total}`)
+          .join("|");
+
+        if (currentHash === _lastOrdersHash) {
+          return; // Completely silent, zero DOM touch
+        }
+        _lastOrdersHash = currentHash;
+
         state.orders = newOrders;
         localStorage.setItem("eurotex_orders", JSON.stringify(state.orders));
-        renderOrdersHistory();
-        renderAdminOrders();
-        updateAdminStats();
+
+        // Only update UI if the user is currently looking at orders or admin panels!
+        const ordersPane = document.getElementById("dPaneOrders");
+        const dashView = document.getElementById("dashboardPageView");
+        if (dashView && dashView.style.display !== "none" && ordersPane && ordersPane.style.display !== "none") {
+          renderOrdersHistory();
+        }
+
+        const adminSecOrders = document.getElementById("adminSecOrders");
+        if (adminSecOrders && adminSecOrders.style.display !== "none") {
+          renderAdminOrders();
+        }
+
+        const adminSecMain = document.getElementById("admin-dashboard-section");
+        if (adminSecMain && adminSecMain.style.display !== "none") {
+          updateAdminStats();
+        }
 
         if (hasNewOrderForAdmin && isUserAdmin()) {
           playOrderNotificationSound();
@@ -5285,12 +5320,56 @@ function renderOrdersHistory() {
   const container = document.getElementById("ordersListContainer");
   if (!container) return;
 
-  if (!state.orders || state.orders.length === 0) {
-    state.orders = getDemoOrders();
-    localStorage.setItem("eurotex_orders", JSON.stringify(state.orders));
-  }
+  const user = state.user || JSON.parse(localStorage.getItem("eurotex_user") || "null");
+  const uEmail = user && user.email ? String(user.email).toLowerCase().trim() : "";
+  const uPhone = user && user.phone ? String(user.phone).replace(/[^0-9]/g, "") : "";
+  const uName = user && (user.fullName || user.name) ? String(user.fullName || user.name).toLowerCase().trim() : "";
 
-  const myOrders = state.orders;
+  let localOrderIds = new Set();
+  try {
+    const savedIds = JSON.parse(localStorage.getItem("eurotex_my_order_ids") || "[]");
+    if (Array.isArray(savedIds)) savedIds.forEach((id) => localOrderIds.add(String(id)));
+  } catch (e) {}
+
+  // Filter ONLY orders that strictly belong to THIS user
+  const myOrders = (state.orders || []).filter((o) => {
+    if (!o) return false;
+    const ordId = String(o.orderId || o.id || "");
+    // 1. Matched by device's placed order IDs
+    if (ordId && localOrderIds.has(ordId)) return true;
+
+    // 2. Matched by logged-in user email
+    const oEmail = String(o.userEmail || o.email || "").toLowerCase().trim();
+    if (uEmail && oEmail && oEmail === uEmail) return true;
+
+    // 3. Matched by phone number
+    const oPhone = String(o.phone || "").replace(/[^0-9]/g, "");
+    if (uPhone && uPhone.length >= 7 && oPhone && (oPhone.includes(uPhone) || uPhone.includes(oPhone))) return true;
+
+    // 4. If logged in and recipient name matches closely
+    if (uName && uName.length >= 4) {
+      const oRecipient = String(o.recipient || o.customerName || "").toLowerCase().trim();
+      if (oRecipient.includes(uName)) return true;
+    }
+
+    return false;
+  });
+
+  if (myOrders.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:50px 20px; background:#ffffff; border-radius:18px; border:1px solid #e2e8f0; margin:20px 0; box-shadow:0 4px 15px rgba(0,0,0,0.02);">
+        <div style="font-size:52px; margin-bottom:12px;">📦</div>
+        <h3 style="font-size:18px; font-weight:800; color:#0f172a; margin:0 0 8px 0;">Sizda hali buyurtmalar mavjud emas</h3>
+        <p style="font-size:13.5px; color:#64748b; margin:0 0 20px 0; max-width:440px; margin-left:auto; margin-right:auto;">
+          Siz ushbu hisob orqali hali buyurtma bermagansiz. Do'konimizdagi premium kostyum va kiyimlarni ko'rib chiqing va buyurtma bering!
+        </p>
+        <button type="button" onclick="closeDashboardView()" style="background:#88001b; color:#ffffff; border:none; border-radius:12px; padding:11px 24px; font-weight:800; font-size:14px; cursor:pointer; box-shadow:0 4px 14px rgba(136,0,27,0.3); transition:all 0.2s;">
+          Katalogga o'tish 🛍️
+        </button>
+      </div>
+    `;
+    return;
+  }
 
   container.innerHTML = myOrders
     .map((order) => {
@@ -6575,14 +6654,14 @@ async function syncProductsWithBackendAndStorage(isIntervalSync = false) {
           const searchInput = document.getElementById("searchInput");
           const isTypingInSearch = searchInput && document.activeElement === searchInput;
 
-          if (!isTypingInSearch) {
+          if (!isIntervalSync && !isTypingInSearch) {
             renderProducts();
           }
 
           const isTypingInAdmin =
             document.activeElement &&
             document.activeElement.closest("#adminProductsTableContainer");
-          if (!isTypingInAdmin) {
+          if (!isIntervalSync && !isTypingInAdmin) {
             renderAdminProducts();
           }
         }
