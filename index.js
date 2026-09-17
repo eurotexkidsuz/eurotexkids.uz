@@ -117,13 +117,15 @@ const apiRouter = require("./routes/apiRoute");
 app.use("/api", apiRouter);
 
 // ── 🌐 GLOBAL SPA CATCH-ALL FOR GET ROUTES ────────────────────────────────────
-app.get("*", (req, res, next) => {
-  const hasExtension = req.path.includes(".") && !req.path.endsWith(".html");
-  if (!hasExtension && !req.path.startsWith("/api")) {
-    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    res.setHeader("Pragma", "no-cache");
-    res.setHeader("Expires", "0");
-    return res.sendFile(path.join(__dirname, "public", "index.html"));
+app.use((req, res, next) => {
+  if (req.method === "GET") {
+    const hasExtension = req.path.includes(".") && !req.path.endsWith(".html");
+    if (!hasExtension && !req.path.startsWith("/api") && !req.path.startsWith("/users/auth")) {
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+      res.setHeader("Pragma", "no-cache");
+      res.setHeader("Expires", "0");
+      return res.sendFile(path.join(__dirname, "public", "index.html"));
+    }
   }
   next();
 });
