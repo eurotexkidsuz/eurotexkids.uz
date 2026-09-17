@@ -4914,11 +4914,47 @@ async function fetchOrdersFromServer() {
     const res = await fetch("/orders");
     if (res.ok) {
       const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
+      const rawOrders = Array.isArray(data) ? data : (data && Array.isArray(data.orders) ? data.orders : []);
+
+      // Auto-sync unsynced local orders from localStorage to server
+      const serverIds = new Set(rawOrders.map((o) => String(o.orderId || o.id || "")));
+      let localList = [];
+      try {
+        localList = JSON.parse(localStorage.getItem("eurotex_orders") || "[]");
+      } catch (e) {}
+
+      const unsynced = localList.filter((lo) => {
+        const lid = String(lo.orderId || lo.id || "");
+        return lid && !serverIds.has(lid);
+      });
+
+      if (unsynced.length > 0) {
+        unsynced.forEach(async (uo) => {
+          try {
+            await fetch("/orders", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(uo),
+            });
+          } catch (e) {}
+        });
+      }
+
+      // Combine server + local unsynced
+      const combined = [...rawOrders, ...unsynced];
+      const dedupMap = new Map();
+      combined.forEach((o) => {
+        const id = String(o.orderId || o.id || "");
+        if (id && !dedupMap.has(id)) dedupMap.set(id, o);
+      });
+
+      const listToProcess = Array.from(dedupMap.values());
+
+      if (listToProcess.length > 0) {
         let hasNewOrderForAdmin = false;
         let newestOrder = null;
 
-        const newOrders = data.map((o) => {
+        const newOrders = listToProcess.map((o) => {
           const id = o.orderId || o.id;
           if (!_isFirstOrderFetch && !_seenOrderIds.has(id)) {
             hasNewOrderForAdmin = true;
@@ -4929,12 +4965,15 @@ async function fetchOrdersFromServer() {
             id,
             orderId: id,
             userEmail: o.userEmail || "",
-            recipient: o.recipient || "Mijoz",
+            recipient: o.recipient || o.customerName || "Mijoz",
+            customerName: o.customerName || o.recipient || "Mijoz",
             phone: o.phone || "",
             address: o.address || "",
             items: o.items || [],
-            total: o.total || 0,
-            statusStep: o.statusStep !== undefined ? o.statusStep : 1,
+            total: o.total || o.totalPriceUsd || 0,
+            totalPriceUsd: o.totalPriceUsd || o.total || 0,
+            totalPriceUzs: o.totalPriceUzs || 0,
+            statusStep: o.statusStep !== undefined ? Number(o.statusStep) : 1,
             status: o.status || "Qabul qilindi 🟡",
             date:
               o.date ||
@@ -7688,8 +7727,36 @@ function renderAdminUsersTable(users) {
         </thead>
         <tbody>
           ${users.map((u) => {
-            const spent = Number(u.totalSpent) || 0;
-            const cnt = Number(u.ordersCount) || 0;
+            let spent = Number(u.totalSpent) || 0;
+            let cnt = Number(u.ordersCount) || 0;
+
+            if (cnt === 0 && Array.isArray(state.orders) && state.orders.length > 0) {
+              const uEmail = String(u.email || "").toLowerCase().trim();
+              const uPhone = String(u.phone || "").replace(/[^0-9]/g, "");
+              const uPrefix = uEmail ? uEmail.split("@")[0] : "";
+              const uName = String(u.name || "").toLowerCase().trim();
+
+              const matched = state.orders.filter((o) => {
+                const oe = String(o.userEmail || o.email || "").toLowerCase().trim();
+                const op = String(o.phone || "").replace(/[^0-9]/g, "");
+                const on = String(o.recipient || o.customerName || "").toLowerCase().trim();
+                return (
+                  (uEmail && oe && oe === uEmail) ||
+                  (uPhone && op && uPhone.length >= 7 && (op.includes(uPhone) || uPhone.includes(op))) ||
+                  (uPrefix && uPrefix.length >= 4 && on.includes(uPrefix)) ||
+                  (uName && uName.length >= 3 && on.includes(uName))
+                );
+              });
+
+              if (matched.length > 0) {
+                cnt = matched.length;
+                spent = matched.reduce((sum, mo) => {
+                  const tot = Number(mo.totalPriceUzs || mo.total || 0);
+                  return sum + (tot > 5000 ? tot : tot * (state.usdRate || 12650));
+                }, 0);
+              }
+            }
+
             let tierClass = "crm-badge-new";
             let tierLabel = "🟢 Yangi";
             if (spent >= 1500000 || cnt >= 3) {
@@ -7710,7 +7777,7 @@ function renderAdminUsersTable(users) {
               <td style="color:#94a3b8;">${u.email}</td>
               <td>
                 <a href="tel:${u.phone}" style="color:#10b981; font-weight:700; text-decoration:none;">
-                  ${u.phone}
+                  ${u.phone || "-"}
                 </a>
               </td>
               <td>${u.city || "O'zbekiston"}</td>
@@ -7747,12 +7814,38 @@ function openAdminUserModal(userIdOrEmail) {
     email: userIdOrEmail,
     phone: "+998 90 000 00 00",
     city: "Toshkent",
+    address: "",
     totalSpent: 0,
     ordersCount: 0
   };
 
-  const spent = Number(user.totalSpent) || 0;
-  const count = Number(user.ordersCount) || 0;
+  const uEmail = String(user.email || "").toLowerCase().trim();
+  const uPhone = String(user.phone || "").replace(/[^0-9]/g, "");
+  const uName = String(user.name || "").toLowerCase().trim();
+  const uPrefix = uEmail ? uEmail.split("@")[0] : "";
+
+  const matchedOrders = (state.orders || []).filter((o) => {
+    const oEmail = String(o.userEmail || o.email || "").toLowerCase().trim();
+    const oPhone = String(o.phone || "").replace(/[^0-9]/g, "");
+    const oName = String(o.recipient || o.customerName || "").toLowerCase().trim();
+
+    return (
+      (uEmail && oEmail && oEmail === uEmail) ||
+      (uPhone && oPhone && uPhone.length >= 7 && (oPhone.includes(uPhone) || uPhone.includes(oPhone))) ||
+      (uName && uName.length >= 3 && oName.includes(uName)) ||
+      (uPrefix && uPrefix.length >= 4 && oName.includes(uPrefix))
+    );
+  });
+
+  let spent = Number(user.totalSpent) || 0;
+  let count = Number(user.ordersCount) || 0;
+  if ((count === 0 || spent === 0) && matchedOrders.length > 0) {
+    count = matchedOrders.length;
+    spent = matchedOrders.reduce((sum, mo) => {
+      const tot = Number(mo.totalPriceUzs || mo.total || 0);
+      return sum + (tot > 5000 ? tot : tot * (state.usdRate || 12650));
+    }, 0);
+  }
   const avg = count > 0 ? Math.round(spent / count) : 0;
 
   // Avatar
@@ -7797,8 +7890,11 @@ function openAdminUserModal(userIdOrEmail) {
   if (avgEl) avgEl.textContent = avg.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " so'm";
 
   // Contact info
+  const firstOrderAddress = matchedOrders[0]?.address;
+  const firstOrderPhone = matchedOrders[0]?.phone;
+
   const phoneEl = document.getElementById("crmModalPhone");
-  if (phoneEl) phoneEl.textContent = user.phone || "Kiritilmagan";
+  if (phoneEl) phoneEl.textContent = user.phone || firstOrderPhone || "Kiritilmagan";
 
   const emailEl = document.getElementById("crmModalEmail");
   if (emailEl) emailEl.textContent = user.email || "Kiritilmagan";
@@ -7807,38 +7903,24 @@ function openAdminUserModal(userIdOrEmail) {
   if (cityEl) cityEl.textContent = user.city || "O'zbekiston";
 
   const addressEl = document.getElementById("crmModalAddress");
-  if (addressEl) addressEl.textContent = user.address || "Asosiy manzil kiritilmagan";
+  if (addressEl) addressEl.textContent = user.address || firstOrderAddress || "Asosiy manzil kiritilmagan";
 
   // Action buttons
   const callBtn = document.getElementById("crmModalCallBtn");
   if (callBtn) {
-    callBtn.href = user.phone ? `tel:${user.phone}` : "javascript:void(0)";
+    const activePhone = user.phone || firstOrderPhone;
+    callBtn.href = activePhone ? `tel:${activePhone}` : "javascript:void(0)";
   }
 
   const tgBtn = document.getElementById("crmModalTgBtn");
   if (tgBtn) {
-    const cleanPhone = String(user.phone || "").replace(/[^0-9]/g, "");
+    const cleanPhone = String(user.phone || firstOrderPhone || "").replace(/[^0-9]/g, "");
     tgBtn.href = cleanPhone ? `https://t.me/+${cleanPhone}` : "https://t.me/";
   }
 
   // Orders list for this customer
   const ordersContainer = document.getElementById("crmModalOrdersList");
   if (ordersContainer) {
-    const matchedOrders = (state.orders || []).filter((o) => {
-      const oEmail = String(o.email || "").toLowerCase();
-      const uEmail = String(user.email || "").toLowerCase();
-      const oPhone = String(o.phone || "").replace(/[^0-9]/g, "");
-      const uPhone = String(user.phone || "").replace(/[^0-9]/g, "");
-      const oName = String(o.recipient || "").toLowerCase();
-      const uName = String(user.name || "").toLowerCase();
-
-      return (
-        (uEmail && oEmail === uEmail) ||
-        (uPhone && oPhone && (oPhone.includes(uPhone) || uPhone.includes(oPhone))) ||
-        (uName && oName.includes(uName))
-      );
-    });
-
     if (matchedOrders.length === 0) {
       ordersContainer.innerHTML = `
         <div style="text-align:center; padding:20px; color:#94a3b8; font-size:13px; background:#f1f5f9; border-radius:10px;">
@@ -7858,7 +7940,9 @@ function openAdminUserModal(userIdOrEmail) {
               0: "Bekor qilindi ❌"
             };
             const sLabel = stepLabels[step] || (o.status || "Jarayonda");
-            const totalSom = (parseFloat(o.total) || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+            const rawOVal = Number(o.totalPriceUzs || o.total || 0);
+            const ordSom = rawOVal > 5000 ? rawOVal : rawOVal * (state.usdRate || 12650);
+            const totalSom = Math.round(ordSom).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 
             return `
               <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">

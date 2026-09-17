@@ -1,0 +1,29 @@
+[
+  {
+    "orderId": "EUR-852248",
+    "userEmail": "abdulaziz10102013abdz@gmail.com",
+    "customerName": "Abdulaziz",
+    "recipient": "Abdulaziz (abdulaziz10102013abdz)",
+    "phone": "+998901234567",
+    "address": "amd,s",
+    "items": [
+      {
+        "title": "AKA",
+        "quantity": 2,
+        "size": "48",
+        "color": "Klassik",
+        "price": 8,
+        "priceUsd": 8,
+        "totalUsd": 16
+      }
+    ],
+    "itemsCount": 2,
+    "total": 16,
+    "totalPriceUsd": 16,
+    "totalPriceUzs": 202400,
+    "usdRateApplied": 12650,
+    "statusStep": 1,
+    "status": "Qabul qilindi 🟡",
+    "date": "9/17/2026"
+  }
+]

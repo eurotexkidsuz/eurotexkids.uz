@@ -1,3 +1,7 @@
+const dns = require("dns");
+try {
+  dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
+} catch (e) {}
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
@@ -112,61 +116,145 @@ router.put("/leads/:id", requireAdmin, (req, res) => {   // #6 — faqat admin
 // 2. 👥 FOYDALANUVCHILAR BAZASI (USER CRM)
 // =============================================================================
 router.get("/users-list", requireAdmin, async (req, res) => {   // #6 — faqat admin
-
   try {
+    // 1. Gather users from Mongo + local database.json
     let dbUsers = [];
     try {
       dbUsers = await User.find().sort({ createdAt: -1 }).limit(300).lean();
-    } catch (e) {}
+    } catch (e) {
+      console.warn("MongoDB User.find warning:", e.message);
+    }
 
-    let orders = [];
-    try {
-      orders = await Order.find().lean();
-    } catch (e) {}
+    // Also read local database.json users
+    let localUsers = [];
+    const localDbFile = path.join(__dirname, "../database.json");
+    if (fs.existsSync(localDbFile)) {
+      try {
+        localUsers = JSON.parse(fs.readFileSync(localDbFile, "utf8")) || [];
+      } catch (e) {}
+    }
 
-    // Aggregate user stats
     const usersMap = new Map();
 
-    dbUsers.forEach((u) => {
-      const email = String(u.email || "").toLowerCase();
-      usersMap.set(email, {
-        id: u._id,
-        email: u.email,
-        name: u.name || u.email.split("@")[0],
-        phone: u.phone || "-",
-        city: u.city || "Toshkent",
-        ordersCount: 0,
-        totalSpent: 0,
-        role: u.role || "user",
-        createdAt: u.createdAt || new Date(),
-      });
+    const registerUser = (u) => {
+      const email = String(u.email || "").toLowerCase().trim();
+      if (!email) return;
+      if (!usersMap.has(email)) {
+        usersMap.set(email, {
+          id: u._id || u.id || "usr_" + Math.random().toString(36).slice(2, 8),
+          email: u.email,
+          name: u.name || u.email.split("@")[0],
+          phone: u.phone && u.phone !== "-" ? u.phone : "",
+          city: u.city || "Toshkent",
+          address: u.address || "",
+          ordersCount: 0,
+          totalSpent: 0,
+          role: u.role || "user",
+          createdAt: u.createdAt || new Date(),
+        });
+      } else {
+        // Merge phone or address if missing
+        const existing = usersMap.get(email);
+        if ((!existing.phone || existing.phone === "-") && u.phone) existing.phone = u.phone;
+        if (!existing.address && u.address) existing.address = u.address;
+        if (!existing.name && u.name) existing.name = u.name;
+      }
+    };
+
+    dbUsers.forEach(registerUser);
+    localUsers.forEach(registerUser);
+
+    // 2. Gather orders from Mongo + local data/orders.json
+    let dbOrders = [];
+    try {
+      dbOrders = await Order.find().lean();
+    } catch (e) {
+      console.warn("MongoDB Order.find in users-list warning:", e.message);
+    }
+
+    let localOrders = [];
+    const localOrdersFile = path.join(__dirname, "../data/orders.json");
+    if (fs.existsSync(localOrdersFile)) {
+      try {
+        localOrders = JSON.parse(fs.readFileSync(localOrdersFile, "utf8")) || [];
+      } catch (e) {}
+    }
+
+    const orderDedup = new Map();
+    dbOrders.forEach((o) => {
+      const id = String(o.orderId || o.id || o._id);
+      orderDedup.set(id, o);
+    });
+    localOrders.forEach((o) => {
+      const id = String(o.orderId || o.id || o._id);
+      if (!orderDedup.has(id)) {
+        orderDedup.set(id, o);
+      }
     });
 
-    // Compute orders from Order collection
-    orders.forEach((o) => {
-      const email = String(o.userEmail || "").toLowerCase();
-      if (!email) return;
-      let user = usersMap.get(email);
+    const allOrders = Array.from(orderDedup.values());
+
+    // 3. Compute orders and LTV for each user
+    allOrders.forEach((o) => {
+      const oEmail = String(o.userEmail || "").toLowerCase().trim();
+      const oPhone = String(o.phone || "").replace(/[^0-9]/g, "");
+      const oRecipient = String(o.recipient || o.customerName || "").toLowerCase().trim();
+
+      let user = null;
+      if (oEmail && usersMap.has(oEmail)) {
+        user = usersMap.get(oEmail);
+      } else if (oPhone && oPhone.length >= 7) {
+        for (const u of usersMap.values()) {
+          const uPhone = String(u.phone || "").replace(/[^0-9]/g, "");
+          if (uPhone && (uPhone.includes(oPhone) || oPhone.includes(uPhone))) {
+            user = u;
+            break;
+          }
+        }
+      }
+
+      if (!user && oRecipient) {
+        for (const u of usersMap.values()) {
+          const uName = String(u.name || "").toLowerCase().trim();
+          const uPrefix = String(u.email || "").split("@")[0].toLowerCase().trim();
+          if ((uName && uName.length >= 3 && oRecipient.includes(uName)) ||
+              (uPrefix && uPrefix.length >= 4 && oRecipient.includes(uPrefix))) {
+            user = u;
+            break;
+          }
+        }
+      }
+
       if (!user) {
+        const guestEmail = oEmail || `xaridor_${o.orderId || Math.random().toString(36).slice(2, 7)}@eurotex.uz`;
         user = {
-          id: "guest_" + email,
-          email: o.userEmail,
-          name: o.customerName || o.recipient || email.split("@")[0],
+          id: "guest_" + (o.orderId || Math.random().toString(36).slice(2, 8)),
+          email: oEmail || guestEmail,
+          name: o.customerName || o.recipient || guestEmail.split("@")[0],
           phone: o.phone || "-",
           city: o.region || "O'zbekiston",
+          address: o.address || "",
           ordersCount: 0,
           totalSpent: 0,
           role: "customer",
           createdAt: o.createdAt || new Date(),
         };
-        usersMap.set(email, user);
+        usersMap.set(user.email, user);
       }
+
       user.ordersCount += 1;
-      user.totalSpent += Number(o.totalPriceUzs || o.total || 0);
+      const rawTot = Number(o.totalPriceUzs || o.total || 0);
+      const uzsVal = rawTot > 5000 ? rawTot : rawTot * 12650;
+      user.totalSpent += uzsVal;
+
       if (o.phone && (!user.phone || user.phone === "-")) user.phone = o.phone;
+      if (o.address && !user.address) user.address = o.address;
     });
 
     const list = Array.from(usersMap.values());
+    // Sort by totalSpent or ordersCount descending
+    list.sort((a, b) => (b.totalSpent || 0) - (a.totalSpent || 0));
+
     res.json({ success: true, users: list });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

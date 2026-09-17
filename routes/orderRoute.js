@@ -1,7 +1,34 @@
+const dns = require("dns");
+try {
+  dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
+} catch (e) {}
 const express = require("express");
 const mongoose = require("mongoose");
+const fs = require("fs");
+const path = require("path");
 const router = express.Router();
 const Order = require("../models/Order");
+
+const ORDERS_FILE = path.join(__dirname, "../data/orders.json");
+
+function readLocalOrders() {
+  try {
+    if (fs.existsSync(ORDERS_FILE)) {
+      return JSON.parse(fs.readFileSync(ORDERS_FILE, "utf8")) || [];
+    }
+  } catch (e) {}
+  return [];
+}
+
+function writeLocalOrders(orders) {
+  try {
+    const dir = path.dirname(ORDERS_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2), "utf8");
+  } catch (e) {
+    console.error("Local orders write error:", e.message);
+  }
+}
 
 const ORDER_STATUS_STEPS = {
   0: { label: "Bekor qilindi", color: "#ef4444", icon: "❌" },
@@ -13,12 +40,12 @@ const ORDER_STATUS_STEPS = {
 
 const FALLBACK_MONGO_URL = process.env.MONGO_URL;
 
-async function ensureDbConnected(res) {
+async function ensureDbConnected() {
   if (mongoose.connection.readyState === 1) return true;
   if (!FALLBACK_MONGO_URL) return false;
   try {
     await mongoose.connect(FALLBACK_MONGO_URL, {
-      serverSelectionTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 6000,
     });
     return true;
   } catch (e) {
@@ -41,36 +68,54 @@ function getClientIp(req) {
 
 router.get("/", async (req, res) => {
   try {
-    const isConnected = await ensureDbConnected(res);
-    if (!isConnected) {
-      return res.status(200).json({
-        success: true,
-        count: 0,
-        orders: [],
-        statusSteps: ORDER_STATUS_STEPS,
-      });
+    const isConnected = await ensureDbConnected();
+    let dbOrders = [];
+    if (isConnected) {
+      try {
+        dbOrders = await Order.find({}).sort({ createdAt: -1 }).lean();
+      } catch (e) {
+        console.warn("MongoDB Order.find warning:", e.message);
+      }
     }
-    const { email, status, limit = 200 } = req.query;
-    const query = {};
-    if (email) query.userEmail = String(email).toLowerCase();
-    if (status !== undefined) query.statusStep = Number(status);
+    const localOrders = readLocalOrders();
 
-    const orders = await Order.find(query)
-      .sort({ createdAt: -1 })
-      .limit(Math.min(Number(limit) || 200, 1000));
+    // Deduplicate and merge by orderId
+    const orderMap = new Map();
+    dbOrders.forEach((o) => {
+      const id = String(o.orderId || o.id || o._id);
+      orderMap.set(id, o);
+    });
+    localOrders.forEach((o) => {
+      const id = String(o.orderId || o.id || o._id);
+      if (!orderMap.has(id)) {
+        orderMap.set(id, o);
+      }
+    });
+
+    let merged = Array.from(orderMap.values());
+    const { email, status, limit = 200 } = req.query;
+    if (email) {
+      const em = String(email).toLowerCase().trim();
+      merged = merged.filter((o) => String(o.userEmail || "").toLowerCase().trim() === em);
+    }
+    if (status !== undefined) {
+      const st = Number(status);
+      merged = merged.filter((o) => Number(o.statusStep) === st);
+    }
 
     return res.status(200).json({
       success: true,
-      count: orders.length,
-      orders,
+      count: merged.length,
+      orders: merged.slice(0, Math.min(Number(limit) || 200, 1000)),
       statusSteps: ORDER_STATUS_STEPS,
     });
   } catch (error) {
     console.error("GET /orders xatosi:", error);
+    const localOrders = readLocalOrders();
     return res.status(200).json({
       success: true,
-      count: 0,
-      orders: [],
+      count: localOrders.length,
+      orders: localOrders,
       statusSteps: ORDER_STATUS_STEPS,
     });
   }
@@ -78,22 +123,25 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const isConnected = await ensureDbConnected(res);
-    if (!isConnected) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Ma'lumotlar bazasi bilan aloqa yo'q" });
-    }
     const { id } = req.params;
-    const order = await Order.findOne({
-      $or: [{ orderId: id }, { _id: mongoose.isValidObjectId(id) ? id : null }],
-    });
-    if (!order) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Buyurtma topilmadi" });
+    const isConnected = await ensureDbConnected();
+    if (isConnected) {
+      try {
+        const order = await Order.findOne({
+          $or: [{ orderId: id }, { _id: mongoose.isValidObjectId(id) ? id : null }],
+        });
+        if (order) return res.status(200).json({ success: true, order });
+      } catch (e) {}
     }
-    return res.status(200).json({ success: true, order });
+
+    // Fallback to local
+    const localOrders = readLocalOrders();
+    const localOrder = localOrders.find((o) => String(o.orderId || o.id) === String(id));
+    if (localOrder) {
+      return res.status(200).json({ success: true, order: localOrder });
+    }
+
+    return res.status(404).json({ success: false, message: "Buyurtma topilmadi" });
   } catch (error) {
     console.error("GET /orders/:id xatosi:", error);
     return res.status(500).json({ success: false, message: error.message });
@@ -102,14 +150,6 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const isConnected = await ensureDbConnected(res);
-    if (!isConnected) {
-      return res.status(503).json({
-        success: false,
-        message: "Ma'lumotlar bazasi bilan aloqa yo'q, keyinroq urinib ko'ring",
-      });
-    }
-
     const {
       orderId,
       userEmail,
@@ -137,12 +177,10 @@ router.post("/", async (req, res) => {
     } = req.body;
 
     if (!items || items.length === 0) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Buyurtma mahsulotlari yetarli emas!",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Buyurtma mahsulotlari yetarli emas!",
+      });
     }
 
     const computedUsdRate = Number(usdRateApplied) || 12650;
@@ -150,23 +188,23 @@ router.post("/", async (req, res) => {
       Number(totalPriceUsd) ||
       Number(total) ||
       items.reduce(
-        (s, it) =>
-          s + Number(it.priceUsd || it.totalUsd || 0) * (it.quantity || 1),
-        0,
+        (s, it) => s + Number(it.priceUsd || it.totalUsd || 0) * (it.quantity || 1),
+        0
       );
     const computedTotalUzs =
       Number(totalPriceUzs) ||
-      (computedTotalUsd > 0
-        ? Math.round(computedTotalUsd * computedUsdRate)
-        : 0);
+      (computedTotalUsd > 0 ? Math.round(computedTotalUsd * computedUsdRate) : 0);
 
-    const newOrder = new Order({
-      orderId:
-        orderId ||
-        "EUR-" +
-          new Date().getFullYear().toString().slice(-2) +
-          Math.floor(100000 + Math.random() * 900000),
-      userEmail: userEmail ? String(userEmail).toLowerCase() : "",
+    const generatedId =
+      orderId ||
+      "EUR-" +
+        new Date().getFullYear().toString().slice(-2) +
+        Math.floor(100000 + Math.random() * 900000);
+
+    const orderData = {
+      orderId: generatedId,
+      id: generatedId,
+      userEmail: userEmail ? String(userEmail).toLowerCase().trim() : "",
       customerName: customerName || recipient || "Mijoz",
       recipient: recipient || customerName || "Mijoz",
       phone: phone || "",
@@ -176,6 +214,7 @@ router.post("/", async (req, res) => {
       deliveryType: deliveryType || "courier",
       paymentMethod: paymentMethod || "cash",
       items: items || [],
+      itemsCount: items.reduce((sum, it) => sum + (it.quantity || 1), 0),
       total: Number(total) || computedTotalUsd,
       totalPriceUsd: computedTotalUsd,
       totalPriceUzs: computedTotalUzs,
@@ -183,32 +222,52 @@ router.post("/", async (req, res) => {
       discountAmount: Number(discountAmount) || 0,
       promoCode: promoCode || "",
       statusStep: statusStep !== undefined ? Number(statusStep) : 1,
+      status: (ORDER_STATUS_STEPS[statusStep !== undefined ? Number(statusStep) : 1] || {}).label ? `${(ORDER_STATUS_STEPS[statusStep !== undefined ? Number(statusStep) : 1] || {}).icon} ${(ORDER_STATUS_STEPS[statusStep !== undefined ? Number(statusStep) : 1] || {}).label}` : "Qabul qilindi 🟡",
       nasiyaMonths: Number(nasiyaMonths) || 0,
-      date: date || "",
+      date: date || new Date().toLocaleDateString("uz-UZ"),
       deliveryDate: deliveryDate || "",
       deliveryTime: deliveryTime || "",
       customerNotes: customerNotes || "",
       ipAddress: getClientIp(req),
-    });
+      createdAt: new Date(),
+    };
 
-    await newOrder.save();
+    // 1. Guaranteed Local JSON Save (Zero lost orders)
+    const localList = readLocalOrders();
+    const existingIdx = localList.findIndex((o) => String(o.orderId || o.id) === String(orderData.orderId));
+    if (existingIdx !== -1) {
+      localList[existingIdx] = { ...localList[existingIdx], ...orderData };
+    } else {
+      localList.unshift(orderData);
+    }
+    writeLocalOrders(localList);
 
-    // Trigger instant Telegram alert to admin
-    try {
-      const { sendNewOrderNotification } = require("../utils/telegramBot");
-      await sendNewOrderNotification(newOrder);
-    } catch (tgErr) {
-      console.warn("Telegram order alert notice:", tgErr.message);
+    // 2. Save to MongoDB Atlas if connected
+    let finalOrder = orderData;
+    const isConnected = await ensureDbConnected();
+    if (isConnected) {
+      try {
+        const mongoOrder = new Order(orderData);
+        finalOrder = await mongoOrder.save();
+      } catch (dbErr) {
+        console.warn("MongoDB save warning (saved locally):", dbErr.message);
+      }
     }
 
-    console.log(
-      `📦 [YANGI BUYURTMA]: #${newOrder.orderId} | User: ${newOrder.userEmail || "guest"} | $${newOrder.totalPriceUsd} / ${newOrder.totalPriceUzs} so'm`,
-    );
+    // 3. Trigger Telegram Alert
+    try {
+      const { sendNewOrderNotification } = require("../utils/telegramBot");
+      await sendNewOrderNotification(finalOrder);
+    } catch (tgErr) {
+      console.warn("Telegram alert notice:", tgErr.message);
+    }
+
+    console.log(`📦 [BUYURTMA SAQLANDI]: #${orderData.orderId} | User: ${orderData.userEmail || "guest"} | $${orderData.totalPriceUsd} / ${orderData.totalPriceUzs} so'm`);
 
     return res.status(201).json({
       success: true,
       message: "Buyurtma muvaffaqiyatli saqlandi!",
-      order: newOrder,
+      order: finalOrder,
     });
   } catch (error) {
     console.error("POST /orders xatosi:", error);
@@ -222,13 +281,6 @@ router.post("/", async (req, res) => {
 
 router.put("/:id/status", async (req, res) => {
   try {
-    const isConnected = await ensureDbConnected(res);
-    if (!isConnected) {
-      return res.status(503).json({
-        success: false,
-        message: "Ma'lumotlar bazasi bilan aloqa yo'q",
-      });
-    }
     const { id } = req.params;
     const { statusStep, status, adminNotes } = req.body;
     const stepNum = Number(statusStep);
@@ -240,19 +292,38 @@ router.put("/:id/status", async (req, res) => {
     }
 
     const stepInfo = ORDER_STATUS_STEPS[stepNum];
+    const statusText = status || (stepInfo ? `${stepInfo.icon} ${stepInfo.label}` : "Jarayonda");
 
-    const queryConditions = [{ orderId: id }];
-    if (mongoose.isValidObjectId(id)) queryConditions.push({ _id: id });
+    // Update in local JSON
+    const localList = readLocalOrders();
+    const lIdx = localList.findIndex((o) => String(o.orderId || o.id) === String(id));
+    if (lIdx !== -1) {
+      localList[lIdx].statusStep = stepNum;
+      localList[lIdx].status = statusText;
+      if (adminNotes !== undefined) localList[lIdx].adminNotes = adminNotes;
+      writeLocalOrders(localList);
+    }
 
-    const updated = await Order.findOneAndUpdate(
-      { $or: queryConditions },
-      {
-        statusStep: stepNum,
-        status: status || stepInfo.icon + " " + stepInfo.label,
-        ...(adminNotes !== undefined ? { adminNotes } : {}),
-      },
-      { new: true },
-    );
+    let updated = lIdx !== -1 ? localList[lIdx] : null;
+
+    // Update in MongoDB
+    const isConnected = await ensureDbConnected();
+    if (isConnected) {
+      try {
+        const queryConditions = [{ orderId: id }];
+        if (mongoose.isValidObjectId(id)) queryConditions.push({ _id: id });
+        const dbUpdated = await Order.findOneAndUpdate(
+          { $or: queryConditions },
+          {
+            statusStep: stepNum,
+            status: statusText,
+            ...(adminNotes !== undefined ? { adminNotes } : {}),
+          },
+          { new: true }
+        );
+        if (dbUpdated) updated = dbUpdated;
+      } catch (e) {}
+    }
 
     if (!updated) {
       return res
@@ -260,9 +331,7 @@ router.put("/:id/status", async (req, res) => {
         .json({ success: false, message: "Buyurtma topilmadi" });
     }
 
-    console.log(
-      `🔄 [STATUS YANGILANDI]: #${updated.orderId} -> ${updated.status}`,
-    );
+    console.log(`🔄 [STATUS YANGILANDI]: #${updated.orderId || id} -> ${updated.status}`);
 
     return res.status(200).json({
       success: true,
@@ -281,17 +350,7 @@ router.put("/:id/status", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   try {
-    const isConnected = await ensureDbConnected(res);
-    if (!isConnected) {
-      return res.status(503).json({
-        success: false,
-        message: "Ma'lumotlar bazasi bilan aloqa yo'q",
-      });
-    }
     const { id } = req.params;
-    const queryConditions = [{ orderId: id }];
-    if (mongoose.isValidObjectId(id)) queryConditions.push({ _id: id });
-
     const updateData = { ...req.body };
     delete updateData._id;
     delete updateData.createdAt;
@@ -303,11 +362,29 @@ router.put("/:id", async (req, res) => {
       }
     }
 
-    const updated = await Order.findOneAndUpdate(
-      { $or: queryConditions },
-      { $set: updateData },
-      { new: true },
-    );
+    // Local JSON update
+    const localList = readLocalOrders();
+    const lIdx = localList.findIndex((o) => String(o.orderId || o.id) === String(id));
+    if (lIdx !== -1) {
+      localList[lIdx] = { ...localList[lIdx], ...updateData };
+      writeLocalOrders(localList);
+    }
+
+    let updated = lIdx !== -1 ? localList[lIdx] : null;
+
+    const isConnected = await ensureDbConnected();
+    if (isConnected) {
+      try {
+        const queryConditions = [{ orderId: id }];
+        if (mongoose.isValidObjectId(id)) queryConditions.push({ _id: id });
+        const dbUpdated = await Order.findOneAndUpdate(
+          { $or: queryConditions },
+          { $set: updateData },
+          { new: true }
+        );
+        if (dbUpdated) updated = dbUpdated;
+      } catch (e) {}
+    }
 
     if (!updated) {
       return res
@@ -328,23 +405,28 @@ router.put("/:id", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
-    const isConnected = await ensureDbConnected(res);
-    if (!isConnected) {
-      return res.status(503).json({
-        success: false,
-        message: "Ma'lumotlar bazasi bilan aloqa yo'q",
-      });
-    }
     const { id } = req.params;
-    const queryConditions = [{ orderId: id }];
-    if (mongoose.isValidObjectId(id)) queryConditions.push({ _id: id });
 
-    const deleted = await Order.deleteOne({ $or: queryConditions });
+    // Delete from local JSON
+    const localList = readLocalOrders();
+    const filtered = localList.filter((o) => String(o.orderId || o.id) !== String(id));
+    writeLocalOrders(filtered);
+
+    // Delete from MongoDB
+    let deletedCount = localList.length - filtered.length;
+    const isConnected = await ensureDbConnected();
+    if (isConnected) {
+      try {
+        const queryConditions = [{ orderId: id }];
+        if (mongoose.isValidObjectId(id)) queryConditions.push({ _id: id });
+        const dbRes = await Order.deleteOne({ $or: queryConditions });
+        if (dbRes.deletedCount > 0) deletedCount += dbRes.deletedCount;
+      } catch (e) {}
+    }
 
     return res.status(200).json({
       success: true,
-      message:
-        deleted.deletedCount > 0 ? "Buyurtma o'chirildi" : "Buyurtma topilmadi",
+      message: deletedCount > 0 ? "Buyurtma o'chirildi" : "Buyurtma topilmadi",
     });
   } catch (error) {
     console.error("DELETE /orders/:id xatosi:", error);

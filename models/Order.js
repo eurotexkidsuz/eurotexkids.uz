@@ -87,7 +87,9 @@ orderSchema.pre("save", function (next) {
   if (this.customerName && !this.recipient) {
     this.recipient = this.customerName;
   }
-  next();
+  if (typeof next === "function") {
+    next();
+  }
 });
 
 orderSchema.index({ statusStep: 1, createdAt: -1 });

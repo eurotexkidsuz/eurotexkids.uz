@@ -1,3 +1,7 @@
+const dns = require("dns");
+try {
+  dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
+} catch (e) {}
 const express = require("express");
 const { connect } = require("mongoose");
 const cors = require("cors");
@@ -46,9 +50,9 @@ async function connectToDB() {
   }
   try {
     await connect(MONGO_URI, {
-      serverSelectionTimeoutMS: 3000,
-      connectTimeoutMS: 3000,
-      socketTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 8000,
+      connectTimeoutMS: 8000,
+      socketTimeoutMS: 10000,
     });
     console.log("✅ MongoDB ulandi!");
   } catch (error) {
