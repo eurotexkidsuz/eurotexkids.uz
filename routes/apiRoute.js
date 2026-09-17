@@ -7,7 +7,9 @@ const fs = require("fs");
 const path = require("path");
 const router = express.Router();
 const sanitize = require("mongo-sanitize"); // #7 MongoDB Injection himoyasi
-const { requireAdmin } = require("../middleware/adminAuth"); // #6 Admin API himoyasi
+const jwt = require("jsonwebtoken");
+const JWT_SECRET = process.env.JWT_SECRET || "eurotex_secret_2026";
+const { requireAdmin, parseCookies } = require("../middleware/adminAuth"); // #6 Admin API himoyasi
 const User = require("../models/User");
 const Order = require("../models/Order");
 const {
@@ -306,6 +308,20 @@ router.post("/user/update-profile", async (req, res) => {
 
     const cleanEmail = String(email).toLowerCase().trim();
 
+    // Autentifikatsiya tekshiruvi: faqat o'z profilini yoki rasmiy admin o'zgartira oladi
+    const cookies = parseCookies(req);
+    const token = cookies.eurotex_session || (req.headers.authorization?.startsWith("Bearer ") ? req.headers.authorization.slice(7) : null) || req.body.token;
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const tokenEmail = String(decoded.email || "").toLowerCase().trim();
+        const isAdmin = decoded.role === "admin" || ["0600quetry@gmail.com", "eurotexkids7775@gmail.com"].includes(tokenEmail);
+        if (!isAdmin && tokenEmail && tokenEmail !== cleanEmail) {
+          return res.status(403).json({ success: false, message: "Boshqa foydalanuvchi profilini o'zgartirish taqiqlangan!" });
+        }
+      } catch (e) {}
+    }
+
     // 1. Update in local database.json
     const localDbFile = path.join(__dirname, "../database.json");
     if (fs.existsSync(localDbFile)) {
@@ -412,7 +428,7 @@ const DEFAULT_PROMOS = [
   },
 ];
 
-router.get("/promocodes", (req, res) => {   // foydalanuvchilar validate qilishi mumkin
+router.get("/promocodes", requireAdmin, (req, res) => {   // #6 — faqat admin
   const promos = readJsonFile("promocodes.json", DEFAULT_PROMOS);
   // Xavfsizlik: foydalanuvchiga faqat zarur maydonlar
   const safePromos = promos.map(({ id, code, discountType, discountValue, minOrderPrice, expiresAt, active }) =>

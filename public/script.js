@@ -1195,6 +1195,22 @@ function transliterateUzbek(text) {
   return result;
 }
 
+function resetSearchAndFilters() {
+  state.searchQuery = "";
+  state.activeSearchQuery = "";
+  state.activeSearch = "";
+  state.currentCategory = "all";
+  const sInput = document.getElementById("searchInput");
+  if (sInput) sInput.value = "";
+  const sSug = document.getElementById("searchSuggestions");
+  if (sSug) sSug.classList.remove("show");
+  document.querySelectorAll(".category-pill, .nav-cat-btn").forEach((b) => b.classList.remove("active"));
+  const allCat = document.querySelector('[data-category="all"]');
+  if (allCat) allCat.classList.add("active");
+  renderProducts();
+  showToast("Barcha filtrlar tozalandi! 🔄");
+}
+
 function renderProducts() {
   const grid = document.getElementById("productGrid");
   const countBadge = document.getElementById("productCountBadge");
@@ -1277,6 +1293,20 @@ function renderProducts() {
 
   const displayLimit = state.displayLimit || 24;
   const visibleItems = filtered.slice(0, displayLimit);
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align: center; padding: 48px 16px; background: var(--bg-surface-secondary, #f8fafc); border: 1px dashed var(--border-color, #cbd5e1); border-radius: 20px; margin: 20px 0;">
+        <div style="font-size: 44px; margin-bottom: 12px;">🔍</div>
+        <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary, #0f172a); margin: 0 0 8px 0;">Qidiruvingiz bo'yicha mahsulot topilmadi</h3>
+        <p style="font-size: 14px; color: var(--text-muted, #64748b); max-width: 420px; margin: 0 auto 20px auto;">Kiritilgan kalit so'z yoki tanlangan toifa bo'yicha hozircha tovarlar mavjud emas. Filtrlarni tozalab ko'ring.</p>
+        <button type="button" onclick="resetSearchAndFilters()" class="btn btn-primary" style="padding: 10px 24px; border-radius: 12px; font-weight: 700; font-size: 14px; background: linear-gradient(135deg, #88001b 0%, #5c0018 100%); color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(136,0,27,0.3);">
+          Filtrlarni tozalash 🔄
+        </button>
+      </div>
+    `;
+    return;
+  }
 
   grid.innerHTML =
     visibleItems
@@ -1572,7 +1602,8 @@ function setupEventListeners() {
   const searchSuggestions = document.getElementById("searchSuggestions");
 
   if (searchInput) {
-    // Typing: Show live Uzum-style autocomplete suggestions & filter main grid live
+    let searchDebounceTimer = null;
+    // Typing: Show live Uzum-style autocomplete suggestions & filter main grid live (with 200ms debounce)
     searchInput.addEventListener("input", (e) => {
       const q = e.target.value.trim();
       state.searchQuery = q;
@@ -1584,8 +1615,11 @@ function setupEventListeners() {
         if (searchSuggestions) searchSuggestions.classList.remove("show");
       }
 
-      // Live filter catalog products
-      renderProducts();
+      // Live filter catalog products with 200ms debounce
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(() => {
+        renderProducts();
+      }, 200);
     });
 
     // Press Enter key to execute search
@@ -2140,6 +2174,10 @@ function addToCart(
       c.color === selectedColor,
   );
   if (existing) {
+    if (existing.quantity >= 100) {
+      showToast("⚠️ Savatda ushbu tovardan maksimal 100 pachka mavjud!", "error");
+      return;
+    }
     existing.quantity += 1;
   } else {
     state.cart.push({
@@ -2211,7 +2249,10 @@ function updateCartQty(productId, size, color, change) {
   const item = state.cart.find(
     (c) => c.id === productId && c.size === size && c.color === color,
   );
-  if (!item) return;
+  if (change > 0 && item.quantity >= 100) {
+    showToast("⚠️ Bitta tovar uchun maksimal 100 pachka! Katta ulgurji hajm uchun fabrika bilan bog'laning.", "error");
+    return;
+  }
 
   item.quantity += change;
   if (item.quantity <= 0) {
@@ -2320,6 +2361,10 @@ function updateCartQtyByIndex(index, change, ev) {
   if (index >= 0 && index < state.cart.length) {
     if (state.cart[index].quantity + change <= 0) {
       removeCartItemByIndex(index, ev);
+      return;
+    }
+    if (change > 0 && state.cart[index].quantity >= 100) {
+      showToast("⚠️ Bitta tovar uchun maksimal 100 pachka! Katta ulgurji hajm uchun fabrika bilan bog'laning.", "error");
       return;
     }
     state.cart[index].quantity += change;
@@ -3902,6 +3947,40 @@ function openTailoringModal() {
   updateURLRoute("/tailoring");
 }
 
+function openPaymentInfoModal() {
+  showCustomConfirm({
+    title: "💳 To'lov va Xarid Shartlari",
+    htmlText: `
+      <div style="text-align:left; font-size:14px; line-height:1.6; color:var(--text-primary);">
+        <p><b>Eurotex Kids</b> da to'lovlarni quyidagi qulay usullarda amalga oshirishingiz mumkin:</p>
+        <ul style="margin: 10px 0; padding-left: 20px;">
+          <li><b>Payme & Click:</b> Barcha turdagi Uzcard va Humo kartalari orqali onlayn yoki kuryer yetkazganda to'lov;</li>
+          <li><b>Naqd to'lov:</b> Mahsulotni tekshirib qabul qilgach kuryerga to'lash;</li>
+          <li><b>Eurotex Nasiya:</b> 3 oydan 12 oygacha foizsiz muddatli to'lov imkoniyati.</li>
+        </ul>
+      </div>
+    `,
+    confirmText: "Tushundim 👍",
+  });
+}
+
+function openDeliveryInfoModal() {
+  showCustomConfirm({
+    title: "🚚 Yetkazib Berish Shartlari",
+    htmlText: `
+      <div style="text-align:left; font-size:14px; line-height:1.6; color:var(--text-primary);">
+        <p><b>Tezkor va xavfsiz yetkazib berish xizmati:</b></p>
+        <ul style="margin: 10px 0; padding-left: 20px;">
+          <li><b>Toshkent shahri bo'yicha:</b> Buyurtma berilgan kuni yoki 24 soat ichida mutlaqo bepul yetkaziladi;</li>
+          <li><b>Viloyatlar bo'yicha:</b> BTS yoki Express pochta orqali 1-2 ish kunida manzilingizgacha yetkazib beriladi;</li>
+          <li><b>Kiyib ko'rish:</b> Kuryer kutib turadi, o'lchami to'g'ri kelmasa joyida almashtirib beriladi.</li>
+        </ul>
+      </div>
+    `,
+    confirmText: "Tushundim 👍",
+  });
+}
+
 function openAuthModal() {
   if (state.user) {
     const email = state.user.email || "";
@@ -3958,8 +4037,17 @@ function triggerUserLogoutProcess() {
     htmlText: `Haqiqatdan ham <b>"${email}"</b> hisobingizdan chiqmoqchimisiz?`,
     confirmText: "Chiqish 🚪",
     onConfirm: () => {
+      // Full session purge on server and client
+      try {
+        fetch("/users/remove-session", { method: "POST" }).catch(() => {});
+      } catch (e) {}
       state.user = null;
       localStorage.removeItem("eurotex_user");
+      localStorage.removeItem("eurotex_session");
+      sessionStorage.clear();
+      // Clear cookies
+      document.cookie = "eurotex_session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+      document.cookie = "token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
       updateUserAuthUI();
       showToast("👋 Tizimdan muvaffaqiyatli chiqdingiz!");
       updateURLRoute("/");
@@ -5197,6 +5285,17 @@ function handleOrderSubmit(e) {
   const finalTotal = finalTotalUsd;
   const orderId = `EUR-${Math.floor(100000 + Math.random() * 900000)}`;
 
+  const payMethodInput = document.querySelector('input[name="payMethod"]:checked');
+  const paymentMethod = payMethodInput ? payMethodInput.value : "cash";
+
+  // Double-submit prevention
+  const submitBtn = e.target.querySelector ? e.target.querySelector('button[type="submit"]') : null;
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.dataset.origText = submitBtn.textContent;
+    submitBtn.textContent = "Buyurtma rasmiylashtirilmoqda... ⏳";
+  }
+
   const currentUserEmail = state.user?.email || "";
   const newOrder = {
     id: orderId,
@@ -5212,6 +5311,7 @@ function handleOrderSubmit(e) {
     recipient: `${name} (${phone})`,
     phone,
     address: addrText,
+    paymentMethod,
   };
 
   if (!state.orders) state.orders = [];
@@ -5239,6 +5339,7 @@ function handleOrderSubmit(e) {
         recipient: `${name} (${phone})`,
         phone,
         address: addrText,
+        paymentMethod,
         items: [...state.cart],
         total: finalTotal > 0 ? finalTotal : 120,
         totalPriceUsd,
@@ -5519,7 +5620,7 @@ function filterBySmartSize() {
 
   if (detectedSize) {
     state.activeSearch = detectedSize;
-    const searchInput = document.getElementById("navSearchInput");
+    const searchInput = document.getElementById("searchInput") || document.getElementById("navSearchInput");
     if (searchInput) searchInput.value = detectedSize;
     renderProducts();
     showToast(`Filtrlandi: Sizga mos ${detectedSize}-o'lchamdagi mahsulotlar saralandi! 🤵`);
@@ -5842,6 +5943,7 @@ function downloadReceiptPdf(orderId) {
         <div><strong>Xaridor:</strong> ${escapeHtml(order.customerName || (state.user && state.user.name) || "Hurmatli Mijoz")}</div>
         <div style="margin-top:4px;"><strong>Telefon:</strong> ${escapeHtml(order.phone || "-")}</div>
         <div style="margin-top:4px;"><strong>Yetkazish manzili:</strong> ${escapeHtml(order.address || "-")}</div>
+        <div style="margin-top:4px;"><strong>To'lov turi:</strong> ${escapeHtml(order.paymentMethod === "payme" ? "Payme 💳" : order.paymentMethod === "click" ? "Click 💳" : "Naqd to'lov 💵")}</div>
       </div>
       <table>
         <thead>
@@ -5974,11 +6076,10 @@ function getDemoOrders() {
 }
 
 function downloadOrderReceipt(orderId) {
-  const order = (state.orders || []).find((o) => o.id === orderId);
-  if (!order) return;
-  alert(
-    `EUROTEXKIDS.UZ ELEKTRON KVITANSIYA:\n\nBuyurtma kodi: #${order.id}\nSana: ${order.date}\nSumma: ${formatMoney(order.total)} so'm\nYetkazib berish: ${order.address}\nStatus: ${order.status}\n\nRahmat! Eurotexkids.uz brendini tanlaganingiz uchun tashakkur!`,
-  );
+  if (typeof downloadReceiptPdf === "function") {
+    return downloadReceiptPdf(orderId);
+  }
+  showToast(`Buyurtma #${orderId} kvitansiyasi tayyorlanmoqda... 📄`);
 }
 
 // -----------------------------------------------------------------------------

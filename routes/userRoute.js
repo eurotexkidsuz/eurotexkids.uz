@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const rateLimit = require("express-rate-limit"); // #2 Rate Limiting
+const { requireAdmin } = require("../middleware/adminAuth");
 const {
   sendCode,
   verifyCode,
@@ -55,7 +56,7 @@ router.post("/delete-account", generalLimiter, deleteAccount);
 // Hero Slides API
 router.get("/slides", getSlides);
 router.get("/slides/stream", getSlidesStream);
-router.post("/slides/upload", saveSlideImage);
+router.post("/slides/upload", requireAdmin, saveSlideImage);
 
 // Google OAuth
 router.get("/auth/google", googleAuth);

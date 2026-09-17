@@ -68,6 +68,14 @@ function getClientIp(req) {
     .trim();
 }
 
+function normalizePhoneNumber(rawPhone) {
+  if (!rawPhone) return "";
+  const digits = String(rawPhone).replace(/\D/g, "");
+  if (digits.length === 9) return `+998${digits}`;
+  if (digits.length === 12 && digits.startsWith("998")) return `+${digits}`;
+  return String(rawPhone).trim();
+}
+
 router.get("/", async (req, res) => {
   try {
     const isConnected = await ensureDbConnected();
@@ -242,7 +250,7 @@ router.post("/", async (req, res) => {
       userEmail: userEmail ? String(userEmail).toLowerCase().trim() : "",
       customerName: customerName || recipient || "Mijoz",
       recipient: recipient || customerName || "Mijoz",
-      phone: phone || "",
+      phone: normalizePhoneNumber(phone),
       address: address || "",
       region: region || "",
       district: district || "",

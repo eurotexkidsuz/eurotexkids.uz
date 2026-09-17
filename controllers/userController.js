@@ -854,6 +854,13 @@ const deleteAccount = async (req, res) => {
         .json({ message: "Email va token kiritilishi shart!" });
     }
 
+    const cleanEmail = String(email).toLowerCase().trim();
+    if (ADMIN_EMAILS.includes(cleanEmail)) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Asosiy administrator hisobini o'chirish taqiqlangan!" });
+    }
+
     // Verify token
     try {
       const decoded = jwt.verify(token, JWT_SECRET);

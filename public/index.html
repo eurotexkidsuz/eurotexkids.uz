@@ -41,9 +41,13 @@
     <meta name="twitter:image" content="https://eurotexkids.uz/images/navy_suit.jpg" />
     <link rel="canonical" href="https://eurotexkids.uz/" />
 
-    <!-- Theme & Favicon -->
+    <!-- Theme & Favicon & PWA Icons -->
     <meta name="theme-color" content="#0f172a" />
-    <link rel="icon" href="/images/eurotex-logo.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="icon" type="image/png" href="/images/eurotex-logo.png" />
+    <link rel="apple-touch-icon" href="/images/eurotex-logo.png" />
+    <link rel="manifest" href="/manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -2674,9 +2678,7 @@
           <a
             href="#"
             onclick="
-              alert(
-                'To\'lov turlari: Payme, Click va Naqd pul',
-              );
+              openPaymentInfoModal();
               return false;
             "
             >To'lov va Xarid shartlari</a
@@ -2684,7 +2686,7 @@
           <a
             href="#"
             onclick="
-              alert('Yetkazib berish 1 kunda bepul amalga oshiriladi.');
+              openDeliveryInfoModal();
               return false;
             "
             >Yetkazib berish shartlari</a

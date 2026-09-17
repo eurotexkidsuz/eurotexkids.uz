@@ -37,6 +37,19 @@ app.use(cors({
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ limit: "2mb", extended: true }));
 
+// ── #2 RATE LIMITING — DoS va brute-force hujumlaridan himoya ────────────────
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Juda ko'p so'rov yuborildi. Iltimos, birozdan so'ng qayta urining.",
+  },
+});
+app.use("/api", apiLimiter);
+
 
 // Database
 const MONGO_URI = process.env.MONGO_URL || "";
