@@ -3046,28 +3046,35 @@ function handleURLRouting() {
 
   // --- Admin Add Product Modals & Sub-routes ---
   if (raw.startsWith("/admin")) {
-    // 🔒 KIRISHNI TEKSHIRISH — Login qilmagan bo'lsa, login modali ochiladi
-    if (!state.user) {
-      // Admin URL ni saqlash (login bo'lgandan keyin qayta yo'naltirish uchun)
-      state._pendingAdminRoute = raw;
-      closeDashboardView();
-      openAuthModal();
-      showToast("🔒 Admin paneliga kirish uchun avval tizimga kiring!");
-      return;
-    }
+    // 🔒 KIRISHNI TEKSHIRISH — Faqat vakolatli adminlar uchun! Oddiy foydalanuvchilar (userlar) uchun taqiqlanadi
+    const currentUser = state.user || JSON.parse(localStorage.getItem("eurotex_user") || "null");
+    const isAdmin = currentUser && (currentUser.role === "admin" || (typeof isAdminEmail === "function" && isAdminEmail(currentUser.email)));
 
-    // Login qilgan lekin admin emas
-    if (!isUserAdmin()) {
+    if (!isAdmin) {
       closeDashboardView();
-      showToast("❌ Sizda admin huquqi yo'q! Faqat vakolatli adminlar kirishi mumkin.");
+      showToast("⛔ Kirish taqiqlangan! Ushbu bo'lim faqat do'kon ma'murlari (adminlar) uchun.");
       window.history.replaceState({}, "", "/");
+      const hw = document.getElementById("homePageWrapper");
+      if (hw) hw.style.display = "";
+      const dv = document.getElementById("dashboardPageView");
+      if (dv) dv.style.display = "none";
       return;
     }
 
     openDashboardView("admin");
 
     if (raw === "/admin" || raw === "/admin/") {
-      showAdminSection("products", true);
+      showAdminSection("products", false);
+      return;
+    }
+
+    if (
+      raw === "/admin/users" ||
+      raw === "/admin/crm" ||
+      raw === "/admin/mijozlar" ||
+      raw === "/admin/customers"
+    ) {
+      showAdminSection("users", false);
       return;
     }
 
@@ -7874,17 +7881,17 @@ function renderAdminUsersTable(users) {
               tierClass = "crm-badge-regular";
               tierLabel = "🥈 Doimiy";
             }
-            const uid = u._id || u.id || u.email;
+            const uid = encodeURIComponent(String(u._id || u.id || u.email || ""));
             return `
             <tr>
               <td>
                 <b style="cursor:pointer; color:#38bdf8; text-decoration:underline;" onclick="openAdminUserModal('${uid}')" title="Mijoz kartochkasini ochish">
-                  ${u.name}
+                  ${u.name || "Noma'lum"}
                 </b>
               </td>
-              <td style="color:#94a3b8;">${u.email}</td>
+              <td style="color:#94a3b8;">${u.email || "-"}</td>
               <td>
-                <a href="tel:${u.phone}" style="color:#10b981; font-weight:700; text-decoration:none;">
+                <a href="tel:${u.phone || ""}" style="color:#10b981; font-weight:700; text-decoration:none;">
                   ${u.phone || "-"}
                 </a>
               </td>
@@ -7915,16 +7922,22 @@ function openAdminUserModal(userIdOrEmail) {
   const modal = document.getElementById("adminUserDetailModal");
   if (!modal) return;
 
+  const key = decodeURIComponent(String(userIdOrEmail || "")).trim();
   const user = (_adminAllUsersCache || []).find(
-    (u) => String(u._id || u.id || "") === String(userIdOrEmail) || String(u.email || "") === String(userIdOrEmail)
+    (u) =>
+      String(u._id || u.id || "").trim() === key ||
+      String(u.email || "").toLowerCase().trim() === key.toLowerCase()
   ) || {
     name: "Mijoz",
-    email: userIdOrEmail,
+    email: key,
     phone: "+998 90 000 00 00",
     city: "Toshkent",
     address: "",
+    birthDate: "",
+    suitSize: "",
+    style: "",
     totalSpent: 0,
-    ordersCount: 0
+    ordersCount: 0,
   };
 
   const uEmail = String(user.email || "").toLowerCase().trim();
@@ -7983,7 +7996,7 @@ function openAdminUserModal(userIdOrEmail) {
   // Meta
   const metaEl = document.getElementById("crmModalMeta");
   if (metaEl) {
-    const regDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString("uz-UZ") : "Noma'lum";
+    const regDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString("uz-UZ") : "Yaqinda";
     metaEl.textContent = `Mijoz ID: #${String(user._id || user.id || "1001").slice(-6)} • Ro'yxatdan o'tgan: ${regDate}`;
   }
 
@@ -8008,7 +8021,7 @@ function openAdminUserModal(userIdOrEmail) {
   if (emailEl) emailEl.textContent = user.email || "Kiritilmagan";
 
   const cityEl = document.getElementById("crmModalCity");
-  if (cityEl) cityEl.textContent = user.city || "O'zbekiston";
+  if (cityEl) cityEl.textContent = user.city || user.region || "O'zbekiston";
 
   const addressEl = document.getElementById("crmModalAddress");
   if (addressEl) addressEl.textContent = user.address || firstOrderAddress || "Asosiy manzil kiritilmagan";
@@ -8024,6 +8037,38 @@ function openAdminUserModal(userIdOrEmail) {
   if (tgBtn) {
     const cleanPhone = String(user.phone || firstOrderPhone || "").replace(/[^0-9]/g, "");
     tgBtn.href = cleanPhone ? `https://t.me/+${cleanPhone}` : "https://t.me/";
+  }
+
+  // 👔 NEW: Clothing Preferences & Onboarding Details
+  const birthEl = document.getElementById("crmModalBirthDate");
+  const bdayBadge = document.getElementById("crmModalBdayDiscount");
+  if (birthEl) {
+    birthEl.textContent = user.birthDate || "Kiritilmagan";
+    if (bdayBadge) bdayBadge.style.display = user.birthDate ? "inline-block" : "none";
+  }
+
+  const sizeEl = document.getElementById("crmModalSuitSize");
+  if (sizeEl) {
+    sizeEl.textContent = user.suitSize ? `${user.suitSize}-o'lcham (Razmer)` : "Kiritilmagan";
+  }
+
+  const styleEl = document.getElementById("crmModalStyle");
+  if (styleEl) {
+    styleEl.textContent = user.style || "Klassik / Erkin";
+  }
+
+  const segEl = document.getElementById("crmModalSegment");
+  if (segEl) {
+    if (spent >= 1500000 || count >= 3) {
+      segEl.textContent = "💎 Premium VIP (Yuqori LTV)";
+      segEl.style.color = "#88001b";
+    } else if (count >= 1 || spent > 0) {
+      segEl.textContent = "🥈 Sadoqatli Mijoz";
+      segEl.style.color = "#2563eb";
+    } else {
+      segEl.textContent = "🟢 Yangi Mijoz (Istiqbolli)";
+      segEl.style.color = "#10b981";
+    }
   }
 
   // Orders list for this customer
@@ -8075,13 +8120,15 @@ function openAdminUserModal(userIdOrEmail) {
     }
   }
 
-  modal.style.display = "flex";
+  openModal("adminUserDetailModal");
 }
 
 function closeAdminUserModal() {
-  const modal = document.getElementById("adminUserDetailModal");
-  if (modal) modal.style.display = "none";
+  closeModal("adminUserDetailModal");
 }
+
+window.openAdminUserModal = openAdminUserModal;
+window.closeAdminUserModal = closeAdminUserModal;
 
 // =============================================================================
 // 3. 🏷️ PROMOKODLAR VA CHEGIRMALAR BOSHQARUVI

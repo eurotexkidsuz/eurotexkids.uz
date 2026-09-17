@@ -145,19 +145,26 @@ router.get("/users-list", requireAdmin, async (req, res) => {   // #6 — faqat 
           email: u.email,
           name: u.name || u.email.split("@")[0],
           phone: u.phone && u.phone !== "-" ? u.phone : "",
-          city: u.city || "Toshkent",
+          city: u.city || u.region || "Toshkent",
           address: u.address || "",
+          birthDate: u.birthDate || "",
+          suitSize: u.suitSize || "",
+          style: u.style || "",
           ordersCount: 0,
           totalSpent: 0,
           role: u.role || "user",
           createdAt: u.createdAt || new Date(),
         });
       } else {
-        // Merge phone or address if missing
+        // Merge phone, address, and profile preferences if missing
         const existing = usersMap.get(email);
         if ((!existing.phone || existing.phone === "-") && u.phone) existing.phone = u.phone;
         if (!existing.address && u.address) existing.address = u.address;
         if (!existing.name && u.name) existing.name = u.name;
+        if (!existing.city && (u.city || u.region)) existing.city = u.city || u.region;
+        if (!existing.birthDate && u.birthDate) existing.birthDate = u.birthDate;
+        if (!existing.suitSize && u.suitSize) existing.suitSize = u.suitSize;
+        if (!existing.style && u.style) existing.style = u.style;
       }
     };
 
@@ -288,8 +295,23 @@ router.post("/user/update-profile", async (req, res) => {
           if (suitSize) db[idx].suitSize = suitSize;
           if (style) db[idx].style = style;
           db[idx].updatedAt = new Date();
-          fs.writeFileSync(localDbFile, JSON.stringify(db, null, 4), "utf8");
+        } else {
+          db.push({
+            _id: "usr_" + Math.random().toString(36).slice(2, 9),
+            email: cleanEmail,
+            name: name || cleanEmail.split("@")[0],
+            phone: phone || "",
+            city: city || "Toshkent",
+            address: address || "",
+            birthDate: birthDate || "",
+            suitSize: suitSize || "",
+            style: style || "",
+            role: "user",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
         }
+        fs.writeFileSync(localDbFile, JSON.stringify(db, null, 4), "utf8");
       } catch (e) {}
     }
 

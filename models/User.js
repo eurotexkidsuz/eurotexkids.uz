@@ -36,10 +36,17 @@ const userSchema = new mongoose.Schema(
     magicToken: { type: String, default: null },
     magicTokenExpiry: { type: Date, default: null },
     role: { type: String, default: "user" },
+    name: { type: String, default: "" },
+    phone: { type: String, default: "" },
+    city: { type: String, default: "" },
+    address: { type: String, default: "" },
+    birthDate: { type: String, default: "" },
+    suitSize: { type: String, default: "" },
+    style: { type: String, default: "" },
     sessions: [sessionSchema],
     loginLogs: [loginLogSchema],
   },
-  { timestamps: true },
+  { timestamps: true, strict: false },
 );
 
 module.exports = mongoose.model("User", userSchema);

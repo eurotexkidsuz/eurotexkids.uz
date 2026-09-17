@@ -1102,6 +1102,8 @@
       "/pachkalab-sotuv": { type: "category", value: "wholesale" },
       "/admin": { type: "admin", value: "dashboard" },
       "/admin/orders": { type: "admin", value: "orders" },
+      "/admin/users": { type: "admin", value: "users" },
+      "/admin/crm": { type: "admin", value: "users" },
       "/admin/addcart": { type: "admin", value: "addcart" },
       "/admin/products": { type: "admin", value: "products" },
       "/admin/settings": { type: "admin", value: "settings" },
@@ -1259,6 +1261,11 @@
                 typeof window.showAdminSection === "function"
               )
                 window.showAdminSection("orders");
+              if (
+                subView === "users" &&
+                typeof window.showAdminSection === "function"
+              )
+                window.showAdminSection("users");
               if (
                 subView === "products" &&
                 typeof window.showAdminSection === "function"

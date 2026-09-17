@@ -65,6 +65,45 @@ connectToDB();
 // Routes
 app.get("/favicon.ico", (req, res) => res.status(204).end());
 
+// ── #14 Sensitive fayllarni himoyalash ────────────────────────────────────────
+app.use((req, res, next) => {
+  const blockedPaths = [".env", "telegram_config.json", "package.json", "package-lock.json"];
+  if (blockedPaths.some((f) => req.path.includes(f))) {
+    return res.status(403).send("Forbidden");
+  }
+  next();
+});
+
+// ── 🌐 EXPRESS SPA NAVIGATION FALLBACK ────────────────────────────────────────
+// Har qanday brauzer sahifasi ochilganda (/orders, /buyurtmalar, /products,
+// /savat, /cart, /checkout, /suits, /admin, va har qanday / manzil) — doim index.html qaytariladi.
+// Brauzerda xom JSON chiqib qolmaydi, to'liq Eurotex veb-sayt interfeysi ochiladi.
+// Dasturiy API va AJAX (fetch/axios) so'rovlari esa o'zining JSON ma'lumotlarini oladi.
+const path = require("path");
+
+app.use((req, res, next) => {
+  if (req.method === "GET") {
+    const isHtmlRequest =
+      (req.headers.accept && req.headers.accept.includes("text/html")) ||
+      req.headers["sec-fetch-dest"] === "document" ||
+      req.headers["sec-fetch-mode"] === "navigate";
+    const hasStaticExtension = req.path.includes(".") && !req.path.endsWith(".html");
+    const isApiEndpoint = req.path.startsWith("/api");
+
+    if (isHtmlRequest && !hasStaticExtension && !isApiEndpoint) {
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+      res.setHeader("Pragma", "no-cache");
+      res.setHeader("Expires", "0");
+      return res.sendFile(path.join(__dirname, "public", "index.html"));
+    }
+  }
+  next();
+});
+
+// ── 📦 STATIC FILES & ASSETS ──────────────────────────────────────────────────
+app.use(express.static(path.join(__dirname, "public")));
+
+// ── 🔌 REST API ROUTES (JSON DATA ENDPOINTS) ───────────────────────────────────
 const { users } = require("./routes/userRoute");
 app.use("/users", users);
 
@@ -77,45 +116,10 @@ app.use("/orders", orderRouter);
 const apiRouter = require("./routes/apiRoute");
 app.use("/api", apiRouter);
 
-// Express SPA Fallback for /savat, /saralanganlar, /checkout, /products, etc.
-const path = require("path");
-app.use((req, res, next) => {
-  if (
-    req.method === "GET" &&
-    !req.path.startsWith("/users") &&
-    !req.path.startsWith("/products") &&
-    !req.path.startsWith("/orders") &&
-    !req.path.includes(".")
-  ) {
-    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    res.setHeader("Pragma", "no-cache");
-    res.setHeader("Expires", "0");
-    return res.sendFile(path.join(__dirname, "public", "index.html"));
-  }
-  next();
-});
-
-// ── #14 Sensitive fayllarni himoyalash ────────────────────────────────────────
-app.use((req, res, next) => {
-  const blockedPaths = [".env", "telegram_config.json", "package.json", "package-lock.json"];
-  if (blockedPaths.some((f) => req.path.includes(f))) {
-    return res.status(403).send("Forbidden");
-  }
-  next();
-});
-
-app.use(express.static("public"));
-
-// SPA Fallback
-app.use((req, res, next) => {
-  if (
-    req.method === "GET" &&
-    !req.path.startsWith("/users") &&
-    !req.path.startsWith("/products") &&
-    !req.path.startsWith("/orders") &&
-    !req.path.startsWith("/api") &&
-    !req.path.includes(".")
-  ) {
+// ── 🌐 GLOBAL SPA CATCH-ALL FOR GET ROUTES ────────────────────────────────────
+app.get("*", (req, res, next) => {
+  const hasExtension = req.path.includes(".") && !req.path.endsWith(".html");
+  if (!hasExtension && !req.path.startsWith("/api")) {
     res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     res.setHeader("Pragma", "no-cache");
     res.setHeader("Expires", "0");
@@ -129,11 +133,6 @@ app.use((err, req, res, next) => {
   console.error("Global Express Error:", err.stack || err.message); // faqat server log
   if (res.headersSent) return next(err);
   return res.status(500).json({ success: false, message: "Server xatosi yuz berdi." });
-});
-
-// Default SPA fallback
-app.use((req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 // Server
