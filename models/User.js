@@ -38,6 +38,8 @@ const userSchema = new mongoose.Schema(
     role: { type: String, default: "user" },
     name: { type: String, default: "" },
     phone: { type: String, default: "" },
+    extraPhone: { type: String, default: "" },
+    telegram: { type: String, default: "" },
     city: { type: String, default: "" },
     address: { type: String, default: "" },
     birthDate: { type: String, default: "" },

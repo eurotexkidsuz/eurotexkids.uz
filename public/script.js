@@ -917,6 +917,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   initSlideLiveSync();
   initAutoGooglePrompt();
   renderProducts();
+  if (state.user && !isUserAdmin()) {
+    checkAndPromptProfileCompletion();
+  }
 });
 
 const ADMIN_EMAILS = ["0600quetry@gmail.com", "eurotexkids7775@gmail.com"];
@@ -966,6 +969,7 @@ function checkGoogleAuthRedirect() {
     } else {
       showToast(`Google orqali muvaffaqiyatli kirdingiz! ✅`);
       closeDashboardView();
+      checkAndPromptProfileCompletion();
     }
   } else if (emailPrompt || err === "auth_failed") {
     window.history.replaceState({}, document.title, window.location.pathname);
@@ -3694,23 +3698,23 @@ function openAuthModal() {
 
     if (avatarEl) {
       if (isAdmin) {
-        avatarEl.innerHTML = `<img src="/images/eurotex-logo.png" alt="Eurotex Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block;" />`;
-        avatarEl.style.background = "#ffffff";
-        avatarEl.style.padding = "6px";
+        avatarEl.innerHTML = `<img src="/images/eurotex_icon.png" alt="Eurotex Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block;" onerror="this.src='/images/eurotex_icon.png'" />`;
+        avatarEl.style.background = "#0f172a";
+        avatarEl.style.padding = "4px";
         avatarEl.style.border = "2.5px solid #00f2fe";
         avatarEl.style.boxShadow = "0 0 20px rgba(0, 242, 254, 0.4)";
       } else if (state.user.picture) {
-        avatarEl.innerHTML = `<img src="${state.user.picture}" alt="User" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;" />`;
-        avatarEl.style.background = "";
-        avatarEl.style.padding = "";
-        avatarEl.style.border = "";
-        avatarEl.style.boxShadow = "";
+        avatarEl.innerHTML = `<img src="${state.user.picture}" alt="User" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;" onerror="this.src='/images/eurotex_icon.png'" />`;
+        avatarEl.style.background = "#0f172a";
+        avatarEl.style.padding = "2px";
+        avatarEl.style.border = "2px solid #88001b";
+        avatarEl.style.boxShadow = "0 4px 16px rgba(136, 0, 27, 0.4)";
       } else {
-        avatarEl.textContent = initial;
-        avatarEl.style.background = "";
-        avatarEl.style.padding = "";
-        avatarEl.style.border = "";
-        avatarEl.style.boxShadow = "";
+        avatarEl.innerHTML = `<img src="/images/eurotex_icon.png" alt="Eurotex Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block;" onerror="this.src='/images/eurotex_icon.png'" />`;
+        avatarEl.style.background = "#0f172a";
+        avatarEl.style.padding = "4px";
+        avatarEl.style.border = "2px solid #88001b";
+        avatarEl.style.boxShadow = "0 4px 16px rgba(136, 0, 27, 0.4)";
       }
     }
     if (nameEl) nameEl.textContent = isAdmin ? "Eurotex Rasmiy Admin" : formattedName;
@@ -4737,19 +4741,18 @@ function quickAdminLogin(email) {
 // =============================================================================
 // 👤 ONBOARDING: PROFILE COMPLETION SYSTEM (GOOGLE & EMAIL LOGIN)
 // =============================================================================
-function checkAndPromptProfileCompletion() {
-  if (!state.user) return;
-  const isAdmin = state.user.role === "admin" || isAdminEmail(state.user.email);
-  if (isAdmin) return;
-
-  // Don't prompt if already completed or dismissed in current session
-  if (state.user.profileCompleted || sessionStorage.getItem("eurotex_onboarding_dismissed")) {
+function openProfileOnboardingModal() {
+  if (!state.user) {
+    openAuthModal();
     return;
   }
+  closeAllModals();
 
   // Pre-fill existing data if available
   const nameInput = document.getElementById("onboardingFullName");
   const phoneInput = document.getElementById("onboardingPhone");
+  const extraPhoneInput = document.getElementById("onboardingExtraPhone");
+  const telegramInput = document.getElementById("onboardingTelegram");
   const regionInput = document.getElementById("onboardingRegion");
   const addrInput = document.getElementById("onboardingAddress");
   const birthInput = document.getElementById("onboardingBirthDate");
@@ -4763,6 +4766,12 @@ function checkAndPromptProfileCompletion() {
   if (phoneInput && state.user.phone && state.user.phone !== "-") {
     phoneInput.value = state.user.phone;
   }
+  if (extraPhoneInput && state.user.extraPhone) {
+    extraPhoneInput.value = state.user.extraPhone;
+  }
+  if (telegramInput && state.user.telegram) {
+    telegramInput.value = state.user.telegram;
+  }
   if (regionInput && state.user.city) regionInput.value = state.user.city;
   if (addrInput && state.user.address) addrInput.value = state.user.address;
   if (birthInput && state.user.birthDate) birthInput.value = state.user.birthDate;
@@ -4771,7 +4780,29 @@ function checkAndPromptProfileCompletion() {
 
   setTimeout(() => {
     openModal("profileOnboardingModal");
-  }, 450);
+  }, 150);
+}
+
+function checkAndPromptProfileCompletion() {
+  if (!state.user) return;
+  const isAdmin = state.user.role === "admin" || isAdminEmail(state.user.email);
+  if (isAdmin) return;
+
+  // Don't prompt if dismissed in current session
+  if (sessionStorage.getItem("eurotex_onboarding_dismissed")) {
+    return;
+  }
+
+  // If user already has required fields filled, no need to auto-prompt
+  const hasPhone = state.user.phone && state.user.phone.length >= 7 && state.user.phone !== "-";
+  const hasAddress = state.user.address && state.user.address.length >= 3;
+  if (hasPhone && hasAddress && state.user.profileCompleted) {
+    return;
+  }
+
+  setTimeout(() => {
+    openProfileOnboardingModal();
+  }, 600);
 }
 
 async function saveProfileOnboarding(e) {
@@ -4780,6 +4811,8 @@ async function saveProfileOnboarding(e) {
 
   const fullName = (document.getElementById("onboardingFullName")?.value || "").trim();
   const phone = (document.getElementById("onboardingPhone")?.value || "").trim();
+  const extraPhone = (document.getElementById("onboardingExtraPhone")?.value || "").trim();
+  const telegram = (document.getElementById("onboardingTelegram")?.value || "").trim();
   const region = (document.getElementById("onboardingRegion")?.value || "Toshkent").trim();
   const address = (document.getElementById("onboardingAddress")?.value || "").trim();
   const birthDate = (document.getElementById("onboardingBirthDate")?.value || "").trim();
@@ -4789,6 +4822,8 @@ async function saveProfileOnboarding(e) {
   state.user.fullName = fullName;
   state.user.name = fullName || state.user.name;
   state.user.phone = phone;
+  state.user.extraPhone = extraPhone;
+  state.user.telegram = telegram;
   state.user.city = region;
   state.user.address = address;
   state.user.birthDate = birthDate;
@@ -4811,6 +4846,8 @@ async function saveProfileOnboarding(e) {
         email: state.user.email,
         name: fullName,
         phone,
+        extraPhone,
+        telegram,
         city: region,
         address,
         birthDate,
@@ -5333,7 +5370,8 @@ function renderOrdersHistory() {
   const user = state.user || JSON.parse(localStorage.getItem("eurotex_user") || "null");
   const uEmail = user && user.email ? String(user.email).toLowerCase().trim() : "";
   const uPhone = user && user.phone ? String(user.phone).replace(/[^0-9]/g, "") : "";
-  const uName = user && (user.fullName || user.name) ? String(user.fullName || user.name).toLowerCase().trim() : "";
+  const uExtraPhone = user && user.extraPhone ? String(user.extraPhone).replace(/[^0-9]/g, "") : "";
+  const uTelegram = user && user.telegram ? String(user.telegram).toLowerCase().replace(/^@/, "").trim() : "";
 
   let localOrderIds = new Set();
   try {
@@ -5345,6 +5383,7 @@ function renderOrdersHistory() {
   const myOrders = (state.orders || []).filter((o) => {
     if (!o) return false;
     const ordId = String(o.orderId || o.id || "");
+
     // 1. Matched by device's placed order IDs
     if (ordId && localOrderIds.has(ordId)) return true;
 
@@ -5352,14 +5391,17 @@ function renderOrdersHistory() {
     const oEmail = String(o.userEmail || o.email || "").toLowerCase().trim();
     if (uEmail && oEmail && oEmail === uEmail) return true;
 
-    // 3. Matched by phone number
+    // 3. Matched by primary phone number (exact suffix matching for 9 digits)
     const oPhone = String(o.phone || "").replace(/[^0-9]/g, "");
-    if (uPhone && uPhone.length >= 7 && oPhone && (oPhone.includes(uPhone) || uPhone.includes(oPhone))) return true;
+    if (uPhone && uPhone.length >= 9 && oPhone && (oPhone.endsWith(uPhone) || uPhone.endsWith(oPhone))) return true;
 
-    // 4. If logged in and recipient name matches closely
-    if (uName && uName.length >= 4) {
-      const oRecipient = String(o.recipient || o.customerName || "").toLowerCase().trim();
-      if (oRecipient.includes(uName)) return true;
+    // 4. Matched by secondary extra phone number
+    if (uExtraPhone && uExtraPhone.length >= 9 && oPhone && (oPhone.endsWith(uExtraPhone) || uExtraPhone.endsWith(oPhone))) return true;
+
+    // 5. Matched by telegram username if present in order
+    if (uTelegram) {
+      const oRecip = String(o.recipient || o.notes || "").toLowerCase();
+      if (oRecip.includes("@" + uTelegram) || oRecip.includes(uTelegram)) return true;
     }
 
     return false;

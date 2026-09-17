@@ -273,7 +273,7 @@ router.get("/users-list", requireAdmin, async (req, res) => {   // #6 — faqat 
 // =============================================================================
 router.post("/user/update-profile", async (req, res) => {
   try {
-    const { email, name, phone, city, address, birthDate, suitSize, style } = req.body;
+    const { email, name, phone, extraPhone, telegram, city, address, birthDate, suitSize, style } = req.body;
     if (!email) {
       return res.status(400).json({ success: false, message: "Email kiritilmagan" });
     }
@@ -289,6 +289,8 @@ router.post("/user/update-profile", async (req, res) => {
         if (idx !== -1) {
           if (name) db[idx].name = name;
           if (phone) db[idx].phone = phone;
+          if (extraPhone !== undefined) db[idx].extraPhone = extraPhone;
+          if (telegram !== undefined) db[idx].telegram = telegram;
           if (city) db[idx].city = city;
           if (address) db[idx].address = address;
           if (birthDate) db[idx].birthDate = birthDate;
@@ -301,6 +303,8 @@ router.post("/user/update-profile", async (req, res) => {
             email: cleanEmail,
             name: name || cleanEmail.split("@")[0],
             phone: phone || "",
+            extraPhone: extraPhone || "",
+            telegram: telegram || "",
             city: city || "Toshkent",
             address: address || "",
             birthDate: birthDate || "",
@@ -325,6 +329,8 @@ router.post("/user/update-profile", async (req, res) => {
             $set: {
               ...(name ? { name } : {}),
               ...(phone ? { phone } : {}),
+              ...(extraPhone !== undefined ? { extraPhone } : {}),
+              ...(telegram !== undefined ? { telegram } : {}),
               ...(city ? { city } : {}),
               ...(address ? { address } : {}),
               ...(birthDate ? { birthDate } : {}),
