@@ -1257,20 +1257,37 @@ function renderProducts() {
               : product.price) ||
             120;
           const priceSom = priceUsd * usdRate;
+          let rawOld = Number(product.oldPrice);
+          if (!Number.isFinite(rawOld) || rawOld > 50000000 || rawOld < 0) {
+            rawOld = 0;
+          }
+
           let oldPriceUsd = 0;
           let oldPriceSom = 0;
-          if (product.oldPrice) {
-            if (product.oldPrice > 5000) {
-              oldPriceSom = Math.round(product.oldPrice);
+          if (rawOld > 0) {
+            if (rawOld > 5000) {
+              oldPriceSom = Math.round(rawOld);
               oldPriceUsd = Math.round(oldPriceSom / usdRate);
             } else {
-              oldPriceUsd = Math.round(product.oldPrice);
+              oldPriceUsd = Math.round(rawOld);
               oldPriceSom = oldPriceUsd * usdRate;
             }
-          } else {
+          }
+
+          if (oldPriceSom <= priceSom) {
             oldPriceUsd = Math.round(priceUsd * 1.25);
             oldPriceSom = oldPriceUsd * usdRate;
           }
+
+          let cardDisc = 0;
+          if (product.discountPercent && product.discountPercent > 0 && product.discountPercent < 100) {
+            cardDisc = Math.round(product.discountPercent);
+          } else if (oldPriceSom > priceSom && priceSom > 0) {
+            cardDisc = Math.round(((oldPriceSom - priceSom) / oldPriceSom) * 100);
+          }
+          if (cardDisc >= 100) cardDisc = 99;
+          if (cardDisc < 1) cardDisc = 0;
+
           const formattedPrice = `$${priceUsd} (${formatMoneySom(priceSom)} so'm)`;
           const formattedOldPrice = `$${oldPriceUsd} (${formatMoneySom(oldPriceSom)} so'm)`;
           const badgeType = product.badgeType || "gold";
@@ -2489,17 +2506,25 @@ function openProductPage(productId) {
   const usdRate = state.usdRate || 12650;
   const priceUsdVal = product.pachkaPriceUsd || product.priceUsd || (product.price ? Math.round(product.price / usdRate) : 50);
   const priceSomRaw = priceUsdVal * usdRate;
+
+  let rawOld = Number(product.oldPrice);
+  if (!Number.isFinite(rawOld) || rawOld > 50000000 || rawOld < 0) {
+    rawOld = 0;
+  }
+
   let oldPriceUsdVal = 0;
   let oldPriceSomRaw = 0;
-  if (product.oldPrice) {
-    if (product.oldPrice > 5000) {
-      oldPriceSomRaw = Math.round(product.oldPrice);
+  if (rawOld > 0) {
+    if (rawOld > 5000) {
+      oldPriceSomRaw = Math.round(rawOld);
       oldPriceUsdVal = Math.round(oldPriceSomRaw / usdRate);
     } else {
-      oldPriceUsdVal = Math.round(product.oldPrice);
+      oldPriceUsdVal = Math.round(rawOld);
       oldPriceSomRaw = oldPriceUsdVal * usdRate;
     }
-  } else {
+  }
+
+  if (oldPriceSomRaw <= priceSomRaw) {
     oldPriceUsdVal = Math.round(priceUsdVal * 1.25);
     oldPriceSomRaw = oldPriceUsdVal * usdRate;
   }
@@ -2513,11 +2538,20 @@ function openProductPage(productId) {
     priceOldEl.textContent = `${formatMoneySom(oldPriceSomRaw)} so'm`;
   }
 
-  // Populate stage discount pill (Image 2 -17% style)
+  // Populate stage discount pill (Image 2 -17% style, strictly 1% to 99%)
   const stageDiscEl = document.getElementById("pdpStageDiscount");
   const pdpDiscountBadge = document.querySelector(".pdp-discount-badge");
-  if (oldPriceSomRaw > priceSomRaw && priceSomRaw > 0) {
-    const pct = Math.round(((oldPriceSomRaw - priceSomRaw) / oldPriceSomRaw) * 100);
+
+  let pct = 0;
+  if (product.discountPercent && product.discountPercent > 0 && product.discountPercent < 100) {
+    pct = Math.round(product.discountPercent);
+  } else if (oldPriceSomRaw > priceSomRaw && priceSomRaw > 0) {
+    pct = Math.round(((oldPriceSomRaw - priceSomRaw) / oldPriceSomRaw) * 100);
+  }
+  if (pct >= 100) pct = 99;
+  if (pct < 1) pct = 0;
+
+  if (pct > 0) {
     if (stageDiscEl) {
       stageDiscEl.textContent = `-${pct}%`;
       stageDiscEl.style.display = "inline-flex";
@@ -6864,12 +6898,13 @@ function updateNewProdDiscountCalc() {
   const preview = document.getElementById("newProdDiscountPreview");
   if (!priceInput || !discInput || !preview) return;
   const price = parseFloat(priceInput.value) || 0;
-  const disc = Math.min(100, Math.max(0, parseFloat(discInput.value) || 0));
+  let disc = Math.min(99, Math.max(0, parseFloat(discInput.value) || 0));
+  discInput.value = disc;
   const rate = (typeof state !== "undefined" && state.usdRate) ? state.usdRate : 12650;
   if (price > 0 && disc > 0) {
     const finalPrice = Math.round(price * (1 - disc / 100) * 100) / 100;
-    const finalSom = Math.round(finalPrice * rate).toLocaleString("ru-RU");
-    const origSom = Math.round(price * rate).toLocaleString("ru-RU");
+    const finalSom = formatMoneySom(finalPrice * rate);
+    const origSom = formatMoneySom(price * rate);
     preview.style.display = "block";
     preview.innerHTML = `✨ Chegirma: <s style="color:#94a3b8; margin-right:4px;">$${price} (${origSom} so'm)</s> ➔ <b style="color:#10b981; font-size:13px;">-$${finalPrice} (${finalSom} so'm)</b> <span style="background:#ef4444; color:#fff; padding:1px 6px; border-radius:6px; font-size:11px; margin-left:4px;">-${disc}%</span>`;
   } else {
@@ -6884,13 +6919,14 @@ function updateEditProdDiscountCalc() {
   const preview = document.getElementById("editProdDiscountPreview");
   if (!priceInput || !discInput) return;
   const price = parseFloat(priceInput.value) || 0;
-  const disc = Math.min(100, Math.max(0, parseFloat(discInput.value) || 0));
+  let disc = Math.min(99, Math.max(0, parseFloat(discInput.value) || 0));
+  discInput.value = disc;
   const rate = (typeof state !== "undefined" && state.usdRate) ? state.usdRate : 12650;
   if (price > 0 && disc > 0) {
     const finalPrice = Math.round(price * (1 - disc / 100) * 100) / 100;
     if (oldPriceInput) oldPriceInput.value = price;
-    const finalSom = Math.round(finalPrice * rate).toLocaleString("ru-RU");
-    const origSom = Math.round(price * rate).toLocaleString("ru-RU");
+    const finalSom = formatMoneySom(finalPrice * rate);
+    const origSom = formatMoneySom(price * rate);
     if (preview) {
       preview.style.display = "block";
       preview.innerHTML = `✨ Chegirma: <s style="color:#94a3b8; margin-right:4px;">$${price} (${origSom} so'm)</s> ➔ <b style="color:#10b981; font-size:13px;">-$${finalPrice} (${finalSom} so'm)</b> <span style="background:#ef4444; color:#fff; padding:1px 6px; border-radius:6px; font-size:11px; margin-left:4px;">-${disc}%</span>`;
@@ -8933,10 +8969,11 @@ function openMaintenanceAdminLogin() {
 }
 
 function formatMoneySom(amount) {
-  const num = Math.round(
-    typeof amount === "number" ? amount : parseFloat(amount) || 0,
-  );
-  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  let num = typeof amount === "number" ? amount : parseFloat(amount) || 0;
+  if (!Number.isFinite(num) || num < 0) num = 0;
+  if (num > 100000000) num = Math.min(num, 100000000);
+  num = Math.round(num);
+  return num.toLocaleString("ru-RU").replace(/\u00A0/g, " ");
 }
 
 function formatMoney(usdAmount) {

@@ -53,12 +53,41 @@ router.get("/", async (req, res) => {
         fileProds.forEach((p) => map.set(String(p.id || p.customId), p));
         dbProds.forEach((p) => {
           const obj = p.toObject ? p.toObject() : p;
-          if (obj.pachkaPriceUsd && obj.pachkaPriceUsd > 0) {
-            obj.priceUsd = obj.pachkaPriceUsd;
+          const pUsd = (obj.pachkaPriceUsd && obj.pachkaPriceUsd > 0)
+            ? obj.pachkaPriceUsd
+            : (obj.priceUsd && obj.priceUsd > 0)
+            ? obj.priceUsd
+            : (obj.price && obj.price > 5000)
+            ? Math.round(obj.price / 12650)
+            : 45;
+
+          obj.pachkaPriceUsd = pUsd;
+          obj.priceUsd = pUsd;
+          obj.price = (obj.price && obj.price > 5000) ? obj.price : pUsd * 12650;
+
+          // Normalize oldPrice and discount
+          let rawOld = Number(obj.oldPrice);
+          if (!Number.isFinite(rawOld) || rawOld > 50000000 || rawOld < 0) {
+            rawOld = 0;
           }
-          if (obj.oldPrice && obj.oldPrice > 50000000) {
-            obj.oldPrice = Math.round((obj.price || (obj.priceUsd || 50) * 12650) * 1.25);
+          if (rawOld > 0 && rawOld <= 5000) {
+            rawOld = rawOld * 12650;
           }
+          if (rawOld <= obj.price) {
+            rawOld = Math.round(obj.price * 1.25);
+          }
+          obj.oldPrice = rawOld;
+
+          // Discount percent is strictly 1% to 99% (never 100%!)
+          if (obj.discountPercent && obj.discountPercent > 0 && obj.discountPercent < 100) {
+            obj.discountPercent = Math.min(99, Math.max(1, Math.round(obj.discountPercent)));
+          } else if (obj.oldPrice > obj.price && obj.price > 0) {
+            const calculatedDisc = Math.round(((obj.oldPrice - obj.price) / obj.oldPrice) * 100);
+            obj.discountPercent = Math.min(99, Math.max(1, calculatedDisc));
+          } else {
+            obj.discountPercent = 0;
+          }
+
           map.set(String(obj.customId || obj.id || obj._id), obj);
         });
         const merged = Array.from(map.values());
