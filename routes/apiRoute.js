@@ -262,6 +262,69 @@ router.get("/users-list", requireAdmin, async (req, res) => {   // #6 — faqat 
 });
 
 // =============================================================================
+// 2.1 👤 MIJOZ PROFILINI TO'LDIRISH VA YANGILASH API
+// =============================================================================
+router.post("/user/update-profile", async (req, res) => {
+  try {
+    const { email, name, phone, city, address, birthDate, suitSize, style } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email kiritilmagan" });
+    }
+
+    const cleanEmail = String(email).toLowerCase().trim();
+
+    // 1. Update in local database.json
+    const localDbFile = path.join(__dirname, "../database.json");
+    if (fs.existsSync(localDbFile)) {
+      try {
+        let db = JSON.parse(fs.readFileSync(localDbFile, "utf8")) || [];
+        const idx = db.findIndex((u) => String(u.email || "").toLowerCase().trim() === cleanEmail);
+        if (idx !== -1) {
+          if (name) db[idx].name = name;
+          if (phone) db[idx].phone = phone;
+          if (city) db[idx].city = city;
+          if (address) db[idx].address = address;
+          if (birthDate) db[idx].birthDate = birthDate;
+          if (suitSize) db[idx].suitSize = suitSize;
+          if (style) db[idx].style = style;
+          db[idx].updatedAt = new Date();
+          fs.writeFileSync(localDbFile, JSON.stringify(db, null, 4), "utf8");
+        }
+      } catch (e) {}
+    }
+
+    // 2. Update in MongoDB if connected
+    try {
+      const mongoose = require("mongoose");
+      if (mongoose.connection.readyState === 1) {
+        await User.findOneAndUpdate(
+          { email: cleanEmail },
+          {
+            $set: {
+              ...(name ? { name } : {}),
+              ...(phone ? { phone } : {}),
+              ...(city ? { city } : {}),
+              ...(address ? { address } : {}),
+              ...(birthDate ? { birthDate } : {}),
+              ...(suitSize ? { suitSize } : {}),
+              ...(style ? { style } : {}),
+              updatedAt: new Date(),
+            },
+          },
+          { new: true, upsert: true }
+        );
+      }
+    } catch (e) {
+      console.warn("Mongo update-profile warning:", e.message);
+    }
+
+    return res.json({ success: true, message: "Profil muvaffaqiyatli saqlandi!" });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// =============================================================================
 // 3. 🏷️ PROMOKODLAR VA CHEGIRMA KUPONLARI TIZIMI
 // =============================================================================
 const DEFAULT_PROMOS = [

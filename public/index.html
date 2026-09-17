@@ -4600,7 +4600,7 @@
             class="btn-profile-item"
             onclick="
               closeModal('userProfileModal');
-              switchDashboardTab('orders');
+              openDashboardView('orders');
             "
           >
             <svg
@@ -4636,6 +4636,160 @@
             </svg>
             🚪 Tizimdan Chiqish
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 👤 ONBOARDING: PROFILE COMPLETION MODAL (GOOGLE & EMAIL LOGIN SO'NG) -->
+    <div id="profileOnboardingModal" class="modal-overlay" style="display: none;">
+      <div class="modal-dialog modal-dialog-md" style="max-width: 580px; width: 92vw; border-radius: 20px; overflow: hidden; background: var(--bg-surface, #ffffff); box-shadow: 0 25px 60px rgba(0,0,0,0.4); border: 1px solid var(--border-color, rgba(255,255,255,0.1));">
+        <!-- Top Branded Header -->
+        <div style="background: linear-gradient(135deg, #18181b 0%, #2a040e 100%); padding: 22px 24px; color: #ffffff; position: relative; border-bottom: 2px solid #88001b;">
+          <button type="button" onclick="skipProfileOnboarding()" style="position: absolute; right: 16px; top: 16px; background: rgba(255,255,255,0.12); border: none; color: #ffffff; width: 32px; height: 32px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+            ✕
+          </button>
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
+            <span style="font-size: 26px;">✨</span>
+            <h3 style="font-size: 19px; font-weight: 800; margin: 0; color: #ffffff;">Profilingizni To'ldiring</h3>
+          </div>
+          <p style="font-size: 12.5px; color: #cbd5e1; margin: 0; line-height: 1.45;">
+            Buyurtmalaringizni tez yetkazish va tug'ilgan kuningizga <b>maxsus -15% sovg'a promokod</b> berishimiz uchun ma'lumotlaringizni kiriting. (Ixtiyoriy)
+          </p>
+        </div>
+
+        <!-- Form Body -->
+        <div style="padding: 22px; max-height: 75vh; overflow-y: auto;">
+          <form id="profileOnboardingForm" onsubmit="saveProfileOnboarding(event)">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin-bottom: 16px;">
+              <!-- 1. Ism & Familiya -->
+              <div>
+                <label style="display: block; font-size: 12.5px; font-weight: 700; color: var(--text-secondary, #475569); margin-bottom: 5px;">
+                  👤 Ism va Familiyangiz *
+                </label>
+                <input
+                  type="text"
+                  id="onboardingFullName"
+                  class="custom-input"
+                  style="width: 100%; padding: 10px 14px; border-radius: 10px; font-size: 14px;"
+                  placeholder="Masalan: Sardor Aliyev"
+                  required
+                />
+              </div>
+
+              <!-- 2. Telefon raqam -->
+              <div>
+                <label style="display: block; font-size: 12.5px; font-weight: 700; color: var(--text-secondary, #475569); margin-bottom: 5px;">
+                  📞 Telefon raqamingiz *
+                </label>
+                <input
+                  type="tel"
+                  id="onboardingPhone"
+                  class="custom-input"
+                  style="width: 100%; padding: 10px 14px; border-radius: 10px; font-size: 14px;"
+                  placeholder="+998 (90) 123-45-67"
+                  required
+                />
+              </div>
+
+              <!-- 3. Shahar / Viloyat -->
+              <div>
+                <label style="display: block; font-size: 12.5px; font-weight: 700; color: var(--text-secondary, #475569); margin-bottom: 5px;">
+                  📍 Shahar / Viloyat
+                </label>
+                <select id="onboardingRegion" class="custom-input" style="width: 100%; padding: 10px 14px; border-radius: 10px; font-size: 13.5px;">
+                  <option value="Toshkent">Toshkent shahri</option>
+                  <option value="Toshkent viloyati">Toshkent viloyati</option>
+                  <option value="Samarqand">Samarqand</option>
+                  <option value="Buxoro">Buxoro</option>
+                  <option value="Farg'ona">Farg'ona</option>
+                  <option value="Andijon">Andijon</option>
+                  <option value="Namangan">Namangan</option>
+                  <option value="Qashqadaryo">Qashqadaryo</option>
+                  <option value="Surxondaryo">Surxondaryo</option>
+                  <option value="Xorazm">Xorazm</option>
+                  <option value="Navoiy">Navoiy</option>
+                  <option value="Jizzax">Jizzax</option>
+                  <option value="Sirdaryo">Sirdaryo</option>
+                  <option value="Qoraqalpog'iston">Qoraqalpog'iston</option>
+                </select>
+              </div>
+
+              <!-- 4. Tug'ilgan sana -->
+              <div>
+                <label style="display: block; font-size: 12.5px; font-weight: 700; color: var(--text-secondary, #475569); margin-bottom: 5px;">
+                  🎁 Tug'ilgan sana (Sovg'a uchun)
+                </label>
+                <input
+                  type="date"
+                  id="onboardingBirthDate"
+                  class="custom-input"
+                  style="width: 100%; padding: 9px 14px; border-radius: 10px; font-size: 13.5px;"
+                />
+              </div>
+
+              <!-- 5. Kiyim o'lchami -->
+              <div>
+                <label style="display: block; font-size: 12.5px; font-weight: 700; color: var(--text-secondary, #475569); margin-bottom: 5px;">
+                  👔 Kostyum / Shim o'lchamingiz
+                </label>
+                <select id="onboardingSuitSize" class="custom-input" style="width: 100%; padding: 10px 14px; border-radius: 10px; font-size: 13.5px;">
+                  <option value="46">46 (S)</option>
+                  <option value="48" selected>48 (M)</option>
+                  <option value="50">50 (L)</option>
+                  <option value="52">52 (XL)</option>
+                  <option value="54">54 (2XL)</option>
+                  <option value="56">56 (3XL)</option>
+                  <option value="58">58 (4XL)</option>
+                </select>
+              </div>
+
+              <!-- 6. Sevimli bichim -->
+              <div>
+                <label style="display: block; font-size: 12.5px; font-weight: 700; color: var(--text-secondary, #475569); margin-bottom: 5px;">
+                  ✂️ Sevimli bichim / Fason
+                </label>
+                <select id="onboardingStyle" class="custom-input" style="width: 100%; padding: 10px 14px; border-radius: 10px; font-size: 13.5px;">
+                  <option value="Slim Fit" selected>Slim Fit (Yopishib turuvchi zamonaviy)</option>
+                  <option value="Klassik">Klassik (Qulay va erkin)</option>
+                  <option value="Regular">Regular Fit (O'rtacha erkinlik)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- 7. Aniq yetkazib berish manzili -->
+            <div style="margin-bottom: 20px;">
+              <label style="display: block; font-size: 12.5px; font-weight: 700; color: var(--text-secondary, #475569); margin-bottom: 5px;">
+                🏠 Aniq yetkazib berish manzilingiz
+              </label>
+              <input
+                type="text"
+                id="onboardingAddress"
+                class="custom-input"
+                style="width: 100%; padding: 10px 14px; border-radius: 10px; font-size: 13.5px;"
+                placeholder="Tuman, ko'cha, uy raqami, xonadon yoki mo'ljal"
+              />
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 10px; justify-content: flex-end; align-items: center; flex-wrap: wrap;">
+              <button
+                type="button"
+                onclick="skipProfileOnboarding()"
+                class="btn btn-secondary"
+                style="padding: 10px 18px; border-radius: 10px; font-weight: 700; font-size: 13px; background: transparent; border: 1px solid var(--border-color, #cbd5e1); color: var(--text-secondary, #64748b);"
+              >
+                Keyinroq to'ldirish (O'tkazib yuborish) ⏭️
+              </button>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                id="onboardingSubmitBtn"
+                style="padding: 10px 22px; border-radius: 10px; font-weight: 800; font-size: 13.5px; background: linear-gradient(135deg, #7000ff, #00f2fe); border: none; color: #ffffff; box-shadow: 0 4px 14px rgba(112, 0, 255, 0.35);"
+              >
+                Saqlash va Davom etish ✨
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

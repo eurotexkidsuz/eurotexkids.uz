@@ -3305,6 +3305,17 @@ function closeDashboardView() {
 }
 
 function switchDashboardTab(tabName) {
+  const dashView = document.getElementById("dashboardPageView");
+  const homeWrapper = document.getElementById("homePageWrapper");
+  const pdpView = document.getElementById("productDetailPageView");
+
+  if (dashView && (dashView.style.display === "none" || !dashView.style.display)) {
+    if (homeWrapper) homeWrapper.style.display = "none";
+    if (pdpView) pdpView.style.display = "none";
+    dashView.style.display = "block";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   const panes = {
     cart: document.getElementById("dPaneCart"),
     wishlist: document.getElementById("dPaneWishlist"),
@@ -4351,6 +4362,7 @@ async function handleEmailAuth(e) {
           }
         } else {
           showToast(`✅ Kod to'g'ri! Xush kelibsiz, ${state.user.name}!`);
+          checkAndPromptProfileCompletion();
         }
       } else {
         showAuthError(data.message || "❌ Noto'g'ri kod kiritildi! Pochtadagi 6 xonali kodni tekshiring.");
@@ -4429,6 +4441,7 @@ function handleGoogleFormSubmit(e) {
     showToast(
       `Xush kelibsiz, ${state.user.name}! Google orqali KODSIZ kirdingiz! ✅`,
     );
+    checkAndPromptProfileCompletion();
   }
 }
 
@@ -4483,6 +4496,7 @@ function handleGoogleGsiCredential(response) {
       showToast(
         `Xush kelibsiz, ${displayName}! Google orqali muvaffaqiyatli kirdingiz! ✅`,
       );
+      checkAndPromptProfileCompletion();
     }
   }
 }
@@ -4643,6 +4657,7 @@ function handleGsiCredentialResponse(response) {
       showToast(
         `✅ ${state.user.name} sifatida Google orqali muvaffaqiyatli kirdingiz! ⚡`,
       );
+      checkAndPromptProfileCompletion();
     }
   } catch (e) {
     window.location.href = "/users/auth/google";
@@ -4710,6 +4725,99 @@ function quickAdminLogin(email) {
   if (isAdmin) {
     openDashboardView("admin");
   }
+}
+
+// =============================================================================
+// 👤 ONBOARDING: PROFILE COMPLETION SYSTEM (GOOGLE & EMAIL LOGIN)
+// =============================================================================
+function checkAndPromptProfileCompletion() {
+  if (!state.user) return;
+  const isAdmin = state.user.role === "admin" || isAdminEmail(state.user.email);
+  if (isAdmin) return;
+
+  // Don't prompt if already completed or dismissed in current session
+  if (state.user.profileCompleted || sessionStorage.getItem("eurotex_onboarding_dismissed")) {
+    return;
+  }
+
+  // Pre-fill existing data if available
+  const nameInput = document.getElementById("onboardingFullName");
+  const phoneInput = document.getElementById("onboardingPhone");
+  const regionInput = document.getElementById("onboardingRegion");
+  const addrInput = document.getElementById("onboardingAddress");
+  const birthInput = document.getElementById("onboardingBirthDate");
+  const sizeInput = document.getElementById("onboardingSuitSize");
+  const styleInput = document.getElementById("onboardingStyle");
+
+  if (nameInput) {
+    const currName = state.user.fullName || state.user.name || "";
+    nameInput.value = currName.includes("@") ? "" : currName;
+  }
+  if (phoneInput && state.user.phone && state.user.phone !== "-") {
+    phoneInput.value = state.user.phone;
+  }
+  if (regionInput && state.user.city) regionInput.value = state.user.city;
+  if (addrInput && state.user.address) addrInput.value = state.user.address;
+  if (birthInput && state.user.birthDate) birthInput.value = state.user.birthDate;
+  if (sizeInput && state.user.suitSize) sizeInput.value = state.user.suitSize;
+  if (styleInput && state.user.style) styleInput.value = state.user.style;
+
+  setTimeout(() => {
+    openModal("profileOnboardingModal");
+  }, 450);
+}
+
+async function saveProfileOnboarding(e) {
+  if (e) e.preventDefault();
+  if (!state.user) return;
+
+  const fullName = (document.getElementById("onboardingFullName")?.value || "").trim();
+  const phone = (document.getElementById("onboardingPhone")?.value || "").trim();
+  const region = (document.getElementById("onboardingRegion")?.value || "Toshkent").trim();
+  const address = (document.getElementById("onboardingAddress")?.value || "").trim();
+  const birthDate = (document.getElementById("onboardingBirthDate")?.value || "").trim();
+  const suitSize = (document.getElementById("onboardingSuitSize")?.value || "48").trim();
+  const style = (document.getElementById("onboardingStyle")?.value || "Slim Fit").trim();
+
+  state.user.fullName = fullName;
+  state.user.name = fullName || state.user.name;
+  state.user.phone = phone;
+  state.user.city = region;
+  state.user.address = address;
+  state.user.birthDate = birthDate;
+  state.user.suitSize = suitSize;
+  state.user.style = style;
+  state.user.profileCompleted = true;
+
+  localStorage.setItem("eurotex_user", JSON.stringify(state.user));
+  updateUserAuthUI();
+  closeModal("profileOnboardingModal");
+
+  showToast(`Rahmat, ${fullName || state.user.name}! Profilingiz muvaffaqiyatli saqlandi! 🎉✨`);
+
+  // Persist to server in background
+  try {
+    fetch("/api/user/update-profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: state.user.email,
+        name: fullName,
+        phone,
+        city: region,
+        address,
+        birthDate,
+        suitSize,
+        style,
+      }),
+    }).catch((err) => console.warn("Profile sync error:", err.message));
+  } catch (err) {}
+}
+
+function skipProfileOnboarding() {
+  sessionStorage.setItem("eurotex_onboarding_dismissed", "true");
+  closeModal("profileOnboardingModal");
+  showToast("Profilni xohlagan paytda to'ldirishingiz mumkin. Xush kelibsiz! 👍");
 }
 
 function updateUserAuthUI() {
