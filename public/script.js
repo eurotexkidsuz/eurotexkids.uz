@@ -903,11 +903,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     handleURLRouting();
   }
 
-  // Auto-sync products & orders in background silently every 30s (zero DOM flicker, completely invisible to user)
+  // Auto-sync products & orders in background silently every 30s when tab is active (Fix 7: Page Visibility API)
   setInterval(() => {
+    if (document.hidden) return; // Tab yopiq yoki minimizatsiyada bo'lsa serverni bezovta qilmaymiz
     syncProductsWithBackendAndStorage(true);
     fetchOrdersFromServer();
   }, 30000);
+
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+      syncProductsWithBackendAndStorage(true);
+      fetchOrdersFromServer();
+    }
+  });
   loadCustomSizesFromStorage();
   setLanguage(state.currentLang);
   setupEventListeners();
@@ -1147,6 +1155,46 @@ function safeFormatMoney(priceVal) {
   }
 }
 
+// 🌐 XSS Himoyasi — HTML teglarni zararsizlantirish (Fix 12)
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+// 💾 Xavfsiz LocalStorage saqlagich (Fix 13: QuotaExceeded va Private mode himoyasi)
+function safeSetLocalStorage(key, val) {
+  try {
+    const serialized = typeof val === "string" ? val : JSON.stringify(val);
+    localStorage.setItem(key, serialized);
+  } catch (e) {
+    console.warn(`[Eurotex Storage] localStorage "${key}" saqlash cheklandi:`, e.message);
+  }
+}
+
+// 🔤 Kirill <-> Lotin o'zbekcha qidiruv transliteratsiyasi (Fix 3)
+function transliterateUzbek(text) {
+  if (!text || typeof text !== "string") return "";
+  const cyrToLat = {
+    "а": "a", "б": "b", "в": "v", "г": "g", "д": "d", "е": "e", "ё": "yo", "ж": "j",
+    "з": "z", "и": "i", "й": "y", "к": "k", "л": "l", "м": "m", "н": "n", "о": "o",
+    "п": "p", "р": "r", "с": "s", "т": "t", "у": "u", "ф": "f", "х": "x", "ц": "ts",
+    "ч": "ch", "ш": "sh", "щ": "sh", "ъ": "", "ы": "i", "ь": "", "э": "e", "ю": "yu",
+    "я": "ya", "ў": "o'", "ғ": "g'", "ҳ": "h", "қ": "q"
+  };
+  const lower = text.toLowerCase();
+  let result = "";
+  for (let i = 0; i < lower.length; i++) {
+    const ch = lower[i];
+    result += cyrToLat[ch] !== undefined ? cyrToLat[ch] : ch;
+  }
+  return result;
+}
+
 function renderProducts() {
   const grid = document.getElementById("productGrid");
   const countBadge = document.getElementById("productCountBadge");
@@ -1195,11 +1243,13 @@ function renderProducts() {
       : true;
 
     const q = activeSearch.toLowerCase().trim();
-    const tokens = q.split(/[\s,;._\-+]+/).filter((t) => t.length > 0);
+    const qTranslit = transliterateUzbek(q);
+    const tokens = [...new Set([...q.split(/[\s,;._\-+]+/), ...(qTranslit ? qTranslit.split(/[\s,;._\-+]+/) : [])])].filter((t) => t.length > 0);
     const fullText = `${titleUz} ${titleRu} ${titleEn} ${colorUz} ${categoryUz} ${fabricUz} ${itemId}`;
     const matchesSearch =
       !activeSearch ||
       fullText.includes(q) ||
+      (qTranslit && fullText.includes(qTranslit)) ||
       (tokens.length > 0 &&
         tokens.some(
           (t) =>
@@ -1435,6 +1485,29 @@ function setupEventListeners() {
     });
   });
 
+  // 📞 Telefon raqamini avtomatik formatlash maskasi (+998 (XX) XXX-XX-XX) (Fix 8)
+  const phoneInputs = document.querySelectorAll("#custPhone, input[type='tel']");
+  phoneInputs.forEach((input) => {
+    input.addEventListener("focus", () => {
+      if (!input.value.trim()) {
+        input.value = "+998 ";
+      }
+    });
+    input.addEventListener("input", () => {
+      let val = input.value.replace(/\D/g, "");
+      if (val.startsWith("998")) {
+        val = val.slice(3);
+      }
+      val = val.slice(0, 9);
+      let formatted = "+998";
+      if (val.length > 0) formatted += ` (${val.slice(0, 2)}`;
+      if (val.length >= 2) formatted += `) ${val.slice(2, 5)}`;
+      if (val.length >= 5) formatted += `-${val.slice(5, 7)}`;
+      if (val.length >= 7) formatted += `-${val.slice(7, 9)}`;
+      input.value = formatted;
+    });
+  });
+
   // Navigation Pills (Category Bar)
   const categoryUrlMap = {
     all: "/all",
@@ -1665,8 +1738,8 @@ function renderSearchSuggestions(query) {
   }
 
   const lang = state.currentLang;
-
-  const tokens = q.split(/[\s,;._\-+]+/).filter((t) => t.length > 0);
+  const qTranslit = transliterateUzbek(q);
+  const tokens = [...new Set([...q.split(/[\s,;._\-+]+/), ...(qTranslit ? qTranslit.split(/[\s,;._\-+]+/) : [])])].filter((t) => t.length > 0);
 
   // Filter matching products (up to 5)
   const matches = (EUROTEX_PRODUCTS || []).filter((item) => {
@@ -1690,7 +1763,7 @@ function renderSearchSuggestions(query) {
 
     const fullText = `${titleUz} ${titleRu} ${titleEn} ${cat} ${color} ${fabric} ${itemId}`;
 
-    if (fullText.includes(q)) return true;
+    if (fullText.includes(q) || (qTranslit && fullText.includes(qTranslit))) return true;
     if (tokens.length > 0) {
       return tokens.some(
         (t) =>
@@ -1725,7 +1798,7 @@ function renderSearchSuggestions(query) {
                         );
                         return `
                             <div class="suggest-prod-item" onclick="executeSearch(decodeURIComponent('${safeTitle}'));">
-                                <img src="${item.image}" alt="" class="suggest-prod-img" />
+                                <img src="${item.image}" alt="" class="suggest-prod-img" onerror="this.onerror=null;this.src='/images/navy_suit.jpg'" />
                                 <div class="suggest-prod-info">
                                     <div class="suggest-prod-title">${item.title_uz}</div>
                                     <div class="suggest-prod-meta">
@@ -2164,6 +2237,20 @@ function updateCartTotalsOnly() {
   let discountUsd = 0;
   let discountSom = 0;
 
+  // Fix 14: Promokodni qayta tekshirish — agar savat summasi minimal talabdan kamayib ketsa
+  if (state.appliedPromoCode && state.appliedPromoMinPrice && state.appliedPromoMinPrice > 0) {
+    const currentSubtotalSom = Math.round(rawSubtotalUsd * rate);
+    if (currentSubtotalSom < state.appliedPromoMinPrice) {
+      const oldCode = state.appliedPromoCode;
+      state.appliedPromoCode = null;
+      state.appliedPromoMinPrice = 0;
+      state.appliedDiscountAmount = 0;
+      state.appliedDiscountUsd = 0;
+      state.discountRate = 0;
+      showToast(`⚠️ Savat summasi kamaygani uchun "${oldCode}" promokodi bekor qilindi`);
+    }
+  }
+
   if (state.discountRate && state.discountRate > 0) {
     discountUsd = Math.round(rawSubtotalUsd * state.discountRate);
     discountSom = Math.round(discountUsd * rate);
@@ -2187,6 +2274,19 @@ function updateCartTotalsOnly() {
   if (cartSubtotal) cartSubtotal.textContent = formatMoney(rawSubtotalUsd);
   if (cartTotal) cartTotal.textContent = formatMoney(finalTotalUsd);
   if (cartPopTotal) cartPopTotal.textContent = safeFormatMoney(finalTotalUsd);
+
+  // Fix 10: Eurotex Nasiya oylik to'lovini dinamik hisoblash
+  const nasiyaEst = document.getElementById("nasiyaEst");
+  if (nasiyaEst) {
+    if (finalTotalUsd > 0) {
+      const finalTotalSom = Math.round(finalTotalUsd * rate);
+      const monthlySom = Math.round(finalTotalSom / 12);
+      nasiyaEst.innerHTML = `⚡ Eurotex Nasiya: Oyiga <b>${formatMoneySom(monthlySom)} so'mdan</b> (12 oy bo'lib to'lash)`;
+      nasiyaEst.style.display = "block";
+    } else {
+      nasiyaEst.style.display = "none";
+    }
+  }
 
   if (discountUsd > 0 || discountSom > 0) {
     if (discountRow) discountRow.style.display = "flex";
@@ -2252,7 +2352,7 @@ function updateCartUI() {
           (item, idx) => `
             <div class="cart-item-row" data-cart-idx="${idx}" style="display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; margin-bottom: 10px;">
               <div style="display: flex; align-items: center; gap: 12px;">
-                <img src="${item.image}" style="width: 60px; height: 75px; object-fit: cover; border-radius: 10px;" alt="${item.title}">
+                <img src="${item.image}" style="width: 60px; height: 75px; object-fit: cover; border-radius: 10px;" alt="${item.title}" onerror="this.onerror=null;this.src='/images/navy_suit.jpg'">
                 <div>
                   <div style="font-weight: 700; font-size: 14px; color: #ffffff; margin-bottom: 4px;">${item.title}</div>
                   <div style="font-size: 12px; color: #94a3b8;">O'lcham: <b style="color: #00f2fe;">${item.size}</b> | Rangi: <b style="color: #00f2fe;">${item.color || "Klassik"}</b></div>
@@ -2506,7 +2606,7 @@ function openProductPage(productId) {
         .map(
           (src, idx) => `
           <button type="button" class="pdp-thumb-item ${idx === 0 ? "active" : ""}" onclick="selectPdpGalleryImage(${idx})">
-            <img src="${src}" alt="${title} rasm-${idx + 1}">
+            <img src="${src}" alt="${title} rasm-${idx + 1}" onerror="this.onerror=null;this.src='/images/navy_suit.jpg'">
           </button>
         `,
         )
@@ -2913,7 +3013,7 @@ function renderPdpRelatedProducts(currentProduct) {
       return `
         <div class="product-card" data-id="${p.id}" onclick="openProductPage('${p.id}')">
           <div class="card-image-wrap">
-            <img src="${pImg}" alt="${pTitle}" loading="lazy" />
+            <img src="${pImg}" alt="${pTitle}" loading="lazy" onerror="this.onerror=null;this.src='/images/navy_suit.jpg'" />
           </div>
           <div class="card-body">
             <h3 class="card-title">${pTitle}</h3>
@@ -3522,6 +3622,10 @@ function openWishlistModal() {
 }
 
 function openCheckoutModal() {
+  if (state.cart.length === 0) {
+    showToast(state.currentLang === "ru" ? "Корзина пуста!" : "Savat bo'sh!");
+    return;
+  }
   if (!state.user) {
     showToast(
       "🔒 Buyurtmani rasmiylashtirish uchun avval tizimga kiring! Kirish sahifasi ochildi. 🔑",
@@ -3529,6 +3633,8 @@ function openCheckoutModal() {
     openAuthModal();
     return;
   }
+  closeAllModals();
+  updateCheckoutData();
   openDashboardView("checkout");
 }
 
@@ -3839,15 +3945,6 @@ function triggerUserLogoutProcess() {
   });
 }
 
-function openCheckoutModal() {
-  if (state.cart.length === 0) {
-    showToast(state.currentLang === "ru" ? "Корзина пуста!" : "Savat bo'sh!");
-    return;
-  }
-  closeModal("cartModal");
-  updateCheckoutData();
-  openModal("checkoutModal");
-}
 
 async function applyPromoCode() {
   const input = document.getElementById("promoCodeInput");
@@ -3881,6 +3978,7 @@ async function applyPromoCode() {
     const data = await res.json();
     if (data.valid) {
       state.appliedPromoCode = data.promo.code;
+      state.appliedPromoMinPrice = data.promo.minOrderPrice || 0;
       state.appliedDiscountAmount = data.discountAmountSom || data.discountAmount || 0;
       state.appliedDiscountUsd = data.discountAmountUsd || Math.round(state.appliedDiscountAmount / rate);
       if (data.promo.discountType === "percent") {
@@ -4982,9 +5080,19 @@ function handleOrderSubmit(e) {
     openAuthModal();
     return;
   }
-  const name = document.getElementById("custName").value || "Xaridor";
-  const phone =
-    document.getElementById("custPhone").value || "+998 (90) 555-77-75";
+  const name = document.getElementById("custName")?.value?.trim() || "Xaridor";
+  const phone = document.getElementById("custPhone")?.value?.trim() || "";
+
+  // 📞 Telefon raqamini tekshirish (Fix 8)
+  const rawDigits = phone.replace(/\D/g, "");
+  const localDigits = rawDigits.startsWith("998") ? rawDigits.slice(3) : rawDigits;
+  if (localDigits.length < 9) {
+    showToast("❌ Iltimos, 9 xonali telefon raqamingizni to'liq kiriting (masalan: +998 90 123-45-67)!");
+    const pInput = document.getElementById("custPhone");
+    if (pInput) pInput.focus();
+    return;
+  }
+
   const addrInput = document.getElementById("custAddress");
   const addrText = addrInput && addrInput.value && addrInput.value.trim()
     ? addrInput.value.trim()
@@ -5123,7 +5231,15 @@ let _lastOrdersHash = "";
 
 async function fetchOrdersFromServer() {
   try {
-    const res = await fetch("/orders");
+    const isAdmin = isUserAdmin();
+    const currentUserEmail = state.user?.email || "";
+    let ordersUrl = "/orders";
+    if (isAdmin && currentUserEmail) {
+      ordersUrl += `?adminEmail=${encodeURIComponent(currentUserEmail)}`;
+    } else if (currentUserEmail) {
+      ordersUrl += `?email=${encodeURIComponent(currentUserEmail)}`;
+    }
+    const res = await fetch(ordersUrl);
     if (res.ok) {
       const data = await res.json();
       const rawOrders = Array.isArray(data) ? data : (data && Array.isArray(data.orders) ? data.orders : []);
@@ -5552,11 +5668,11 @@ function renderOrdersHistory() {
             ${trackerHtml}
 
             <div style="font-size:13.5px; margin:12px 0 10px 0; color:var(--text-primary, #1e293b);">
-                ${(order.items || []).map((item) => `<div>• <b>${item.title}</b> (${item.quantity}x) — O'lcham: ${item.size || "46"} / ${item.color || "To'q ko'k (Navy)"}</div>`).join("")}
+                ${(order.items || []).map((item) => `<div>• <b>${escapeHtml(item.title)}</b> (${item.quantity}x) — O'lcham: ${escapeHtml(item.size || "46")} / ${escapeHtml(item.color || "To'q ko'k (Navy)")}</div>`).join("")}
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:12px; padding-top:10px; border-top:1px dashed var(--border-color); font-size:13px; color:var(--text-secondary, #475569);">
-                <div>Manzil: <b>${order.address || "Toshkent sh., Chilonzor tumani, Lutfiy ko'chasi 14-uy"}</b></div>
+                <div>Manzil: <b>${escapeHtml(order.address || "Toshkent sh., Chilonzor tumani, Lutfiy ko'chasi 14-uy")}</b></div>
                 <div>Jami: <strong style="font-size:16px; color:var(--text-primary, #0f172a);">${safeFormatMoney(order.total || 120)}</strong></div>
             </div>
             
@@ -6396,7 +6512,7 @@ function renderAdminProducts() {
                     <div class="admin-product-card">
                         <!-- Top Image Box -->
                         <div class="admin-card-media">
-                            <img src="${p.image}" alt="${p.title_uz}" class="admin-card-img">
+                            <img src="${p.image}" alt="${p.title_uz}" class="admin-card-img" onerror="this.onerror=null;this.src='/images/navy_suit.jpg'">
                             <span class="admin-card-badge">📦 Pachka: ${p.pachkaQty || 6} dona ${p.discountPercent ? `<b style="background:#ef4444; color:#fff; padding:1px 6px; border-radius:6px; margin-left:4px;">-${p.discountPercent}%</b>` : ""}</span>
                         </div>
 
@@ -9264,6 +9380,7 @@ function initSlideLiveSync() {
   let lastVersion = null;
   let failCount = 0;
   const pollInterval = setInterval(async () => {
+    if (document.hidden) return;
     if (failCount > 3) {
       clearInterval(pollInterval);
       return;

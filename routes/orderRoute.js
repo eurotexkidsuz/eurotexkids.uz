@@ -8,6 +8,8 @@ const fs = require("fs");
 const path = require("path");
 const router = express.Router();
 const Order = require("../models/Order");
+const { parseCookies } = require("../middleware/adminAuth");
+const ADMIN_EMAILS = ["0600quetry@gmail.com", "eurotexkids7775@gmail.com"];
 
 const ORDERS_FILE = path.join(__dirname, "../data/orders.json");
 
@@ -93,11 +95,44 @@ router.get("/", async (req, res) => {
     });
 
     let merged = Array.from(orderMap.values());
-    const { email, status, limit = 200 } = req.query;
-    if (email) {
+    const { email, status, limit = 200, adminEmail } = req.query;
+
+    // Maxfiylik tekshiruvi (Fix 5): Faqat admin butun buyurtmalar bazasini ko'ra oladi
+    const cookies = parseCookies(req);
+    const token =
+      cookies.eurotex_session ||
+      (req.headers.authorization?.startsWith("Bearer ")
+        ? req.headers.authorization.slice(7)
+        : null) ||
+      req.headers["x-admin-token"];
+    const headerAdminEmail = (
+      req.headers["x-admin-email"] ||
+      adminEmail ||
+      ""
+    ).toLowerCase().trim();
+
+    const isAdmin =
+      ADMIN_EMAILS.includes(headerAdminEmail) ||
+      token === "admin_master_token_2026";
+
+    if (!isAdmin) {
+      // Oddiy foydalanuvchi: faqat o'z emailiga tegishli buyurtmalarni ko'ra oladi
+      const targetEmail = (email || "").toLowerCase().trim();
+      if (targetEmail) {
+        merged = merged.filter(
+          (o) => String(o.userEmail || "").toLowerCase().trim() === targetEmail,
+        );
+      } else {
+        // Agar email berilmagan bo'lsa va admin bo'lmasa, begonalar buyurtmalari yashiriladi
+        merged = [];
+      }
+    } else if (email) {
       const em = String(email).toLowerCase().trim();
-      merged = merged.filter((o) => String(o.userEmail || "").toLowerCase().trim() === em);
+      merged = merged.filter(
+        (o) => String(o.userEmail || "").toLowerCase().trim() === em,
+      );
     }
+
     if (status !== undefined) {
       const st = Number(status);
       merged = merged.filter((o) => Number(o.statusStep) === st);

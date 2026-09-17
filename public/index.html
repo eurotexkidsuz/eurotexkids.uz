@@ -17,20 +17,29 @@
     />
     <meta name="robots" content="index, follow" />
 
-    <!-- Open Graph / Social Media -->
+    <!-- Open Graph / Social Media (Telegram, WhatsApp, Facebook Preview) -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://eurotexkids.uz/" />
     <meta
       property="og:title"
-      content="Eurotexkids.uz — Premial Erkaklar Kostyum-Shimlari"
+      content="Eurotexkids.uz — Premial Erkaklar Kostyum-Shimlari va Kiyimlari"
     />
     <meta
       property="og:description"
-      content="Mukammal bichim va Italiya matolaridan tikilgan erkaklar kostyum-shimlari. 1 kunda bepul yetkazib berish."
+      content="Italiya matolaridan tayyorlangan premium kostyum-shimlar va klassik erkaklar kiyimi. 1 kunda bepul yetkazib berish va Eurotex Nasiya."
     />
-    <meta property="og:image" content="/images/navy_suit.jpg" />
+    <meta property="og:image" content="https://eurotexkids.uz/images/navy_suit.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="uz_UZ" />
-    <meta property="og:site_name" content="Eurotexkids.uz" />
+    <meta property="og:site_name" content="Eurotex Kids Tashkent" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Eurotexkids.uz — Premial Kostyum-Shimlar" />
+    <meta name="twitter:description" content="Mukammal bichim, premium matolar va tezkor yetkazib berish." />
+    <meta name="twitter:image" content="https://eurotexkids.uz/images/navy_suit.jpg" />
+    <link rel="canonical" href="https://eurotexkids.uz/" />
 
     <!-- Theme & Favicon -->
     <meta name="theme-color" content="#0f172a" />
@@ -41,7 +50,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/style.css?v=313.0.0" />
+    <link rel="stylesheet" href="/style.css?v=314.0.0" />
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
@@ -1509,6 +1518,10 @@
                     <div class="summary-line total">
                       <span>Jami:</span>
                       <strong id="cartTotal">0 so'm</strong>
+                    </div>
+
+                    <div class="nasiya-monthly-est" id="nasiyaEst" style="margin: 10px 0; font-size: 13px; color: #10b981; font-weight: 700; background: rgba(16, 185, 129, 0.08); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                      ⚡ Eurotex Nasiya: Oyiga <b>0 so'mdan</b> (12 oy)
                     </div>
 
                     <div class="promo-code-box">
@@ -3033,414 +3046,6 @@
         </div>
       </div>
     </div>
-
-    <!-- DEDICATED FULL-WIDTH DASHBOARD PAGE VIEW (NO POPUP MODALS/BACKDROP) -->
-    <section
-      id="dashboardPageView"
-      class="dashboard-page-view"
-      style="display: none"
-    >
-      <div class="container">
-        <div class="dashboard-header-strip">
-          <button
-            type="button"
-            class="dashboard-back-btn"
-            data-i18n="backToHome"
-            onclick="closeDashboardView()"
-          >
-            ← Bosh sahifaga qaytish
-          </button>
-
-          <!-- Dashboard Navigation Tabs -->
-          <div class="dashboard-nav-tabs">
-            <button
-              type="button"
-              class="dashboard-tab-btn active"
-              id="dTabCart"
-              onclick="switchDashboardTab('cart')"
-            >
-              <span data-i18n="dashCart">🛒 Savatingiz</span> (<span
-                id="dashCartCount"
-                >0</span
-              >)
-            </button>
-            <button
-              type="button"
-              class="dashboard-tab-btn"
-              id="dTabWishlist"
-              onclick="switchDashboardTab('wishlist')"
-            >
-              <span data-i18n="dashWishlist">❤️ Saralanganlar</span> (<span
-                id="dashWishCount"
-                >0</span
-              >)
-            </button>
-            <button
-              type="button"
-              class="dashboard-tab-btn"
-              id="dTabCheckout"
-              data-i18n="dashCheckout"
-              onclick="switchDashboardTab('checkout')"
-            >
-              📋 Buyurtmani rasmiylashtirish
-            </button>
-          </div>
-        </div>
-
-        <!-- Dashboard Pane 1: Cart View -->
-        <div id="dPaneCart" class="dashboard-pane active">
-          <div class="cart-modal-page">
-            <div class="cart-modal-header">
-              <h2>
-                <span data-i18n="dashCart">Savatingiz</span>,
-                <span id="cartHeaderCount">0 ta mahsulot</span> 🛒
-              </h2>
-            </div>
-
-            <div class="cart-modal-grid">
-              <!-- Left Column: Items List & Delivery Info -->
-              <div class="cart-left-col">
-                <div class="cart-select-all-row">
-                  <label class="checkbox-label">
-                    <input
-                      type="checkbox"
-                      id="selectAllCartCheck"
-                      checked
-                      onchange="toggleSelectAllCart(this)"
-                    />
-                    <span data-i18n="selectAll"
-                      >Hammasini yechish / belgilash</span
-                    >
-                  </label>
-                  <button
-                    type="button"
-                    class="clear-selected-btn"
-                    data-i18n="clearCartBtn"
-                    onclick="clearCart()"
-                  >
-                    Savatni tozalash
-                  </button>
-                </div>
-
-                <div class="cart-delivery-badge-box">
-                  <div class="del-badge-title" data-i18n="expressDeliveryTitle">
-                    ⚡ Eurotex Market yetkazib berishi
-                  </div>
-                  <div class="del-badge-time" data-i18n="expressDeliveryTime">
-                    <b>Ertaga yetkazib beramiz</b> (Topshirish punktlariga
-                    bepul)
-                  </div>
-                </div>
-
-                <div class="cart-items-list" id="cartItemsList">
-                  <!-- Rendered by JS -->
-                </div>
-
-                <div
-                  class="cart-recommend-strip"
-                  onclick="
-                    closeDashboardView();
-                    document
-                      .getElementById('products-section')
-                      .scrollIntoView({ behavior: 'smooth' });
-                  "
-                >
-                  <div class="rec-icon">👔</div>
-                  <div class="rec-text">
-                    <strong data-i18n="recommendTitle"
-                      >Kerak bo'lib qolishi mumkin</strong
-                    >
-                    <span data-i18n="recommendSubtitle"
-                      >Kamar, galstuk va oq ko'ylaklar to'plami</span
-                    >
-                  </div>
-                  <span class="rec-arrow">❯</span>
-                </div>
-              </div>
-
-              <!-- Right Column: Summary Card -->
-              <div class="cart-right-col">
-                <div class="cart-summary-card">
-                  <h3 data-i18n="orderSummaryTitle">Buyurtmangiz</h3>
-                  <div class="summary-line">
-                    <span
-                      ><span data-i18n="summaryItems">Mahsulotlar</span> (<span
-                        id="cartItemQty"
-                        >0</span
-                      >):</span
-                    >
-                    <strong id="cartSubtotal">0 so'm</strong>
-                  </div>
-                  <div
-                    class="summary-line"
-                    id="discountRow"
-                    style="display: none; color: #10b981"
-                  >
-                    <span data-i18n="summaryDiscount">Chegirma:</span>
-                    <strong id="cartDiscount">-0 so'm</strong>
-                  </div>
-                  <div class="summary-line">
-                    <span data-i18n="summaryDelivery">Yetkazib berish:</span>
-                    <strong style="color: #10b981" data-i18n="summaryFree"
-                      >Bepul ⚡</strong
-                    >
-                  </div>
-
-                  <div class="summary-divider"></div>
-
-                  <div class="summary-line total">
-                    <span data-i18n="summaryTotal">Jami:</span>
-                    <strong id="cartTotal">0 so'm</strong>
-                  </div>
-
-                  <div class="nasiya-monthly-est" id="nasiyaEst">
-                    Eurotex Nasiya: Oyiga <b>0 so'mdan</b> (12 oy)
-                  </div>
-
-                  <div class="promo-code-box">
-                    <input
-                      type="text"
-                      id="promoCodeInput"
-                      placeholder="Promo-kod (masalan: EUROTEX2026)"
-                    />
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-outline"
-                      onclick="applyPromoCode()"
-                    >
-                      Qo'llash
-                    </button>
-                  </div>
-
-                  <button
-                    class="btn btn-primary btn-block btn-large"
-                    data-i18n="proceedToCheckout"
-                    onclick="switchDashboardTab('checkout')"
-                  >
-                    Rasmiylashtirishga o'tish
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Dashboard Pane 2: Wishlist View -->
-        <div id="dPaneWishlist" class="dashboard-pane" style="display: none">
-          <div class="cart-modal-page">
-            <div class="cart-modal-header">
-              <h2>
-                <span data-i18n="dashWishlist">Saralanganlar</span>,
-                <span id="wishlistHeaderCount">0 ta mahsulot</span> ❤️
-              </h2>
-            </div>
-            <div
-              class="product-grid"
-              id="wishlistGrid"
-              style="margin-top: 20px"
-            >
-              <!-- Wishlist products rendered by JS -->
-            </div>
-          </div>
-        </div>
-
-        <!-- Dashboard Pane 3: Checkout View -->
-        <div id="dPaneCheckout" class="dashboard-pane" style="display: none">
-          <div class="uzum-checkout-page">
-            <div class="uzum-checkout-header">
-              <h2 data-i18n="checkoutTitle">Buyurtma</h2>
-              <span class="uzum-sub-badge" data-i18n="expressDeliveryTitle"
-                >Eurotex Market yetkazib berishi ⚡</span
-              >
-            </div>
-
-            <form id="checkoutForm" onsubmit="handleOrderSubmit(event)">
-              <div class="uzum-checkout-grid">
-                <div class="checkout-left-col">
-                  <div class="checkout-card-box">
-                    <h3 data-i18n="deliveryStep1">1. Olish usuli</h3>
-                    <div class="delivery-tabs-row">
-                      <label class="del-tab-btn active">
-                        <input
-                          type="radio"
-                          name="delType"
-                          value="pickup"
-                          checked
-                        />
-                        <span data-i18n="pickupPoint"
-                          >Topshirish punkti (Bepul)</span
-                        >
-                      </label>
-                      <label class="del-tab-btn">
-                        <input type="radio" name="delType" value="courier" />
-                        <span data-i18n="courierOption">Kuryer orqali</span>
-                      </label>
-                    </div>
-
-                    <div class="form-group" style="margin-top: 16px">
-                      <label for="custAddress" data-i18n="addressLabel"
-                        >Kuryer olib borishi uchun aniq manzilingizni kiriting:</label
-                      >
-                      <input
-                        type="text"
-                        id="custAddress"
-                        placeholder="Masalan: Toshkent sh., Chilonzor tumani, Lutfiy ko'chasi 14-uy..."
-                        required
-                        style="width: 100%; border-radius: 12px; padding: 12px 14px; border: 1.5px solid #cbd5e1; font-size: 14px;"
-                      />
-                    </div>
-
-                    <div class="form-group-row">
-                      <div class="form-group">
-                        <label for="custName" data-i18n="recipientNameLabel"
-                          >Oluvchining Ismi va Familiyasi:</label
-                        >
-                        <input
-                          type="text"
-                          id="custName"
-                          placeholder="Masalan: Sardor Alimov"
-                          required
-                        />
-                      </div>
-                      <div class="form-group">
-                        <label for="custPhone" data-i18n="phoneLabel"
-                          >Telefon raqami:</label
-                        >
-                        <input
-                          type="tel"
-                          id="custPhone"
-                          placeholder="+998 (90) 555-77-75"
-                          required
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="checkout-card-box">
-                    <h3 data-i18n="deliveryStep2">
-                      2. Yetkazib berish kuni va vaqti
-                    </h3>
-                    <div class="date-picker-row">
-                      <label class="date-pill active">
-                        <input
-                          type="radio"
-                          name="delDate"
-                          value="ertaga"
-                          checked
-                        />
-                        <span data-i18n="tomorrowOption">Ertaga (28-iyul)</span>
-                      </label>
-                      <label class="date-pill">
-                        <input type="radio" name="delDate" value="2-kun" />
-                        <span>29-iyul (ch)</span>
-                      </label>
-                      <label class="date-pill">
-                        <input type="radio" name="delDate" value="3-kun" />
-                        <span>30-iyul (pa)</span>
-                      </label>
-                    </div>
-                    <div class="time-slot-info" data-i18n="deliveryHours">
-                      ⏰ Yetkazib berish vaqti: <b>10:00 – 22:00</b>
-                    </div>
-                  </div>
-
-                  <div class="checkout-card-box">
-                    <h3 data-i18n="paymentStep3">3. To'lov turi</h3>
-                    <div class="eurotex-pay-selector-row">
-                      <label class="eurotex-pay-btn active">
-                        <input
-                          type="radio"
-                          name="payMethod"
-                          value="payme"
-                          checked
-                        />
-                        <span>Payme</span>
-                      </label>
-                      <label class="eurotex-pay-btn">
-                        <input
-                          type="radio"
-                          name="payMethod"
-                          value="click"
-                        />
-                        <span>Click</span>
-                      </label>
-                      <label class="eurotex-pay-btn">
-                        <input
-                          type="radio"
-                          name="payMethod"
-                          value="cash"
-                        />
-                        <span>Naqd to'lov</span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="checkout-right-col">
-                  <div class="uzum-summary-card">
-                    <h3 data-i18n="orderSummaryTitle">Sizning buyurtmangiz</h3>
-                    <div class="summary-line">
-                      <span data-i18n="summaryItems">Mahsulotlar:</span>
-                      <strong id="checkoutSubtotal">0 so'm</strong>
-                    </div>
-                    <div class="summary-line">
-                      <span data-i18n="summaryDelivery">Yetkazib berish:</span>
-                      <strong style="color: #10b981" data-i18n="summaryFree"
-                        >Bepul ⚡</strong
-                      >
-                    </div>
-                    <div
-                      class="summary-line"
-                      id="checkoutDiscountRow"
-                      style="display: none; color: #10b981"
-                    >
-                      <span data-i18n="summaryDiscount">Chegirmalar:</span>
-                      <strong id="checkoutDiscount">-0 so'm</strong>
-                    </div>
-
-                    <div class="summary-divider"></div>
-
-                    <div class="summary-line total">
-                      <span data-i18n="summaryTotal">Jami:</span>
-                      <strong
-                        id="checkoutFinalTotal"
-                        style="color: var(--color-navy); font-size: 22px"
-                        >0 so'm</strong
-                      >
-                    </div>
-
-                    <button
-                      type="submit"
-                      class="btn btn-primary btn-block btn-large"
-                      style="margin-top: 18px"
-                      data-i18n="confirmOrderBtn"
-                    >
-                      Buyurtmani tasdiqlash ✅
-                    </button>
-
-                    <div class="checkout-terms-note">
-                      Buyurtmani joylashtirganda siz foydalanuvchi kelishuvini
-                      va yetkazib berish shartlarini qabul qilasiz.
-                    </div>
-                  </div>
-
-                  <div
-                    class="uzum-promo-card"
-                    onclick="switchDashboardTab('cart')"
-                  >
-                    <span class="promo-icon">🏷️</span>
-                    <span data-i18n="applyPromoLink"
-                      >Promokodni qo'llash / almashtirish</span
-                    >
-                    <span class="promo-arrow">❯</span>
-                  </div>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </section>
 
     <!-- =========================================================================
          🌟 EUROTEX ULTRA-LUXURY CONFIRMATION / ALERT MODAL DIALOG
@@ -5031,7 +4636,7 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=318.0.0" defer></script>
-    <script src="/eurotex-engine.js?v=16.2.0" defer></script>
+    <script src="/script.js?v=319.0.0" defer></script>
+    <script src="/eurotex-engine.js?v=16.3.0" defer></script>
   </body>
 </html>
