@@ -5269,6 +5269,9 @@ function initTheme() {
     }
   }
   document.documentElement.setAttribute("data-theme", savedTheme);
+  if (document.body) {
+    document.body.classList.toggle("dark-mode", savedTheme === "dark");
+  }
   state.currentTheme = savedTheme;
   updateThemeToggleUI();
 }
@@ -5276,6 +5279,9 @@ function initTheme() {
 function toggleTheme() {
   const newTheme = state.currentTheme === "dark" ? "light" : "dark";
   document.documentElement.setAttribute("data-theme", newTheme);
+  if (document.body) {
+    document.body.classList.toggle("dark-mode", newTheme === "dark");
+  }
   state.currentTheme = newTheme;
   localStorage.setItem("eurotex_theme", newTheme);
   updateThemeToggleUI();
@@ -5286,6 +5292,10 @@ function toggleTheme() {
 
 function updateThemeToggleUI() {
   const isDark = state.currentTheme === "dark";
+  document.documentElement.setAttribute("data-theme", state.currentTheme);
+  if (document.body) {
+    document.body.classList.toggle("dark-mode", isDark);
+  }
 
   // Desktop header / utility bar toggle
   const icon = document.getElementById("themeToggleIcon");
@@ -5309,11 +5319,11 @@ function updateThemeToggleUI() {
 function getOrderStatusStep(order) {
   if (typeof order.statusStep === "number") return order.statusStep;
   const s = String(order.status || "").toLowerCase();
-  if (s.includes("bekor") || s.includes("cancel") || s.includes("❌")) return 0;
-  if (s.includes("yetkazildi") || s.includes("yetkazib berildi") || s.includes("delivered") || s.includes("✅")) return 4;
-  if (s.includes("kuryer") || s.includes("yo'lda") || s.includes("yolda") || s.includes("courier") || s.includes("🚚")) return 3;
-  if (s.includes("tayyor") || s.includes("omborda") || s.includes("processing") || s.includes("📦")) return 2;
-  return 1; // Qabul qilindi
+  if (s.includes("bekor")) return 0;
+  if (s.includes("topshir") || s.includes("yetkazildi") || s.includes("yakun")) return 4;
+  if (s.includes("kuryer") || s.includes("yo'lda") || s.includes("yol")) return 3;
+  if (s.includes("tayyor") || s.includes("yig'il") || s.includes("ombor")) return 2;
+  return 1;
 }
 
 function renderOrdersHistory() {
@@ -5357,10 +5367,10 @@ function renderOrdersHistory() {
 
   if (myOrders.length === 0) {
     container.innerHTML = `
-      <div style="text-align:center; padding:50px 20px; background:#ffffff; border-radius:18px; border:1px solid #e2e8f0; margin:20px 0; box-shadow:0 4px 15px rgba(0,0,0,0.02);">
+      <div style="text-align:center; padding:50px 20px; background:var(--bg-surface, #ffffff); border-radius:18px; border:1px solid var(--border-color, #e2e8f0); margin:20px 0; box-shadow:0 4px 15px rgba(0,0,0,0.02);">
         <div style="font-size:52px; margin-bottom:12px;">📦</div>
-        <h3 style="font-size:18px; font-weight:800; color:#0f172a; margin:0 0 8px 0;">Sizda hali buyurtmalar mavjud emas</h3>
-        <p style="font-size:13.5px; color:#64748b; margin:0 0 20px 0; max-width:440px; margin-left:auto; margin-right:auto;">
+        <h3 style="font-size:18px; font-weight:800; color:var(--text-primary, #0f172a); margin:0 0 8px 0;">Sizda hali buyurtmalar mavjud emas</h3>
+        <p style="font-size:13.5px; color:var(--text-secondary, #64748b); margin:0 0 20px 0; max-width:440px; margin-left:auto; margin-right:auto;">
           Siz ushbu hisob orqali hali buyurtma bermagansiz. Do'konimizdagi premium kostyum va kiyimlarni ko'rib chiqing va buyurtma bering!
         </p>
         <button type="button" onclick="closeDashboardView()" style="background:#88001b; color:#ffffff; border:none; border-radius:12px; padding:11px 24px; font-weight:800; font-size:14px; cursor:pointer; box-shadow:0 4px 14px rgba(136,0,27,0.3); transition:all 0.2s;">
@@ -5402,7 +5412,7 @@ function renderOrdersHistory() {
       } else {
         trackerHtml = `
           <div class="order-live-tracker">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; font-size:12.5px; color:#64748b; font-weight:700;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; font-size:12.5px; color:var(--text-secondary, #64748b); font-weight:700;">
               <span>🚚 Buyurtma Qayerda?</span>
               <span style="color:${step === 4 ? "#10b981" : "#88001b"};">${step === 4 ? "Muvaffaqiyatli yetkazildi ✅" : (step === 3 ? "Kuryer topshirishga chiqdi 🚚" : (step === 2 ? "Omborda qadoqlanmoqda 📦" : "Buyurtmangiz qabul qilindi 📋"))}</span>
             </div>
@@ -5436,10 +5446,10 @@ function renderOrdersHistory() {
       }
 
       return `
-        <div class="checkout-card-box" style="margin-bottom: 18px; background: #ffffff; border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; box-shadow: 0 3px 12px rgba(0,0,0,0.03);">
+        <div class="checkout-card-box order-history-card" style="margin-bottom: 18px; border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; box-shadow: 0 3px 12px rgba(0,0,0,0.03);">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:12px;">
                 <div>
-                    <strong style="font-size:16px; color:var(--color-navy);">Buyurtma #${order.id}</strong>
+                    <strong style="font-size:16px; color:var(--text-primary, #0f172a);">Buyurtma #${order.id}</strong>
                     <span style="font-size:13px; color:var(--text-muted); margin-left:8px;">Sana: ${order.date}</span>
                 </div>
                 <span class="uzum-sub-badge" style="background:${badgeBg}; color:${badgeColor}; font-size:13px; font-weight:700; padding:4px 12px; border-radius:8px;">
@@ -5449,18 +5459,18 @@ function renderOrdersHistory() {
             
             ${trackerHtml}
 
-            <div style="font-size:13.5px; margin:12px 0 10px 0; color:#334155;">
+            <div style="font-size:13.5px; margin:12px 0 10px 0; color:var(--text-primary, #1e293b);">
                 ${(order.items || []).map((item) => `<div>• <b>${item.title}</b> (${item.quantity}x) — O'lcham: ${item.size || "46"} / ${item.color || "To'q ko'k (Navy)"}</div>`).join("")}
             </div>
 
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:12px; padding-top:10px; border-top:1px dashed var(--border-color); font-size:13px; color:#475569;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:12px; padding-top:10px; border-top:1px dashed var(--border-color); font-size:13px; color:var(--text-secondary, #475569);">
                 <div>Manzil: <b>${order.address || "Toshkent sh., Chilonzor tumani, Lutfiy ko'chasi 14-uy"}</b></div>
-                <div>Jami: <strong style="font-size:16px; color:var(--color-navy);">${safeFormatMoney(order.total || 120)}</strong></div>
+                <div>Jami: <strong style="font-size:16px; color:var(--text-primary, #0f172a);">${safeFormatMoney(order.total || 120)}</strong></div>
             </div>
             
             <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
                 <button type="button" onclick="downloadReceiptPdf('${order.id}')" class="btn btn-secondary btn-sm" style="font-weight:700; font-size:12.5px; border-radius:8px;">📄 PDF Kvitansiya</button>
-                <button type="button" onclick="switchDashboardTab('returns'); prefillReturnOrder('${order.id}');" class="btn btn-primary btn-sm" style="font-weight:700; font-size:12.5px; border-radius:8px; background: linear-gradient(135deg, #7000ff, #00f2fe);">🔄 Almashtirish / Qaytarish</button>
+                <button type="button" onclick="switchDashboardTab('returns'); prefillReturnOrder('${order.id}');" class="btn btn-primary btn-sm" style="font-weight:700; font-size:12.5px; border-radius:8px; background: linear-gradient(135deg, #88001b 0%, #5c0018 100%);">🔄 Almashtirish / Qaytarish</button>
             </div>
         </div>
       `;
