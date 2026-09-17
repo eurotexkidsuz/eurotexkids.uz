@@ -6202,7 +6202,7 @@ function renderAdminOrders() {
         .map((o, idx) => {
           const firstItem = (o.items && o.items[0]) || {};
           const itemImg =
-            firstItem.image || firstItem.img || "/images/default-product.png";
+            firstItem.image || firstItem.img || "/images/navy_suit.jpg";
           const itemTitle = firstItem.title || "Eurotex Kostyum";
           const pachkaQty = firstItem.quantity || 6;
 
@@ -6226,7 +6226,7 @@ function renderAdminOrders() {
             <div class="admin-product-card">
               <!-- Top Image Box (Screenshot 3 Design) -->
               <div class="admin-card-media">
-                <img src="${itemImg}" alt="${itemTitle}" class="admin-card-img" onerror="this.src='/images/default-product.png'">
+                <img src="${itemImg}" alt="${itemTitle}" class="admin-card-img" onerror="this.onerror=null;this.src='/images/navy_suit.jpg'">
                 <span class="admin-card-badge">Pachka: ${pachkaQty} dona</span>
               </div>
 
