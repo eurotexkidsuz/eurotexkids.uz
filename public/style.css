@@ -1723,25 +1723,28 @@ html[data-theme="dark"] .main-header.scrolled {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at center, rgba(30, 41, 59, 0.85) 0%, rgba(7, 11, 20, 0.98) 100%);
   border-radius: 24px;
   overflow: hidden;
-  padding: 12px 0;
+  background: #090e1a;
+  padding: 0;
 }
 
 .slide-img {
-  max-width: 96%;
-  max-height: 96%;
-  width: auto;
+  width: 100%;
   height: 100%;
-  object-fit: contain !important;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover !important;
   object-position: center center !important;
   display: block;
   margin: 0 auto;
-  border-radius: 18px;
-  filter: drop-shadow(0 16px 36px rgba(0, 0, 0, 0.6));
+  border-radius: 24px;
   z-index: 2;
   transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.carousel-slide:hover .slide-img {
+  transform: scale(1.02);
 }
 
 .carousel-arrow {
@@ -2906,6 +2909,312 @@ html[data-theme="dark"] .modal-close:hover {
   background: #ef4444;
   border-color: #ef4444;
   color: #ffffff;
+}
+/* ==========================================================================
+   🏬 EUROTEX RASMIY DO'KONLAR MODALI (STORES MODAL)
+   ========================================================================== */
+.stores-dialog {
+  max-width: 520px;
+  border-radius: 24px !important;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.stores-modal-box {
+  padding: 26px 24px 22px;
+  text-align: left;
+  background: var(--bg-surface, #ffffff);
+  border-radius: 24px;
+}
+
+html[data-theme="dark"] .stores-modal-box,
+body.dark-mode .stores-modal-box {
+  background: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+.stores-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+html[data-theme="dark"] .stores-modal-header,
+body.dark-mode .stores-modal-header {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.stores-header-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(112, 0, 255, 0.1), rgba(0, 242, 254, 0.1));
+  border: 1.5px solid rgba(112, 0, 255, 0.2);
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.stores-modal-title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
+  letter-spacing: -0.3px;
+}
+
+html[data-theme="dark"] .stores-modal-title,
+body.dark-mode .stores-modal-title {
+  color: #ffffff !important;
+}
+
+.stores-modal-desc {
+  margin: 3px 0 0;
+  font-size: 13.5px;
+  color: var(--text-secondary, #64748b);
+}
+
+/* Store Cards */
+.store-card {
+  border-radius: 18px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  border: 1.5px solid;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.store-card:hover {
+  transform: translateY(-2px);
+}
+
+/* 1-Do'kon: Abu Saxiy */
+.store-card-primary {
+  background: linear-gradient(135deg, #f0fdfa 0%, #f8fafc 100%);
+  border-color: rgba(13, 148, 136, 0.25);
+  box-shadow: 0 4px 16px rgba(13, 148, 136, 0.06);
+}
+
+.store-card-primary:hover {
+  border-color: rgba(13, 148, 136, 0.45);
+  box-shadow: 0 8px 24px rgba(13, 148, 136, 0.12);
+}
+
+html[data-theme="dark"] .store-card-primary,
+body.dark-mode .store-card-primary {
+  background: linear-gradient(135deg, #0b1e28 0%, #0d2738 100%) !important;
+  border-color: rgba(0, 242, 254, 0.25) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 2-Do'kon: Giper Market */
+.store-card-secondary {
+  background: linear-gradient(135deg, #faf5ff 0%, #f8fafc 100%);
+  border-color: rgba(147, 51, 234, 0.22);
+  box-shadow: 0 4px 16px rgba(147, 51, 234, 0.06);
+}
+
+.store-card-secondary:hover {
+  border-color: rgba(147, 51, 234, 0.4);
+  box-shadow: 0 8px 24px rgba(147, 51, 234, 0.12);
+}
+
+html[data-theme="dark"] .store-card-secondary,
+body.dark-mode .store-card-secondary {
+  background: linear-gradient(135deg, #1b1333 0%, #151d3b 100%) !important;
+  border-color: rgba(168, 85, 247, 0.25) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+.store-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.store-card-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-primary, #0f172a);
+}
+
+html[data-theme="dark"] .store-card-name,
+body.dark-mode .store-card-name {
+  color: #ffffff !important;
+}
+
+.store-chip {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+}
+
+.store-chip-primary {
+  background: rgba(13, 148, 136, 0.12);
+  color: #0f766e;
+  border: 1px solid rgba(13, 148, 136, 0.3);
+}
+
+html[data-theme="dark"] .store-chip-primary,
+body.dark-mode .store-chip-primary {
+  background: rgba(0, 242, 254, 0.18);
+  color: #00f2fe;
+  border-color: rgba(0, 242, 254, 0.35);
+}
+
+.store-chip-secondary {
+  background: rgba(147, 51, 234, 0.12);
+  color: #7e22ce;
+  border: 1px solid rgba(147, 51, 234, 0.25);
+}
+
+html[data-theme="dark"] .store-chip-secondary,
+body.dark-mode .store-chip-secondary {
+  background: rgba(168, 85, 247, 0.2);
+  color: #c084fc;
+  border-color: rgba(168, 85, 247, 0.35);
+}
+
+.store-card-location {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text-primary, #1e293b);
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+html[data-theme="dark"] .store-card-location,
+body.dark-mode .store-card-location {
+  color: #f1f5f9 !important;
+}
+
+.store-card-schedule {
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.6;
+  margin-bottom: 10px;
+  background: rgba(0, 0, 0, 0.03);
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+html[data-theme="dark"] .store-card-schedule,
+body.dark-mode .store-card-schedule {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #cbd5e1 !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.schedule-title {
+  margin-bottom: 3px;
+}
+
+.schedule-item {
+  color: inherit;
+}
+
+.schedule-closed {
+  color: #ef4444 !important;
+  font-weight: 700;
+}
+
+.store-card-phone {
+  font-size: 13px;
+  color: #475569;
+}
+
+html[data-theme="dark"] .store-card-phone,
+body.dark-mode .store-card-phone {
+  color: #cbd5e1 !important;
+}
+
+.store-phone-link {
+  color: #b45309 !important;
+  font-weight: 800 !important;
+  text-decoration: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.store-phone-link:hover {
+  color: #d97706 !important;
+  text-decoration: underline !important;
+}
+
+html[data-theme="dark"] .store-phone-link,
+body.dark-mode .store-phone-link {
+  color: #fbbf24 !important;
+}
+
+html[data-theme="dark"] .store-phone-link:hover,
+body.dark-mode .store-phone-link:hover {
+  color: #fde047 !important;
+}
+
+/* Modal Bottom Actions */
+.store-modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.store-action-call {
+  flex: 1;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%) !important;
+  color: #0b1329 !important;
+  font-weight: 800 !important;
+  font-size: 14px !important;
+  padding: 12px 18px !important;
+  border-radius: 12px !important;
+  border: none !important;
+  text-decoration: none !important;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35) !important;
+  transition: all 0.25s ease !important;
+}
+
+.store-action-call:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5) !important;
+  background: linear-gradient(135deg, #fde68a 0%, #f59e0b 100%) !important;
+  color: #000000 !important;
+}
+
+.store-action-tg {
+  flex: 1;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  background: linear-gradient(135deg, #0088cc 0%, #0077b5 100%) !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  font-size: 14px !important;
+  padding: 12px 18px !important;
+  border-radius: 12px !important;
+  border: none !important;
+  text-decoration: none !important;
+  box-shadow: 0 4px 14px rgba(0, 136, 204, 0.35) !important;
+  transition: all 0.25s ease !important;
+}
+
+.store-action-tg:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 136, 204, 0.5) !important;
+  background: linear-gradient(135deg, #1ca0e3 0%, #0088cc 100%) !important;
+  color: #ffffff !important;
 }
 
 /* Quick View Modal Content */
