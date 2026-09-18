@@ -15,11 +15,15 @@ function readDB() {
   }
 }
 
+// 💾 #1 ATOMAR FAYL YOZISH
 function writeDB(data) {
+  const tmpPath = DB_FILE + ".tmp";
   try {
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 4), "utf8");
+    fs.writeFileSync(tmpPath, JSON.stringify(data, null, 4), "utf8");
+    fs.renameSync(tmpPath, DB_FILE);
   } catch (err) {
     console.error("Local DB write error:", err);
+    try { fs.unlinkSync(tmpPath); } catch (_) {}
   }
 }
 

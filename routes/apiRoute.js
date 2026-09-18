@@ -38,13 +38,18 @@ function readJsonFile(filename, defaultValue = []) {
   return defaultValue;
 }
 
+// 💾 #1 ATOMAR FAYL YOZISH: .tmp faylga yozib, keyin fs.renameSync — server crash'dan himoya
 function writeJsonFile(filename, data) {
   const filePath = path.join(DATA_DIR, filename);
+  const tmpPath  = filePath + ".tmp";
   try {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8");
+    const json = JSON.stringify(data, null, 2);
+    fs.writeFileSync(tmpPath, json, "utf8");
+    fs.renameSync(tmpPath, filePath);
     return true;
   } catch (e) {
     console.error(`Error writing ${filename}:`, e);
+    try { fs.unlinkSync(tmpPath); } catch (_) {}
     return false;
   }
 }

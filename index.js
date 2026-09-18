@@ -108,6 +108,45 @@ const path = require("path");
 let cachedHydratedHtml = "";
 let lastHydratedAt = 0;
 
+// 🌐 #2 — Ijtimoiy tarmoq botlari uchun User-Agent tekshiruvi
+function isSocialBot(req) {
+  const ua = (req.headers["user-agent"] || "").toLowerCase();
+  return (
+    ua.includes("telegrambot") ||
+    ua.includes("facebookexternalhit") ||
+    ua.includes("whatsapp") ||
+    ua.includes("twitterbot") ||
+    ua.includes("linkedinbot") ||
+    ua.includes("slackbot") ||
+    ua.includes("discordbot") ||
+    ua.includes("vkshare") ||
+    ua.includes("applebot")
+  );
+}
+
+// 🌐 #2 — OG meta taglarini mahsulot ma'lumotlariga almashtirish (SSR)
+function injectProductOgTags(html, product) {
+  const title = encodeURIComponent(product.title_uz || product.title || "Eurotex Kiyim");
+  const desc  = encodeURIComponent(
+    `Narxi: $${product.priceUsd || product.price || ""} | ${product.category_uz || "Erkaklar kiyimi"} | eurotexkids.uz`
+  );
+  const img   = product.image || product.img || "https://eurotexkids.uz/images/eurotex-logo.png";
+  const url   = `https://eurotexkids.uz/product/${encodeURIComponent(product.id)}`;
+
+  const ogBlock = `
+    <meta property="og:title" content="${decodeURIComponent(title)}" />
+    <meta property="og:description" content="${decodeURIComponent(desc)}" />
+    <meta property="og:image" content="${img}" />
+    <meta property="og:url" content="${url}" />
+    <meta property="og:type" content="product" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${decodeURIComponent(title)}" />
+    <meta name="twitter:image" content="${img}" />`;
+
+  // Eski og: meta taglarini yangi bilan almashtir
+  return html.replace(/<meta property="og:[^"]*"[^>]*>/g, "").replace("</head>", ogBlock + "\n</head>");
+}
+
 function getHydratedHtml() {
   const now = Date.now();
   if (cachedHydratedHtml && now - lastHydratedAt < 2000) {
@@ -128,6 +167,7 @@ function getHydratedHtml() {
     if (fs.existsSync(slidesPath)) {
       slides = JSON.parse(fs.readFileSync(slidesPath, "utf8") || "{}");
     }
+
 
     if (slides && typeof slides === "object") {
       Object.keys(slides).forEach((idx) => {
@@ -183,6 +223,25 @@ app.use((req, res, next) => {
     }
   }
   next();
+});
+
+// ── 🌐 #2 OG META SSR — Ijtimoiy tarmoq botlari uchun mahsulot og: taglarini inject qilish ──
+app.get("/product/:id", (req, res, next) => {
+  if (!isSocialBot(req)) return next();
+  const prodsPath = path.join(__dirname, "products_db.json");
+  try {
+    const prods = fs.existsSync(prodsPath)
+      ? JSON.parse(fs.readFileSync(prodsPath, "utf8") || "[]")
+      : [];
+    const product = prods.find((p) => String(p.id) === String(req.params.id));
+    if (!product) return next();
+    let html = getHydratedHtml();
+    html = injectProductOgTags(html, product);
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    return res.send(html);
+  } catch (e) {
+    return next();
+  }
 });
 
 // ── 📦 STATIC FILES & ASSETS ──────────────────────────────────────────────────

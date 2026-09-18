@@ -901,7 +901,12 @@ const deleteAccount = async (req, res) => {
 
     await User.deleteOne({ email });
 
-    return res.json({ message: "Hisob muvaffaqiyatli o'chirildi!" });
+    // 🗑️ #12 KASKADLI TOZALASH: Cookie + Session + Lokal ma'lumotlar
+    // Auth cookie-larni o'chirish
+    res.clearCookie("authToken", { path: "/", httpOnly: true, sameSite: "lax" });
+    res.clearCookie("eurotex_session", { path: "/" });
+
+    return res.json({ success: true, message: "Hisob va barcha bog'liq ma'lumotlar muvaffaqiyatli o'chirildi!" });
   } catch (error) {
     console.error("deleteAccount xatosi:", error);
     return res.status(500).json({ message: "Xatolik yuz berdi!" });

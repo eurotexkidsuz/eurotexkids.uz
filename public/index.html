@@ -2,6 +2,19 @@
 <html lang="uz" data-theme="light">
   <head>
     <meta charset="UTF-8" />
+    <!-- 🌓 #6 FOUC Oldini olish: Sahifa yuklanmasidanoq qorong'i rejimni o'rnatish -->
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem("eurotex_theme");
+          if (saved === "dark" || (!saved && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+            document.documentElement.setAttribute("data-theme", "dark");
+          } else {
+            document.documentElement.setAttribute("data-theme", "light");
+          }
+        } catch(e) {}
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
       Eurotexkids.uz — Premial Erkaklar Kostyum-Shimlari va Kiyim-kechaklari |
@@ -143,12 +156,21 @@
             <span class="loc-icon">📍</span>
             <span data-i18n="cityLabel">Shahar:</span>
             <select id="citySelect">
-              <option value="Toshkent">Toshkent</option>
-              <option value="Samarqand">Samarqand</option>
-              <option value="Buxoro">Buxoro</option>
-              <option value="Andijon">Andijon</option>
-              <option value="Farg'ona">Farg'ona</option>
-              <option value="Namangan">Namangan</option>
+              <option value="" disabled selected>Viloyatni tanlang</option>
+              <option value="Toshkent shahri">Toshkent shahri</option>
+              <option value="Toshkent viloyati">Toshkent viloyati</option>
+              <option value="Andijon viloyati">Andijon viloyati</option>
+              <option value="Farg'ona viloyati">Farg'ona viloyati</option>
+              <option value="Namangan viloyati">Namangan viloyati</option>
+              <option value="Samarqand viloyati">Samarqand viloyati</option>
+              <option value="Buxoro viloyati">Buxoro viloyati</option>
+              <option value="Xorazm viloyati">Xorazm viloyati</option>
+              <option value="Qashqadaryo viloyati">Qashqadaryo viloyati</option>
+              <option value="Surxondaryo viloyati">Surxondaryo viloyati</option>
+              <option value="Jizzax viloyati">Jizzax viloyati</option>
+              <option value="Sirdaryo viloyati">Sirdaryo viloyati</option>
+              <option value="Navoiy viloyati">Navoiy viloyati</option>
+              <option value="Qoraqalpog'iston Respublikasi">Qoraqalpog'iston Respublikasi</option>
             </select>
           </div>
           <span class="utility-divider">|</span>
@@ -2170,9 +2192,14 @@
 
                 <!-- Admin Section 1: Customer Orders -->
                 <div id="adminSecOrders">
-                  <h3 class="admin-section-heading">
-                    Barcha Mijozlar Buyurtmalari Boshqaruvi
-                  </h3>
+                  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 14px;">
+                    <h3 class="admin-section-heading" style="margin: 0;">
+                      Barcha Mijozlar Buyurtmalari Boshqaruvi
+                    </h3>
+                    <button type="button" onclick="exportOrdersToCSV()" class="btn btn-secondary btn-sm" style="font-size: 13px; font-weight: 700; background: #0284c7; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+                      📥 Eksport CSV
+                    </button>
+                  </div>
                   <div id="adminOrdersTableContainer">
                     <!-- Rendered dynamically -->
                   </div>
@@ -4450,20 +4477,21 @@
                   📍 Shahar / Viloyat *
                 </label>
                 <select id="onboardingRegion" class="custom-input" style="width: 100%; padding: 10px 14px; border-radius: 10px; font-size: 13.5px;">
-                  <option value="Toshkent">Toshkent shahri</option>
+                  <option value="" disabled selected>Viloyatni tanlang</option>
+                  <option value="Toshkent shahri">Toshkent shahri</option>
                   <option value="Toshkent viloyati">Toshkent viloyati</option>
-                  <option value="Samarqand">Samarqand</option>
-                  <option value="Buxoro">Buxoro</option>
-                  <option value="Farg'ona">Farg'ona</option>
-                  <option value="Andijon">Andijon</option>
-                  <option value="Namangan">Namangan</option>
-                  <option value="Qashqadaryo">Qashqadaryo</option>
-                  <option value="Surxondaryo">Surxondaryo</option>
-                  <option value="Xorazm">Xorazm</option>
-                  <option value="Navoiy">Navoiy</option>
-                  <option value="Jizzax">Jizzax</option>
-                  <option value="Sirdaryo">Sirdaryo</option>
-                  <option value="Qoraqalpog'iston">Qoraqalpog'iston</option>
+                  <option value="Andijon viloyati">Andijon viloyati</option>
+                  <option value="Farg'ona viloyati">Farg'ona viloyati</option>
+                  <option value="Namangan viloyati">Namangan viloyati</option>
+                  <option value="Samarqand viloyati">Samarqand viloyati</option>
+                  <option value="Buxoro viloyati">Buxoro viloyati</option>
+                  <option value="Xorazm viloyati">Xorazm viloyati</option>
+                  <option value="Qashqadaryo viloyati">Qashqadaryo viloyati</option>
+                  <option value="Surxondaryo viloyati">Surxondaryo viloyati</option>
+                  <option value="Jizzax viloyati">Jizzax viloyati</option>
+                  <option value="Sirdaryo viloyati">Sirdaryo viloyati</option>
+                  <option value="Navoiy viloyati">Navoiy viloyati</option>
+                  <option value="Qoraqalpog'iston Respublikasi">Qoraqalpog'iston Respublikasi</option>
                 </select>
               </div>
 

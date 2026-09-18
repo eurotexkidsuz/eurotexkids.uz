@@ -24,11 +24,14 @@ function readLocalOrders() {
   return [];
 }
 
+// 💾 #1 ATOMAR FAYL YOZISH: .tmp -> rename — server crash'dan himoya
 function writeLocalOrders(orders) {
   try {
     const dir = path.dirname(ORDERS_FILE);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2), "utf8");
+    const tmpPath = ORDERS_FILE + ".tmp";
+    fs.writeFileSync(tmpPath, JSON.stringify(orders, null, 2), "utf8");
+    fs.renameSync(tmpPath, ORDERS_FILE);
   } catch (e) {
     console.error("Local orders write error:", e.message);
   }

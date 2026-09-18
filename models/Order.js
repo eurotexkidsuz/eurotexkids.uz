@@ -1,4 +1,6 @@
 const { Schema, model } = require("mongoose");
+const { randomInt } = require("crypto"); // 🔐 #11 Unikal buyurtma ID uchun
+
 
 const ORDER_STATUS_STEPS = {
   0: { label: "Bekor qilindi", color: "#ef4444", icon: "❌" },
@@ -52,10 +54,12 @@ const orderSchema = new Schema(
 
 orderSchema.pre("save", function (next) {
   if (!this.orderId) {
+    // 🔐 #11 crypto.randomInt — to'qnashuvdan kafolatlangan unikal ID
+    const rnd = randomInt(100000, 999999);
     this.orderId =
       "EUR-" +
       new Date().getFullYear().toString().slice(-2) +
-      Math.floor(100000 + Math.random() * 900000);
+      rnd;
   }
   if (Array.isArray(this.items)) {
     this.itemsCount = this.items.reduce(

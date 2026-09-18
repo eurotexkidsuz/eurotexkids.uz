@@ -10146,11 +10146,12 @@ function openMaintenanceAdminLogin() {
   openAuthModal();
 }
 
+// 💵 #9 So'mga o'girishda O'zbekiston kassa standarti bo'yicha 500 so'mga yaxlitlash
 function formatMoneySom(amount) {
   let num = typeof amount === "number" ? amount : parseFloat(amount) || 0;
   if (!Number.isFinite(num) || num < 0) num = 0;
   if (num > 100000000) num = Math.min(num, 100000000);
-  num = Math.round(num);
+  num = Math.round(num / 500) * 500;
   return num.toLocaleString("ru-RU").replace(/\u00A0/g, " ");
 }
 
@@ -10162,7 +10163,7 @@ function formatMoney(usdAmount) {
   let usd = 0;
   let uzs = 0;
   if (num >= 100000) {
-    uzs = Math.round(num);
+    uzs = Math.round(num / 500) * 500;
     usd = Math.round(uzs / rate);
   } else {
     usd = Math.round(num);
@@ -10502,4 +10503,189 @@ function updateSlideImageInDOM(slideIndex, imgUrl) {
   // Update immediately
   slideImg.src = imgUrl;
   localStorage.setItem("eurotex_hero_slide_img_" + slideIndex, imgUrl);
+}
+
+// =============================================================================
+// 📶 #13 OFFLINE / ONLINE TARMOQ HOLATI XABARLARI
+// =============================================================================
+(function initNetworkStatusWatcher() {
+  function getOrCreateBanner() {
+    let banner = document.getElementById("eurotexNetworkBanner");
+    if (!banner) {
+      banner = document.createElement("div");
+      banner.id = "eurotexNetworkBanner";
+      banner.style.cssText = `
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%) translateY(120px);
+        z-index: 999999;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 20px;
+        border-radius: 50px;
+        font-size: 14px;
+        font-weight: 700;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+        transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+        opacity: 0;
+        pointer-events: none;
+      `;
+      document.body.appendChild(banner);
+    }
+    return banner;
+  }
+
+  function showOffline() {
+    const banner = getOrCreateBanner();
+    banner.style.background = "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)";
+    banner.style.color = "#ffffff";
+    banner.style.border = "1px solid rgba(255,255,255,0.2)";
+    banner.innerHTML = "<span>📶</span> <span>Internet aloqasi uzildi. Qayta ulanish kutilmoqda...</span>";
+    banner.style.opacity = "1";
+    banner.style.transform = "translateX(-50%) translateY(0)";
+  }
+
+  function showOnline() {
+    const banner = getOrCreateBanner();
+    banner.style.background = "linear-gradient(135deg, #10b981 0%, #059669 100%)";
+    banner.style.color = "#ffffff";
+    banner.style.border = "1px solid rgba(255,255,255,0.2)";
+    banner.innerHTML = "<span>✅</span> <span>Internet aloqasi qayta tiklandi!</span>";
+    banner.style.opacity = "1";
+    banner.style.transform = "translateX(-50%) translateY(0)";
+    setTimeout(() => {
+      banner.style.opacity = "0";
+      banner.style.transform = "translateX(-50%) translateY(120px)";
+    }, 3500);
+  }
+
+  window.addEventListener("offline", showOffline);
+  window.addEventListener("online", showOnline);
+
+  // 📍 City Select xotirasini bog'lash
+  document.addEventListener("DOMContentLoaded", () => {
+    const citySelect = document.getElementById("citySelect");
+    if (citySelect) {
+      const saved = localStorage.getItem("eurotex_selected_city");
+      if (saved) {
+        citySelect.value = saved;
+      }
+      citySelect.addEventListener("change", (e) => {
+        if (e.target.value) {
+          localStorage.setItem("eurotex_selected_city", e.target.value);
+          if (typeof showToast === "function") {
+            showToast(`📍 Tanlangan hudud: ${e.target.value}`, "info");
+          }
+        }
+      });
+    }
+  });
+})();
+
+// =============================================================================
+// 📊 #3 ADMIN BUYURTMALARINI CSV FORMATDA EKSPORT QILISH
+// =============================================================================
+function exportOrdersToCSV() {
+  const orders = (state && state.orders && state.orders.length > 0)
+    ? state.orders
+    : [];
+
+  if (orders.length === 0) {
+    if (typeof showToast === "function") {
+      showToast("⚠️ Eksport qilish uchun hech qanday buyurtma topilmadi!", "warning");
+    } else {
+      alert("Hech qanday buyurtma topilmadi!");
+    }
+    return;
+  }
+
+  const headers = [
+    "Buyurtma ID",
+    "Sana",
+    "Mijoz Ismi",
+    "Telefon",
+    "Viloyat / Manzil",
+    "Mahsulotlar Soni",
+    "Mahsulotlar Ro'yxati",
+    "Jami Summa (UZS)",
+    "Jami Summa (USD)",
+    "To'lov Turi",
+    "Holat"
+  ];
+
+  const rows = orders.map((o) => {
+    const itemsStr = (o.items || [])
+      .map((it) => `${it.title || "Tovar"} (${it.quantity || 1}x, ${it.size || "-"}, ${it.color || "-"})`)
+      .join(" | ");
+
+    return [
+      `"${(o.id || o.orderId || "").replace(/"/g, '""')}"`,
+      `"${(o.date || "").replace(/"/g, '""')}"`,
+      `"${(o.customerName || o.name || "").replace(/"/g, '""')}"`,
+      `"${(o.phone || "").replace(/"/g, '""')}"`,
+      `"${(o.address || o.region || "").replace(/"/g, '""')}"`,
+      o.itemsCount || (o.items ? o.items.length : 0),
+      `"${itemsStr.replace(/"/g, '""')}"`,
+      o.totalPriceUzs || o.total || 0,
+      o.totalPriceUsd || 0,
+      `"${(o.paymentMethod || "Naqd / Karta").replace(/"/g, '""')}"`,
+      `"${(o.statusText || o.status || "Kutilmoqda").replace(/"/g, '""')}"`
+    ].join(",");
+  });
+
+  // UTF-8 BOM (\uFEFF) — Excel da o'zbekcha / kirill harflar buzilmasligi uchun
+  const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\r\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const today = new Date().toISOString().split("T")[0];
+  a.href = url;
+  a.download = `eurotex_orders_${today}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  if (typeof showToast === "function") {
+    showToast(`✅ ${orders.length} ta buyurtma CSV formatida yuklab olindi!`, "success");
+  }
+}
+
+// =============================================================================
+// 🖼️ #7 RASMLARNI AVTOMATIK BRAUZERDA SIQISH (CANVAS 1200PX / WEBP-JPEG 85%)
+// =============================================================================
+function compressImageFile(file, maxWidth = 1200, quality = 0.85) {
+  return new Promise((resolve, reject) => {
+    if (!file || !file.type.startsWith("image/")) {
+      return reject(new Error("Noto'g'ri rasm fayli"));
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // WebP yoki JPEG ga siqish
+        const mimeType = file.type === "image/png" ? "image/png" : "image/jpeg";
+        const compressedBase64 = canvas.toDataURL(mimeType, quality);
+        resolve(compressedBase64);
+      };
+      img.onerror = () => reject(new Error("Rasm yuklashda xatolik"));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error("Fayl o'qishda xatolik"));
+    reader.readAsDataURL(file);
+  });
 }
