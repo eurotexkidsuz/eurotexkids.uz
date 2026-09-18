@@ -3,7 +3,7 @@ try {
   dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
 } catch (e) {}
 const express = require("express");
-const { connect } = require("mongoose");
+const mongoose = require("mongoose");
 const cors = require("cors");
 const helmet = require("helmet");           // #1 — HTTP Security headers
 const rateLimit = require("express-rate-limit"); // #2 — Rate limiting
@@ -225,6 +225,30 @@ app.use((err, req, res, next) => {
 
 // Server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 Server: http://localhost:${PORT}`);
 });
+
+// Graceful Shutdown (Band 5)
+function gracefulShutdown(signal) {
+  console.log(`\n🛑 ${signal} signali qabul qilindi. Server toza yakunlanmoqda...`);
+  server.close(async () => {
+    console.log("HTTP server to'xtatildi.");
+    try {
+      if (mongoose.connection && mongoose.connection.readyState !== 0) {
+        await mongoose.connection.close();
+        console.log("MongoDB ulanishi xavfsiz yopildi.");
+      }
+    } catch (e) {
+      console.error("MongoDB yopilishida xatolik:", e.message);
+    }
+    process.exit(0);
+  });
+  setTimeout(() => {
+    console.error("Majburiy to'xtatish (timeout) bajarilmoqda.");
+    process.exit(1);
+  }, 10000).unref();
+}
+
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));

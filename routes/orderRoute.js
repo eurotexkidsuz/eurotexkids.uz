@@ -78,6 +78,15 @@ function normalizePhoneNumber(rawPhone) {
   return String(rawPhone).trim();
 }
 
+function sanitizeText(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/[<>]/g, "")
+    .replace(/javascript:/gi, "")
+    .replace(/on\w+=/gi, "")
+    .trim();
+}
+
 router.get("/", async (req, res) => {
   try {
     const isConnected = await ensureDbConnected();
@@ -358,7 +367,7 @@ router.post("/", async (req, res) => {
     const computedTotalUsd = Math.max(0, verifiedTotalUsd - computedDiscountUsd);
     const computedTotalUzs = Math.round(computedTotalUsd * computedUsdRate);
 
-    // 2. Promokod ishlatilgan bo'lsa usedCount hisoblagichini oshirish
+    // 2. Promokod ishlatilgan bo'lsa usedCount hisoblagichini oshirish va usedBy ga yozish
     if (promoCode) {
       const promosFile = path.join(__dirname, "../data/promocodes.json");
       if (fs.existsSync(promosFile)) {
@@ -368,6 +377,11 @@ router.post("/", async (req, res) => {
           const targetPromo = promoList.find((p) => p.code && p.code.toUpperCase() === cleanPCode);
           if (targetPromo) {
             targetPromo.usedCount = (targetPromo.usedCount || 0) + 1;
+            if (!Array.isArray(targetPromo.usedBy)) targetPromo.usedBy = [];
+            const userKey = (userEmail ? String(userEmail).toLowerCase().trim() : "") || normalizePhoneNumber(phone);
+            if (userKey && !targetPromo.usedBy.includes(userKey)) {
+              targetPromo.usedBy.push(userKey);
+            }
             fs.writeFileSync(promosFile, JSON.stringify(promoList, null, 2), "utf8");
           }
         } catch (e) {}
@@ -384,12 +398,12 @@ router.post("/", async (req, res) => {
       orderId: generatedId,
       id: generatedId,
       userEmail: userEmail ? String(userEmail).toLowerCase().trim() : "",
-      customerName: customerName || recipient || "Mijoz",
-      recipient: recipient || customerName || "Mijoz",
+      customerName: sanitizeText(customerName || recipient || "Mijoz"),
+      recipient: sanitizeText(recipient || customerName || "Mijoz"),
       phone: normalizePhoneNumber(phone),
-      address: address || "",
-      region: region || "",
-      district: district || "",
+      address: sanitizeText(address || ""),
+      region: sanitizeText(region || ""),
+      district: sanitizeText(district || ""),
       deliveryType: deliveryType || "courier",
       paymentMethod: paymentMethod || "cash",
       items: validatedItems || items || [],
@@ -406,7 +420,7 @@ router.post("/", async (req, res) => {
       date: date || new Date().toLocaleDateString("uz-UZ"),
       deliveryDate: deliveryDate || "",
       deliveryTime: deliveryTime || "",
-      customerNotes: customerNotes || "",
+      customerNotes: sanitizeText(customerNotes || ""),
       ipAddress: getClientIp(req),
       createdAt: new Date(),
     };

@@ -59,6 +59,12 @@ class UserMock {
     const idx = db.findIndex(
       (u) => u.email && u.email.toLowerCase() === this.email.toLowerCase(),
     );
+    if (Array.isArray(this.sessions) && this.sessions.length > 20) {
+      this.sessions = this.sessions.slice(-20);
+    }
+    if (Array.isArray(this.loginLogs) && this.loginLogs.length > 50) {
+      this.loginLogs = this.loginLogs.slice(-50);
+    }
     this.updatedAt = new Date();
     // Convert to plain object safely
     const plain = {};

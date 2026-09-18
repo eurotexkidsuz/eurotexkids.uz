@@ -1244,6 +1244,15 @@
                   >
                     🤍
                   </button>
+                  <button
+                    type="button"
+                    class="pdp-btn-share"
+                    id="pdpShareBtn"
+                    onclick="handlePdpShare()"
+                    title="Mahsulot havolasini nusxalash / ulashish"
+                  >
+                    📋 Ulashish
+                  </button>
                 </div>
               </div>
 
@@ -1816,10 +1825,27 @@
                   kvitansiyani yuklab oling
                 </p>
               </div>
+
+              <!-- Order Status Filter Tabs (Band 13) -->
+              <div class="order-status-tabs" id="orderStatusTabs">
+                <button type="button" class="order-tab-btn active" data-status="all" onclick="filterCustomerOrders('all', this)">
+                  Barchasi <span class="order-tab-badge" id="orderTabCountAll">0</span>
+                </button>
+                <button type="button" class="order-tab-btn" data-status="delivering" onclick="filterCustomerOrders('delivering', this)">
+                  🚚 Yetkazilmoqda <span class="order-tab-badge" id="orderTabCountDelivering">0</span>
+                </button>
+                <button type="button" class="order-tab-btn" data-status="completed" onclick="filterCustomerOrders('completed', this)">
+                  ✅ Bajarildi <span class="order-tab-badge" id="orderTabCountCompleted">0</span>
+                </button>
+                <button type="button" class="order-tab-btn" data-status="cancelled" onclick="filterCustomerOrders('cancelled', this)">
+                  ❌ Bekor qilindi <span class="order-tab-badge" id="orderTabCountCancelled">0</span>
+                </button>
+              </div>
+
               <div
                 class="orders-list-container"
                 id="ordersListContainer"
-                style="margin-top: 20px"
+                style="margin-top: 14px"
               >
                 <!-- Rendered dynamically by script.js -->
               </div>
@@ -2640,9 +2666,8 @@
           <!-- Official Social Media & Direct Contact Channels -->
           <div class="social-circles-row">
             <!-- 1. Instagram (@eurotex.uz) -->
-            <a
-              href="https://instagram.com/eurotex.uz/"
-              target="_blank"
+            <a href="https://instagram.com/eurotex.uz/"
+              target="_blank" rel="noopener noreferrer"
               class="social-circle-btn insta"
               title="Instagram: @eurotex.uz"
             >
@@ -2653,9 +2678,8 @@
               </svg>
             </a>
             <!-- 2. Telegram Kanal (@eurotex_kids) -->
-            <a
-              href="https://t.me/eurotex_kids"
-              target="_blank"
+            <a href="https://t.me/eurotex_kids"
+              target="_blank" rel="noopener noreferrer"
               class="social-circle-btn tg"
               title="Telegram Kanal: @eurotex_kids"
             >
@@ -2665,9 +2689,8 @@
               </svg>
             </a>
             <!-- 3. Telegram Admin (@eurotex_admin - Abduraxmon) -->
-            <a
-              href="https://t.me/eurotex_admin"
-              target="_blank"
+            <a href="https://t.me/eurotex_admin"
+              target="_blank" rel="noopener noreferrer"
               class="social-circle-btn tg-admin"
               title="Admin: @eurotex_admin (Abduraxmon)"
             >
@@ -2676,9 +2699,8 @@
               </svg>
             </a>
             <!-- 4. WhatsApp (+998 90 555-77-75) -->
-            <a
-              href="https://wa.me/998905557775"
-              target="_blank"
+            <a href="https://wa.me/998905557775"
+              target="_blank" rel="noopener noreferrer"
               class="social-circle-btn wa"
               title="WhatsApp: +998 90 555-77-75"
             >
@@ -2687,9 +2709,8 @@
               </svg>
             </a>
             <!-- 5. Taplink (taplink.cc/eurotex.fabric) -->
-            <a
-              href="https://taplink.cc/eurotex.fabric"
-              target="_blank"
+            <a href="https://taplink.cc/eurotex.fabric"
+              target="_blank" rel="noopener noreferrer"
               class="social-circle-btn taplink"
               title="Taplink: taplink.cc/eurotex.fabric"
             >
@@ -2701,11 +2722,11 @@
           </div>
 
           <div class="social-links-text-row">
-            <a href="https://instagram.com/eurotex.uz/" target="_blank" class="social-btn insta-btn" title="Instagram: @eurotex.uz">📸 @eurotex.uz</a>
-            <a href="https://t.me/eurotex_kids" target="_blank" class="social-btn kids" title="Telegram: @eurotex_kids">📢 @eurotex_kids</a>
-            <a href="https://t.me/eurotex_admin" target="_blank" class="social-btn admin-btn" title="Admin: @eurotex_admin">👤 @eurotex_admin</a>
-            <a href="https://wa.me/998905557775" target="_blank" class="social-btn wa-btn" title="WhatsApp">💬 WhatsApp</a>
-            <a href="https://taplink.cc/eurotex.fabric" target="_blank" class="social-btn taplink-btn" title="Taplink">🔗 Taplink</a>
+            <a href="https://instagram.com/eurotex.uz/" target="_blank" rel="noopener noreferrer" class="social-btn insta-btn" title="Instagram: @eurotex.uz">📸 @eurotex.uz</a>
+            <a href="https://t.me/eurotex_kids" target="_blank" rel="noopener noreferrer" class="social-btn kids" title="Telegram: @eurotex_kids">📢 @eurotex_kids</a>
+            <a href="https://t.me/eurotex_admin" target="_blank" rel="noopener noreferrer" class="social-btn admin-btn" title="Admin: @eurotex_admin">👤 @eurotex_admin</a>
+            <a href="https://wa.me/998905557775" target="_blank" rel="noopener noreferrer" class="social-btn wa-btn" title="WhatsApp">💬 WhatsApp</a>
+            <a href="https://taplink.cc/eurotex.fabric" target="_blank" rel="noopener noreferrer" class="social-btn taplink-btn" title="Taplink">🔗 Taplink</a>
           </div>
         </div>
 
@@ -2752,7 +2773,7 @@
           <a href="#" onclick="event.preventDefault(); openModal('aboutUsModal');">Kompaniya haqida</a>
           <a href="#" onclick="event.preventDefault(); openModal('storesModal');">🏬 Do'konlarimiz manzili</a>
           <a href="#" onclick="event.preventDefault(); openModal('vipBookingModal');">👑 VIP Kiyib ko'rish</a>
-          <a href="https://t.me/eurotex_admin" target="_blank">Hamkorlik va Ulgurji xarid (Optom)</a>
+          <a href="https://t.me/eurotex_admin" target="_blank" rel="noopener noreferrer">Hamkorlik va Ulgurji xarid (Optom)</a>
         </div>
 
         <div class="footer-col">
@@ -2763,23 +2784,23 @@
           </div>
           <div class="footer-contact-item">
             <span class="f-icon">💬</span>
-            <a href="https://wa.me/998905557775" target="_blank" title="WhatsApp Katalog">WhatsApp: +998 (90) 555-77-75</a>
+            <a href="https://wa.me/998905557775" target="_blank" rel="noopener noreferrer" title="WhatsApp Katalog">WhatsApp: +998 (90) 555-77-75</a>
           </div>
           <div class="footer-contact-item">
             <span class="f-icon">📷</span>
-            <a href="https://instagram.com/eurotex.uz/" target="_blank" title="Instagram">Instagram: @eurotex.uz</a>
+            <a href="https://instagram.com/eurotex.uz/" target="_blank" rel="noopener noreferrer" title="Instagram">Instagram: @eurotex.uz</a>
           </div>
           <div class="footer-contact-item">
             <span class="f-icon">📢</span>
-            <a href="https://t.me/eurotex_kids" target="_blank" title="Telegram Kanal">Telegram: @eurotex_kids</a>
+            <a href="https://t.me/eurotex_kids" target="_blank" rel="noopener noreferrer" title="Telegram Kanal">Telegram: @eurotex_kids</a>
           </div>
           <div class="footer-contact-item">
             <span class="f-icon">👤</span>
-            <a href="https://t.me/eurotex_admin" target="_blank" title="Admin Abduraxmon">Admin: @eurotex_admin (Abduraxmon)</a>
+            <a href="https://t.me/eurotex_admin" target="_blank" rel="noopener noreferrer" title="Admin Abduraxmon">Admin: @eurotex_admin (Abduraxmon)</a>
           </div>
           <div class="footer-contact-item">
             <span class="f-icon">🔗</span>
-            <a href="https://taplink.cc/eurotex.fabric" target="_blank" title="Taplink">Taplink: eurotex.fabric</a>
+            <a href="https://taplink.cc/eurotex.fabric" target="_blank" rel="noopener noreferrer" title="Taplink">Taplink: eurotex.fabric</a>
           </div>
           <div class="footer-contact-item">
             <span class="f-icon">⏰</span>
@@ -3233,7 +3254,7 @@
             <a href="tel:+998905557775" class="btn store-call-btn">
               📞 Qo'ng'iroq qilish
             </a>
-            <a href="https://t.me/eurotex_admin" target="_blank" class="btn store-admin-btn">
+            <a href="https://t.me/eurotex_admin" target="_blank" rel="noopener noreferrer" class="btn store-admin-btn">
               ✈️ Telegram Admin
             </a>
           </div>
@@ -4615,7 +4636,7 @@
           <a id="maintenanceCallBtn" href="tel:+998901234567" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 12px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8; text-decoration: none; font-weight: 700; font-size: 13.5px; transition: all 0.2s;">
             📞 Qo'ng'iroq qilish
           </a>
-          <a id="maintenanceTgBtn" href="https://t.me/eurotexkids_admin" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 12px; background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.4); color: #4ade80; text-decoration: none; font-weight: 700; font-size: 13.5px; transition: all 0.2s;">
+          <a id="maintenanceTgBtn" href="https://t.me/eurotexkids_admin" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 12px; background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.4); color: #4ade80; text-decoration: none; font-weight: 700; font-size: 13.5px; transition: all 0.2s;">
             💬 Telegram Administrator
           </a>
         </div>
@@ -4681,7 +4702,7 @@
               <a id="crmModalCallBtn" href="tel:" class="btn btn-sm" style="background: #10b981; color: #ffffff; text-decoration: none; border-radius: 8px; padding: 7px 14px; font-weight: 700; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px;">
                 📞 Qo'ng'iroq qilish
               </a>
-              <a id="crmModalTgBtn" href="https://t.me/" target="_blank" class="btn btn-sm" style="background: #0ea5e9; color: #ffffff; text-decoration: none; border-radius: 8px; padding: 7px 14px; font-weight: 700; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px;">
+              <a id="crmModalTgBtn" href="https://t.me/" target="_blank" rel="noopener noreferrer" class="btn btn-sm" style="background: #0ea5e9; color: #ffffff; text-decoration: none; border-radius: 8px; padding: 7px 14px; font-weight: 700; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px;">
                 💬 Telegram orqali yozish
               </a>
             </div>
@@ -4731,6 +4752,20 @@
         </div>
       </div>
     </div>
+
+    <!-- Floating Scroll to Top Button (Band 11) -->
+    <button
+      type="button"
+      id="btnScrollToTop"
+      class="scroll-to-top-btn"
+      onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
+      aria-label="Yuqoriga qaytish"
+      title="Yuqoriga qaytish"
+    >
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 15l-6-6-6 6"/>
+      </svg>
+    </button>
 
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>

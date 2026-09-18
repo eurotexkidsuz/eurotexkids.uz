@@ -51,4 +51,15 @@ const userSchema = new mongoose.Schema(
   { timestamps: true, strict: false },
 );
 
+// Unbounded Array Bloat himoyasi
+userSchema.pre("save", function (next) {
+  if (Array.isArray(this.sessions) && this.sessions.length > 20) {
+    this.sessions = this.sessions.slice(-20);
+  }
+  if (Array.isArray(this.loginLogs) && this.loginLogs.length > 50) {
+    this.loginLogs = this.loginLogs.slice(-50);
+  }
+  next();
+});
+
 module.exports = mongoose.model("User", userSchema);

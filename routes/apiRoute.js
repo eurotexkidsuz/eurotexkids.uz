@@ -98,19 +98,20 @@ router.post("/leads", async (req, res) => {
 
   // #7 MongoDB sanitize — injection himoyasi
   const { name, phone, productTitle, size, color, price } = sanitize(req.body);
-  if (!phone) {
-    return res.status(400).json({ success: false, message: "Telefon raqami kiritilishi shart" });
+  const cleanPhone = String(phone || "").replace(/\D/g, "");
+  if (!cleanPhone || cleanPhone.length < 9) {
+    return res.status(400).json({ success: false, message: "Telefon raqami kamida 9 ta raqamdan iborat bo'lishi shart!" });
   }
 
   const leads = readJsonFile("leads.json", []);
   const newLead = {
     id: "lead_" + Date.now(),
-    name: name || "Xaridor",
-    phone,
-    productTitle: productTitle || "Eurotex Kostyum",
-    size: size || "-",
-    color: color || "-",
-    price: price || "-",
+    name: String(name || "Xaridor").replace(/[<>]/g, "").slice(0, 50),
+    phone: cleanPhone.length === 9 ? `+998${cleanPhone}` : (cleanPhone.startsWith("998") ? `+${cleanPhone}` : `+${cleanPhone}`),
+    productTitle: String(productTitle || "Eurotex Kostyum").replace(/[<>]/g, "").slice(0, 100),
+    size: String(size || "-").slice(0, 20),
+    color: String(color || "-").slice(0, 30),
+    price: String(price || "-").slice(0, 40),
     status: "yangi",
     date: new Date().toLocaleString("uz-UZ", { timeZone: "Asia/Tashkent" }),
   };
@@ -552,9 +553,16 @@ router.post("/promocodes/validate", (req, res) => {
   }
 
   // 4. 1 kishiga 1 marta cheklovini tekshirish
-  if (userIdentifier && Array.isArray(promo.usedBy)) {
-    const cleanUser = String(userIdentifier).trim().toLowerCase();
-    const userUses = promo.usedBy.filter((u) => String(u).toLowerCase() === cleanUser).length;
+  const checkUser = userIdentifier || req.body.email || req.body.phone;
+  if (checkUser && Array.isArray(promo.usedBy)) {
+    const cleanUser = String(checkUser).trim().toLowerCase();
+    const cleanDigits = cleanUser.replace(/\D/g, "");
+    const userUses = promo.usedBy.filter((u) => {
+      const su = String(u).toLowerCase().trim();
+      if (su === cleanUser) return true;
+      if (cleanDigits.length >= 9 && su.replace(/\D/g, "").endsWith(cleanDigits)) return true;
+      return false;
+    }).length;
     if (userUses >= (promo.perUserLimit || 1)) {
       return res.json({
         valid: false,
@@ -775,6 +783,93 @@ router.get("/exchange-rate", async (req, res) => {
   } catch (e) {}
 
   return res.json({ success: true, rate: cachedUsdRate.rate, cached: true });
+});
+
+// =============================================================================
+// 8. ⭐ MIJOZLAR SHARHLARI (CUSTOMER REVIEWS) REST API
+// =============================================================================
+const DEFAULT_REVIEWS = [
+  {
+    id: "rev_1",
+    author: "Dilshodbek T.",
+    city: "Toshkent",
+    rating: 5,
+    text: "Mato sifati a'lo darajada! Bolamga to'y uchun oldik, Turkiya matosi g'ijimlanmas ekan. Kuryer 1 kunda yetkazib berdi.",
+    date: "14.09.2026",
+    status: "approved",
+    productTitle: "Slim Fit Bolalar Kostyumi",
+  },
+  {
+    id: "rev_2",
+    author: "Nargiza Alimova",
+    city: "Samarqand",
+    rating: 5,
+    text: "Tikilishi juda chiroyli, iplari chiqib ketmagan. Razmeri ham aynan mos keldi. Rahmat kattakon Eurotex jamoasiga!",
+    date: "10.09.2026",
+    status: "approved",
+    productTitle: "Classic Royal Ko'k Kostyum",
+  },
+  {
+    id: "rev_3",
+    author: "Bobur Rahimov",
+    city: "Namangan",
+    rating: 5,
+    text: "Optomga 10 pachka oldik do'konimiz uchun, 3 kunda deyarli yarmi sotilib ketdi. Sifatiga gap yo'q, yangi partiya kutamiz.",
+    date: "05.09.2026",
+    status: "approved",
+    productTitle: "Ulgurji Maktab To'plami",
+  },
+];
+
+router.get("/reviews", (req, res) => {
+  const reviews = readJsonFile("reviews.json", DEFAULT_REVIEWS);
+  const status = req.query.status;
+  if (status) {
+    return res.json({ success: true, reviews: reviews.filter((r) => r.status === status) });
+  }
+  res.json({ success: true, reviews });
+});
+
+router.post("/reviews", (req, res) => {
+  if (!checkSpamLimit(req, "review")) {
+    return res.status(429).json({ success: false, message: "Iltimos, ozroq kuting. Sharhingiz yuborilgan." });
+  }
+
+  const { author, name, city, rating, text, comment, productTitle, productId } = sanitize(req.body);
+  const authorName = String(author || name || "Mijoz").replace(/[<>]/g, "").trim().slice(0, 50);
+  const reviewText = String(text || comment || "").replace(/[<>]/g, "").trim().slice(0, 1000);
+  const numRating = Math.min(5, Math.max(1, Number(rating) || 5));
+
+  if (!reviewText) {
+    return res.status(400).json({ success: false, message: "Sharh matni kiritilishi shart!" });
+  }
+
+  const reviews = readJsonFile("reviews.json", DEFAULT_REVIEWS);
+  const newReview = {
+    id: "rev_" + Date.now(),
+    author: authorName,
+    city: String(city || "O'zbekiston").replace(/[<>]/g, "").slice(0, 50),
+    rating: numRating,
+    text: reviewText,
+    productTitle: String(productTitle || "Eurotex Mahsuloti").replace(/[<>]/g, "").slice(0, 100),
+    productId: productId || "",
+    status: "approved",
+    date: new Date().toLocaleDateString("uz-UZ"),
+    createdAt: new Date().toISOString(),
+  };
+
+  reviews.unshift(newReview);
+  writeJsonFile("reviews.json", reviews);
+
+  res.json({ success: true, message: "Sharhingiz uchun tashakkur! Fikringiz qabul qilindi. ⭐", review: newReview });
+});
+
+router.delete("/reviews/:id", requireAdmin, (req, res) => {
+  const id = req.params.id;
+  let reviews = readJsonFile("reviews.json", DEFAULT_REVIEWS);
+  reviews = reviews.filter((r) => String(r.id) !== String(id));
+  writeJsonFile("reviews.json", reviews);
+  res.json({ success: true, message: "Sharh o'chirildi" });
 });
 
 module.exports = router;

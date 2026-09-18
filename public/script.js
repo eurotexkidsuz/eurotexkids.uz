@@ -1321,11 +1321,28 @@ let state = {
   user: JSON.parse(localStorage.getItem("eurotex_user") || "null"),
 };
 
+function initScrollToTop() {
+  const btn = document.getElementById("btnScrollToTop");
+  if (!btn) return;
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (window.scrollY > 400) {
+        btn.classList.add("visible");
+      } else {
+        btn.classList.remove("visible");
+      }
+    },
+    { passive: true },
+  );
+}
+
 // DOM Content Loaded Handler
 document.addEventListener("DOMContentLoaded", async () => {
   initPreloader();
   initTheme();
   initPWA();
+  initScrollToTop();
   closeAllModals();
   checkGoogleAuthRedirect();
   updateUserAuthUI();
@@ -2592,13 +2609,26 @@ function toggleWishlist(productId) {
   }
 }
 
+function triggerBadgePulse(el) {
+  if (!el) return;
+  el.classList.remove("badge-pulse-animate");
+  void el.offsetWidth;
+  el.classList.add("badge-pulse-animate");
+}
+
 function updateWishlistUI() {
   const wishlistCount = document.getElementById("wishlistCount");
   const mobileWishlistBadge = document.getElementById("mobileWishlistBadge");
   const count = state.wishlist.length;
 
-  if (wishlistCount) wishlistCount.textContent = count;
-  if (mobileWishlistBadge) mobileWishlistBadge.textContent = count;
+  if (wishlistCount) {
+    if (wishlistCount.textContent !== String(count)) triggerBadgePulse(wishlistCount);
+    wishlistCount.textContent = count;
+  }
+  if (mobileWishlistBadge) {
+    if (mobileWishlistBadge.textContent !== String(count)) triggerBadgePulse(mobileWishlistBadge);
+    mobileWishlistBadge.textContent = count;
+  }
 }
 
 // =============================================================================
@@ -2923,8 +2953,14 @@ function updateCartTotalsOnly() {
   discountUsd = Math.min(discountUsd, rawSubtotalUsd);
   const finalTotalUsd = Math.max(0, rawSubtotalUsd - discountUsd);
 
-  if (cartCount) cartCount.textContent = totalCount;
-  if (mobileCartBadge) mobileCartBadge.textContent = totalCount;
+  if (cartCount) {
+    if (cartCount.textContent !== String(totalCount)) triggerBadgePulse(cartCount);
+    cartCount.textContent = totalCount;
+  }
+  if (mobileCartBadge) {
+    if (mobileCartBadge.textContent !== String(totalCount)) triggerBadgePulse(mobileCartBadge);
+    mobileCartBadge.textContent = totalCount;
+  }
   if (dashCartCount) dashCartCount.textContent = totalCount;
   if (cartHeaderCount) cartHeaderCount.textContent = `${totalCount} ta mahsulot`;
   if (cartItemQty) cartItemQty.textContent = totalCount;
@@ -3540,6 +3576,35 @@ function handlePdpOneClickBuy() {
     window.currentPdpSize || "36",
     window.currentPdpColor || "Qora",
   );
+}
+
+function handlePdpShare() {
+  const prod = window.currentPdpProduct;
+  if (!prod) return;
+  const shareUrl = `${window.location.origin}/product/${prod.id}`;
+  const shareTitle = prod.title_uz || prod.title || "Eurotex Bolalar Kostyumi";
+  const shareText = `${shareTitle} - Eurotex do'konidan oliy sifatli bolalar kiyimi!`;
+
+  if (navigator.share) {
+    navigator
+      .share({
+        title: shareTitle,
+        text: shareText,
+        url: shareUrl,
+      })
+      .catch(() => {});
+  } else if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard
+      .writeText(shareUrl)
+      .then(() => {
+        showToast("Mahsulot havolasi nusxalandi! 📋", "success");
+      })
+      .catch(() => {
+        prompt("Mahsulot havolasi:", shareUrl);
+      });
+  } else {
+    prompt("Mahsulot havolasi:", shareUrl);
+  }
 }
 
 function openOneClickBuyModal(product, size, color) {
@@ -6333,6 +6398,14 @@ function getOrderStatusStep(order) {
   return 1;
 }
 
+function filterCustomerOrders(status, btn) {
+  state.customerOrderFilter = status;
+  document.querySelectorAll("#orderStatusTabs .order-tab-btn").forEach((b) => {
+    b.classList.toggle("active", b.getAttribute("data-status") === status);
+  });
+  renderOrdersHistory();
+}
+
 function renderOrdersHistory() {
   const container = document.getElementById("ordersListContainer");
   if (!container) return;
@@ -6377,6 +6450,21 @@ function renderOrdersHistory() {
     return false;
   });
 
+  // Update order status tabs counts
+  const countAll = myOrders.length;
+  const countDelivering = myOrders.filter((o) => [1, 2, 3].includes(getOrderStatusStep(o))).length;
+  const countCompleted = myOrders.filter((o) => getOrderStatusStep(o) === 4).length;
+  const countCancelled = myOrders.filter((o) => getOrderStatusStep(o) === 0).length;
+
+  const bAll = document.getElementById("orderTabCountAll");
+  const bDeliv = document.getElementById("orderTabCountDelivering");
+  const bComp = document.getElementById("orderTabCountCompleted");
+  const bCanc = document.getElementById("orderTabCountCancelled");
+  if (bAll) bAll.textContent = countAll;
+  if (bDeliv) bDeliv.textContent = countDelivering;
+  if (bComp) bComp.textContent = countCompleted;
+  if (bCanc) bCanc.textContent = countCancelled;
+
   if (myOrders.length === 0) {
     container.innerHTML = `
       <div style="text-align:center; padding:50px 20px; background:var(--bg-surface, #ffffff); border-radius:18px; border:1px solid var(--border-color, #e2e8f0); margin:20px 0; box-shadow:0 4px 15px rgba(0,0,0,0.02);">
@@ -6393,7 +6481,32 @@ function renderOrdersHistory() {
     return;
   }
 
-  container.innerHTML = myOrders
+  const currentFilter = state.customerOrderFilter || "all";
+  const displayedOrders = myOrders.filter((o) => {
+    const step = getOrderStatusStep(o);
+    if (currentFilter === "delivering") return [1, 2, 3].includes(step);
+    if (currentFilter === "completed") return step === 4;
+    if (currentFilter === "cancelled") return step === 0;
+    return true;
+  });
+
+  if (displayedOrders.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:45px 20px; background:var(--bg-surface, #ffffff); border-radius:18px; border:1px solid var(--border-color, #e2e8f0); margin:20px 0;">
+        <div style="font-size:44px; margin-bottom:10px;">🔍</div>
+        <h3 style="font-size:16.5px; font-weight:800; color:var(--text-primary, #0f172a); margin:0 0 6px 0;">Ushbu holatda buyurtmalar mavjud emas</h3>
+        <p style="font-size:13px; color:var(--text-secondary, #64748b); margin:0 0 16px 0;">
+          Tanlangan holat bo'yicha hech qanday buyurtma topilmadi.
+        </p>
+        <button type="button" onclick="filterCustomerOrders('all')" style="background:rgba(136,0,27,0.08); color:#88001b; border:1px solid rgba(136,0,27,0.25); border-radius:10px; padding:8px 18px; font-weight:700; font-size:13px; cursor:pointer;">
+          Barcha buyurtmalarni ko'rish
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = displayedOrders
     .map((order) => {
       const step = getOrderStatusStep(order);
 
@@ -9024,7 +9137,7 @@ async function loadAdminLeads() {
                     </select>
                   </td>
                   <td>
-                    <a href="https://t.me/+998${(l.phone || '').replace(/\D/g, '').slice(-9)}" target="_blank" class="btn btn-outline" style="padding:4px 10px; font-size:11px; border-radius:6px; text-decoration:none; color:#38bdf8; border-color:#38bdf8;">
+                    <a href="https://t.me/+998${(l.phone || '').replace(/\D/g, '').slice(-9)}" target="_blank" rel="noopener noreferrer" class="btn btn-outline" style="padding:4px 10px; font-size:11px; border-radius:6px; text-decoration:none; color:#38bdf8; border-color:#38bdf8;">
                       Telegram
                     </a>
                   </td>

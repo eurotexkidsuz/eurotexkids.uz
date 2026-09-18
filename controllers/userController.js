@@ -16,6 +16,17 @@ function isAdminEmail(email) {
   return ADMIN_EMAILS.includes(email.toLowerCase().trim());
 }
 
+// Unbounded Array Bloat himoyasi: sessions max 20, loginLogs max 50
+function trimUserArrays(user) {
+  if (!user) return;
+  if (Array.isArray(user.sessions) && user.sessions.length > 20) {
+    user.sessions = user.sessions.slice(-20);
+  }
+  if (Array.isArray(user.loginLogs) && user.loginLogs.length > 50) {
+    user.loginLogs = user.loginLogs.slice(-50);
+  }
+}
+
 const GOOGLE_CLIENT_ID = (
   process.env.GOOGLE_CLIENT_ID ||
   ["949327485964", "pbdlffn30vuge0ert42rlpdnf82854ql", "apps.googleusercontent.com"].join("-").replace("-apps", ".apps")
@@ -271,8 +282,8 @@ const sendCode = async (req, res) => {
       });
     }
 
-    // Generate 6-digit code
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    // Generate 6-digit cryptographically secure code
+    const code = crypto.randomInt(100000, 1000000).toString();
 
     console.log("\n==================================================");
     console.log(`🔥 [EUROTEX EMAIL KODI] Email: ${email} -> KOD: ${code}`);
@@ -399,6 +410,7 @@ const verifyCode = async (req, res) => {
     const session = { ...deviceInfo, createdAt: now, lastActive: now };
     user.sessions.push(session);
     user.loginLogs.push({ ...deviceInfo, status: "success" });
+    trimUserArrays(user);
 
     const parsedDays = parseInt(rememberDays, 10);
     const days = Math.min(
@@ -566,8 +578,18 @@ const removeSession = async (req, res) => {
     if (!user)
       return res.status(404).json({ message: "Foydalanuvchi topilmadi!" });
 
-    user.sessions = user.sessions.filter((s) => s._id.toString() !== sessionId);
+    user.sessions = (user.sessions || []).filter((s) => s._id && s._id.toString() !== sessionId);
+    trimUserArrays(user);
     await user.save();
+
+    // Clear session cookies from browser
+    res.clearCookie("eurotex_session", {
+      path: "/",
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Lax",
+    });
+    res.clearCookie("token", { path: "/" });
 
     return res.status(200).json({ message: "Sessiya o'chirildi!" });
   } catch (error) {

@@ -1,0 +1,44 @@
+[
+  {
+    "id": "rev_1789731462199",
+    "author": "Test Sharhchi",
+    "city": "O'zbekiston",
+    "rating": 5,
+    "text": "Juda zo'r mahsulotlar!",
+    "productTitle": "Eurotex Mahsuloti",
+    "productId": "",
+    "status": "approved",
+    "date": "18/09/2026",
+    "createdAt": "2026-09-18T11:37:42.200Z"
+  },
+  {
+    "id": "rev_1",
+    "author": "Dilshodbek T.",
+    "city": "Toshkent",
+    "rating": 5,
+    "text": "Mato sifati a'lo darajada! Bolamga to'y uchun oldik, Turkiya matosi g'ijimlanmas ekan. Kuryer 1 kunda yetkazib berdi.",
+    "date": "14.09.2026",
+    "status": "approved",
+    "productTitle": "Slim Fit Bolalar Kostyumi"
+  },
+  {
+    "id": "rev_2",
+    "author": "Nargiza Alimova",
+    "city": "Samarqand",
+    "rating": 5,
+    "text": "Tikilishi juda chiroyli, iplari chiqib ketmagan. Razmeri ham aynan mos keldi. Rahmat kattakon Eurotex jamoasiga!",
+    "date": "10.09.2026",
+    "status": "approved",
+    "productTitle": "Classic Royal Ko'k Kostyum"
+  },
+  {
+    "id": "rev_3",
+    "author": "Bobur Rahimov",
+    "city": "Namangan",
+    "rating": 5,
+    "text": "Optomga 10 pachka oldik do'konimiz uchun, 3 kunda deyarli yarmi sotilib ketdi. Sifatiga gap yo'q, yangi partiya kutamiz.",
+    "date": "05.09.2026",
+    "status": "approved",
+    "productTitle": "Ulgurji Maktab To'plami"
+  }
+]
