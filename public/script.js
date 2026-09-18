@@ -3,6 +3,25 @@
    100% EUROTEX BRANDED (No third-party Uzum naming)
 */
 
+// Master Client Cache Busting & Obsolete Storage Purge
+(function () {
+  try {
+    const EUROTEX_APP_VERSION = "2026_09_18_v325";
+    if (typeof localStorage !== "undefined" && localStorage.getItem("eurotex_app_cache_ver") !== EUROTEX_APP_VERSION) {
+      localStorage.removeItem("eurotex_products");
+      localStorage.removeItem("eurotex_custom_products");
+      for (let i = 0; i <= 5; i++) {
+        localStorage.removeItem("eurotex_hero_slide_img_" + i);
+        localStorage.removeItem("eurotex_hero_slide_text_" + i);
+      }
+      localStorage.setItem("eurotex_app_cache_ver", EUROTEX_APP_VERSION);
+      if (typeof indexedDB !== "undefined" && typeof indexedDB.deleteDatabase === "function") {
+        try { indexedDB.deleteDatabase("EurotexDB"); } catch (e) {}
+      }
+    }
+  } catch (e) {}
+})();
+
 // Multi-Language Translation Dictionary
 const TRANSLATIONS = {
   uz: {
@@ -10335,14 +10354,17 @@ function initSlideLiveSync() {
 }
 
 function updateSlideImageInDOM(slideIndex, imgUrl) {
+  if (!imgUrl) return;
   const slideImg = document.getElementById("heroSlideImg_" + slideIndex);
-  if (slideImg && slideImg.src !== imgUrl) {
-    slideImg.style.transition = "opacity 0.4s ease";
-    slideImg.style.opacity = "0.3";
-    setTimeout(() => {
-      slideImg.src = imgUrl;
-      slideImg.style.opacity = "1";
-      localStorage.setItem("eurotex_hero_slide_img_" + slideIndex, imgUrl);
-    }, 350);
+  if (!slideImg) return;
+
+  const currentAttr = slideImg.getAttribute("src") || "";
+  // If already set to this image, skip completely — 0ms, zero flicker!
+  if (currentAttr === imgUrl || slideImg.src.endsWith(imgUrl)) {
+    return;
   }
+
+  // Update immediately
+  slideImg.src = imgUrl;
+  localStorage.setItem("eurotex_hero_slide_img_" + slideIndex, imgUrl);
 }

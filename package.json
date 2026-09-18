@@ -9,6 +9,9 @@
   "nodemonConfig": {
     "ignore": [
       "database.json",
+      "products_db.json",
+      "slides.json",
+      "public/images/uploads/*",
       "test-*.js",
       ".env*",
       "*.log"

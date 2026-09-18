@@ -129,11 +129,20 @@ function getHydratedHtml() {
       slides = JSON.parse(fs.readFileSync(slidesPath, "utf8") || "{}");
     }
 
-    if (slides && slides["0"]) {
-      html = html.replace(
-        /(id=["']heroSlideImg_0["'][^>]*src=["'])[^"']*(["'])/,
-        `$1${slides["0"]}$2`
-      );
+    if (slides && typeof slides === "object") {
+      Object.keys(slides).forEach((idx) => {
+        const slideUrl = slides[idx];
+        if (slideUrl) {
+          html = html.replace(
+            new RegExp(`(<img\\b[^>]*?src=["'])[^"']*?(["'][^>]*?id=["']heroSlideImg_${idx}["'][^>]*>)`, "i"),
+            `$1${slideUrl}$2`
+          );
+          html = html.replace(
+            new RegExp(`(<img\\b[^>]*?id=["']heroSlideImg_${idx}["'][^>]*?src=["'])[^"']*?(["'][^>]*>)`, "i"),
+            `$1${slideUrl}$2`
+          );
+        }
+      });
     }
 
     const injection = `

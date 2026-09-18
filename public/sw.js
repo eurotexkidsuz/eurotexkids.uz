@@ -24,12 +24,11 @@ const OFFLINE_HTML = `<!DOCTYPE html>
 </body>
 </html>`;
 
-const CACHE_NAME = "eurotex-v4-precache";
+const CACHE_NAME = "eurotex-v5-precache";
 const CRITICAL_ASSETS = [
-  "/style.css?v=314.0.0",
+  "/style.css?v=325.0.0",
   "/images/eurotex-logo.png",
   "/manifest.json",
-  "/images/navy_suit.jpg",
 ];
 
 self.addEventListener("install", (e) => {
@@ -65,6 +64,22 @@ self.addEventListener("fetch", (e) => {
     );
     return;
   }
+
+  const url = new URL(e.request.url);
+  // Network-first for scripts, dynamic data, and uploads to guarantee fresh updates
+  if (
+    url.pathname.endsWith(".js") ||
+    url.pathname.startsWith("/api") ||
+    url.pathname.startsWith("/products") ||
+    url.pathname.startsWith("/users") ||
+    url.pathname.startsWith("/images/uploads")
+  ) {
+    e.respondWith(
+      fetch(e.request).catch(() => caches.match(e.request))
+    );
+    return;
+  }
+
   e.respondWith(
     caches.match(e.request).then((cachedResponse) => {
       if (cachedResponse) return cachedResponse;

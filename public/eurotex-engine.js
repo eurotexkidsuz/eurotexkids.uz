@@ -1172,38 +1172,28 @@
   ------------------------------------------------------------------ */
   function bootstrapGlobalFallbackProducts() {
     try {
-      const merged = [];
-      const seen = new Set();
-      const pushIfNew = (arr) => {
-        (arr || []).forEach((p) => {
-          const k = String(p.customId || p.id || p._id || Math.random());
-          if (!seen.has(k)) {
-            seen.add(k);
-            merged.push({ ...p, customId: k });
-          }
-        });
-      };
-      pushIfNew(window.DEFAULT_EUROTEX_PRODUCTS || []);
-      pushIfNew(DEFAULT_EUROTEX_PRODUCTS_V2 || []);
-      try {
-        const local = JSON.parse(
-          localStorage.getItem("eurotex_products") || "[]",
-        );
-        pushIfNew(local);
-      } catch (e) {}
-
-      window.EUROTEX_PRODUCTS = merged;
-      window.DEFAULT_EUROTEX_PRODUCTS_V2 = DEFAULT_EUROTEX_PRODUCTS_V2;
-
-      if (
-        !window.DEFAULT_EUROTEX_PRODUCTS ||
-        window.DEFAULT_EUROTEX_PRODUCTS.length < 20
-      ) {
-        window.DEFAULT_EUROTEX_PRODUCTS = merged;
+      if (typeof window !== "undefined" && Array.isArray(window.__SERVER_PRODUCTS__) && window.__SERVER_PRODUCTS__.length > 0) {
+        window.EUROTEX_PRODUCTS = window.__SERVER_PRODUCTS__;
+        if (!window.state) window.state = {};
+        window.state.products = window.EUROTEX_PRODUCTS.slice();
+        window.state.usdRate = CurrencyEngine.state.usdRate;
+        window.state.statusSteps = ORDER_STATUS_STEPS;
+        window.state.masterAdminEmails = MASTER_ADMIN_EMAILS;
+        return window.EUROTEX_PRODUCTS;
       }
+      if (typeof window !== "undefined" && Array.isArray(window.EUROTEX_PRODUCTS) && window.EUROTEX_PRODUCTS.length > 0) {
+        if (!window.state) window.state = {};
+        window.state.products = window.EUROTEX_PRODUCTS.slice();
+        window.state.usdRate = CurrencyEngine.state.usdRate;
+        window.state.statusSteps = ORDER_STATUS_STEPS;
+        window.state.masterAdminEmails = MASTER_ADMIN_EMAILS;
+        return window.EUROTEX_PRODUCTS;
+      }
+
+      window.EUROTEX_PRODUCTS = DEFAULT_EUROTEX_PRODUCTS_V2.slice();
       if (!window.state) window.state = {};
-      window.state.usdRate = CurrencyEngine.state.usdRate;
       window.state.products = window.EUROTEX_PRODUCTS.slice();
+      window.state.usdRate = CurrencyEngine.state.usdRate;
       window.state.statusSteps = ORDER_STATUS_STEPS;
       window.state.masterAdminEmails = MASTER_ADMIN_EMAILS;
       return window.EUROTEX_PRODUCTS;
@@ -1629,19 +1619,22 @@
     } catch (e) {}
     try {
       await IDBEngine.init();
-      const cachedProducts = await IDBEngine.getAll(IDBEngine.STORE_PRODUCTS);
-      if (cachedProducts && cachedProducts.length > 5) {
-        if (window.state && Array.isArray(window.state.products)) {
-          window.state.products = cachedProducts.concat(
-            window.state.products.filter(
-              (p) =>
-                !cachedProducts.some(
-                  (c) =>
-                    String(c.customId || c.id) === String(p.customId || p.id),
-                ),
-            ),
-          );
-          window.EUROTEX_PRODUCTS = window.state.products.slice();
+      // DO NOT overwrite server products with stale IDB cache
+      if (!window.__SERVER_PRODUCTS__ || window.__SERVER_PRODUCTS__.length === 0) {
+        const cachedProducts = await IDBEngine.getAll(IDBEngine.STORE_PRODUCTS);
+        if (cachedProducts && cachedProducts.length > 5) {
+          if (window.state && Array.isArray(window.state.products)) {
+            window.state.products = cachedProducts.concat(
+              window.state.products.filter(
+                (p) =>
+                  !cachedProducts.some(
+                    (c) =>
+                      String(c.customId || c.id) === String(p.customId || p.id),
+                  ),
+              ),
+            );
+            window.EUROTEX_PRODUCTS = window.state.products.slice();
+          }
         }
       }
     } catch (e) {}
@@ -1679,9 +1672,12 @@
     /* Deprecation safety hooks */
     window.runCheckoutAuthGate = runCheckoutAuthGate;
     window.EurotexCurrency = CurrencyEngine;
-    /* Auto-render storefront products grid */
+    /* Auto-render storefront products grid only if not already populated */
     if (typeof window.renderProducts === "function") {
-      try { window.renderProducts(); } catch (e) {}
+      const grid = document.getElementById("productGrid");
+      if (!grid || grid.children.length === 0) {
+        try { window.renderProducts(); } catch (e) {}
+      }
     }
 
     console.log(
