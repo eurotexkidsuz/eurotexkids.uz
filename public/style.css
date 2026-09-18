@@ -1004,21 +1004,21 @@ html[data-theme="dark"] .main-header.scrolled {
 /* Uzum-style Logo Container for Full Eurotex Logo */
 .brand-logo-container {
   background: #ffffff;
-  border: 1.5px solid #1b6b68;
+  border: 1.5px solid rgba(15, 23, 42, 0.12);
   border-radius: 12px;
   padding: 4px 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(27, 107, 104, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   height: 48px;
   transition: var(--transition);
 }
 
 .brand-logo-container:hover {
   border-color: var(--color-uzum-purple);
-  transform: scale(1.03);
-  box-shadow: 0 4px 14px rgba(112, 0, 255, 0.2);
+  transform: scale(1.02);
+  box-shadow: 0 4px 14px rgba(112, 0, 255, 0.18);
 }
 
 .brand-logo-img {
@@ -1601,10 +1601,10 @@ html[data-theme="dark"] .main-header.scrolled {
   border-radius: 9999px;
   font-size: 14px;
   font-weight: 700;
-  color: var(--text-secondary);
-  background: var(--bg-surface-secondary);
-  border: 1px solid var(--border-color);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #334155;
+  background: #ffffff;
+  border: 1.5px solid rgba(226, 232, 240, 0.95);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
@@ -1615,11 +1615,11 @@ html[data-theme="dark"] .main-header.scrolled {
 }
 
 .nav-pill:hover {
-  background: rgba(112, 0, 255, 0.08);
-  color: var(--color-uzum-purple);
-  border-color: var(--color-uzum-purple);
+  background: rgba(112, 0, 255, 0.05);
+  color: #7000ff;
+  border-color: #7000ff;
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(112, 0, 255, 0.15);
+  box-shadow: 0 6px 16px rgba(112, 0, 255, 0.12);
 }
 
 .nav-pill.active {
@@ -1663,29 +1663,28 @@ html[data-theme="dark"] .main-header.scrolled {
 
 /* Hero Carousel */
 .hero-carousel-section {
-  margin: 16px auto 24px;
-  max-width: 880px;
+  margin: 18px auto 32px;
+  max-width: 1240px;
   width: 100%;
   position: relative;
-  border-radius: var(--radius-xl);
+  border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-  background: #0f172a;
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  background: #090e1a;
 }
 
 .carousel-container {
   position: relative;
   width: 100%;
-  height: 600px;
-  min-height: 480px;
-  max-height: 720px;
+  height: 500px;
+  min-height: 400px;
+  max-height: 560px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at center, #1e293b 0%, #0b1322 100%);
-  border-radius: var(--radius-xl);
+  background: radial-gradient(ellipse at 50% 40%, #1e293b 0%, #070b14 100%);
+  border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
 }
 
 .carousel-slide {
@@ -1702,8 +1701,8 @@ html[data-theme="dark"] .main-header.scrolled {
   will-change: opacity, transform;
   transform: translateZ(0);
   transition:
-    opacity 0.5s ease,
-    visibility 0.5s ease;
+    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .carousel-slide.active {
@@ -1724,112 +1723,173 @@ html[data-theme="dark"] .main-header.scrolled {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  border-radius: var(--radius-xl);
+  background: radial-gradient(circle at center, rgba(30, 41, 59, 0.85) 0%, rgba(7, 11, 20, 0.98) 100%);
+  border-radius: 24px;
   overflow: hidden;
   padding: 12px 0;
 }
 
 .slide-img {
-  max-width: 100%;
-  max-height: 100%;
+  max-width: 96%;
+  max-height: 96%;
   width: auto;
   height: 100%;
   object-fit: contain !important;
   object-position: center center !important;
   display: block;
   margin: 0 auto;
-  border-radius: var(--radius-lg);
-  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.4));
+  border-radius: 18px;
+  filter: drop-shadow(0 16px 36px rgba(0, 0, 0, 0.6));
+  z-index: 2;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .carousel-arrow {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 40px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(8px);
-  color: #fff;
+  width: 48px;
+  height: 48px;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
   border-radius: 50%;
-  font-size: 18px;
+  font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10;
-  transition: var(--transition);
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .carousel-arrow:hover {
-  background: rgba(255, 255, 255, 0.4);
+  background: #7000ff;
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 10px 28px rgba(112, 0, 255, 0.5);
 }
 
 .carousel-arrow.prev {
-  left: 16px;
+  left: 20px;
 }
 .carousel-arrow.next {
-  right: 16px;
+  right: 20px;
 }
 
 .carousel-indicators {
   position: absolute;
-  bottom: 16px;
+  bottom: 18px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
+  align-items: center;
   gap: 8px;
   z-index: 10;
+  padding: 6px 14px;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .carousel-indicators .dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.35);
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .carousel-indicators .dot.active {
   width: 28px;
-  border-radius: 10px;
-  background: var(--color-gold);
+  background: linear-gradient(90deg, #fbbf24, #f59e0b);
+  border-radius: 6px;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
 }
 
 /* Advantages Bar */
 .advantages-bar {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 36px;
+  gap: 18px;
+  margin-bottom: 42px;
+  max-width: 1240px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .advantage-card {
-  background: #ffffff;
-  border: 1px solid var(--border-color);
-  padding: 16px;
-  border-radius: var(--radius-md);
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  padding: 18px 20px;
+  border-radius: 18px;
   display: flex;
   align-items: center;
-  gap: 14px;
-  box-shadow: var(--shadow-sm);
+  gap: 16px;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+}
+
+.advantage-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  background: linear-gradient(90deg, #7000ff, #f59e0b);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.advantage-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 30px -4px rgba(0, 0, 0, 0.09);
+  border-color: rgba(112, 0, 255, 0.25);
+}
+
+.advantage-card:hover::after {
+  opacity: 1;
 }
 
 .advantage-icon {
-  font-size: 26px;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(112, 0, 255, 0.08) 0%, rgba(245, 158, 11, 0.08) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
   flex-shrink: 0;
+  border: 1px solid rgba(112, 0, 255, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.advantage-card:hover .advantage-icon {
+  transform: scale(1.12);
 }
 
 .advantage-text strong {
   display: block;
-  font-size: 14px;
-  color: var(--color-navy);
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 2px;
 }
 
 .advantage-text span {
-  font-size: 12px;
-  color: var(--text-secondary);
+  font-size: 12.5px;
+  color: #64748b;
+  line-height: 1.4;
 }
 
 /* Products Section */
@@ -4917,25 +4977,31 @@ html[data-theme="dark"] .modal-close:hover {
 
 .admin-img-edit-btn {
   position: absolute !important;
-  bottom: 50px !important;
-  right: 30px !important;
-  width: 54px !important;
-  height: 54px !important;
+  top: 24px !important;
+  right: 24px !important;
+  bottom: auto !important;
+  width: 44px !important;
+  height: 44px !important;
   padding: 0 !important;
   border-radius: 50% !important;
   z-index: 999 !important;
-  background: linear-gradient(135deg, #7000ff 0%, #00f2fe 100%) !important;
+  background: rgba(15, 23, 42, 0.75) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
   color: #ffffff !important;
-  border: 2.5px solid #ffffff !important;
-  box-shadow:
-    0 8px 30px rgba(0, 0, 0, 0.7),
-    0 0 15px rgba(0, 242, 254, 0.7) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
-  transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.admin-img-edit-btn:hover {
+  background: #7000ff !important;
+  border-color: rgba(255, 255, 255, 0.6) !important;
+  transform: scale(1.1) rotate(90deg) !important;
+  box-shadow: 0 10px 28px rgba(112, 0, 255, 0.6) !important;
 }
 
 .admin-img-edit-btn:hover {
