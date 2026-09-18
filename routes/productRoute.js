@@ -101,6 +101,37 @@ router.get("/", async (req, res) => {
   return res.json({ success: true, products: fileProds });
 });
 
+// Get single product by id, customId or _id
+router.get("/:id", async (req, res) => {
+  try {
+    const id = String(req.params.id);
+    await ensureDbConnected();
+
+    if (mongoose.connection && mongoose.connection.readyState === 1) {
+      const queryConditions = [{ customId: id }, { id: id }];
+      if (mongoose.isValidObjectId(id)) {
+        queryConditions.push({ _id: id });
+      }
+      try {
+        const dbProd = await Product.findOne({ $or: queryConditions });
+        if (dbProd) {
+          return res.json({ success: true, product: dbProd });
+        }
+      } catch (e) {}
+    }
+
+    const fileProds = readLocalProducts();
+    const found = fileProds.find((p) => String(p.id || p.customId || p._id) === id);
+    if (found) {
+      return res.json({ success: true, product: found });
+    }
+
+    return res.status(404).json({ success: false, message: "Mahsulot topilmadi" });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // Add new product (Faqat Admin)
 router.post("/", requireAdmin, async (req, res) => {
   try {

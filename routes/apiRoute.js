@@ -749,4 +749,32 @@ router.post("/maintenance", requireAdmin, (req, res) => {
   res.json({ success: true, maintenance: updated });
 });
 
+// =============================================================================
+// CBU Valyuta kursi API (USD/UZS) — 6 soat keshlanadi
+// =============================================================================
+let cachedUsdRate = { rate: 12650, lastFetch: 0 };
+
+router.get("/exchange-rate", async (req, res) => {
+  const now = Date.now();
+  if (now - cachedUsdRate.lastFetch < 6 * 3600 * 1000 && cachedUsdRate.rate > 10000) {
+    return res.json({ success: true, rate: cachedUsdRate.rate, cached: true });
+  }
+
+  try {
+    const cbuRes = await fetch("https://cbu.uz/uz/arkhiv-kursov-valyut/json/", {
+      signal: AbortSignal.timeout(4000),
+    });
+    if (cbuRes.ok) {
+      const data = await cbuRes.json();
+      const usdItem = (data || []).find((c) => c.Ccy === "USD");
+      if (usdItem && Number(usdItem.Rate) > 10000) {
+        cachedUsdRate = { rate: Math.round(Number(usdItem.Rate)), lastFetch: now };
+        return res.json({ success: true, rate: cachedUsdRate.rate, cached: false });
+      }
+    }
+  } catch (e) {}
+
+  return res.json({ success: true, rate: cachedUsdRate.rate, cached: true });
+});
+
 module.exports = router;

@@ -159,4 +159,29 @@ User.find = async function (query) {
   return matches.map((u) => new UserMock(u));
 };
 
+User.deleteOne = async function (query) {
+  if (isDbConnected()) {
+    try {
+      return await MongooseUser.deleteOne(query);
+    } catch (err) {
+      console.error("Mongoose deleteOne failed, falling back to local DB:", err.message);
+    }
+  }
+
+  const db = readDB();
+  const initialLength = db.length;
+  const filtered = db.filter((u) => {
+    for (let key in query) {
+      if (key === "email" && u.email) {
+        if (u.email.toLowerCase() === String(query[key]).toLowerCase()) return false;
+      } else if (u[key] === query[key]) {
+        return false;
+      }
+    }
+    return true;
+  });
+  writeDB(filtered);
+  return { deletedCount: initialLength - filtered.length };
+};
+
 module.exports = User;

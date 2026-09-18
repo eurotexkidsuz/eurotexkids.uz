@@ -7,8 +7,11 @@ const { connect } = require("mongoose");
 const cors = require("cors");
 const helmet = require("helmet");           // #1 — HTTP Security headers
 const rateLimit = require("express-rate-limit"); // #2 — Rate limiting
+const compression = require("compression");
 require("dotenv").config();
 const app = express();
+app.set("trust proxy", 1); // #2 Reverse proxy (Nginx, Cloudflare) ortida mijoz IP sini to'g'ri olish
+app.use(compression()); // HTTP javoblarni Gzip orqali siqish (tezlikni 4-5x oshiradi)
 
 // ── #1 HELMET — XSS, Clickjacking, MIME sniffing himoyasi ─────────────────────
 app.use(

@@ -894,6 +894,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   checkMaintenanceStatus();
   await syncProductsWithBackendAndStorage(false);
   await fetchOrdersFromServer();
+  await fetchExchangeRate();
+  cleanupExpiredLocalStorage();
   
   const currentPath = (window.location.pathname || "").toLowerCase().replace(/\/$/, "") || "/";
   if (currentPath === "/" || currentPath === "/index.html" || currentPath === "") {
@@ -984,6 +986,136 @@ function checkGoogleAuthRedirect() {
     openModal("authModal");
     switchAuthTab("email");
     showToast("🔑 Emailingizni kiriting va 'Kod yuborish'ni bosing! ✅");
+  }
+}
+
+// Fix 7 (Frontend): Real-time Exchange Rate Sync with CBU Backend Cache
+async function fetchExchangeRate() {
+  try {
+    const res = await fetch("/api/exchange-rate");
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data && data.success && data.rate) {
+      const parsedRate = Math.round(Number(data.rate));
+      if (parsedRate > 1000) {
+        state.usdRate = parsedRate;
+        localStorage.setItem("eurotex_usd_rate", String(parsedRate));
+        if (typeof renderProducts === "function") {
+          renderProducts();
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("Exchange rate fetch error, fallback to stored:", e.message);
+  }
+}
+
+// Fix 10: Automatic cleanup of expired/stale local storage items older than 30 days
+function cleanupExpiredLocalStorage() {
+  try {
+    const now = Date.now();
+    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
+    if (state.orders && Array.isArray(state.orders)) {
+      const freshOrders = state.orders.filter((order) => {
+        if (!order || (!order.date && !order.createdAt)) return true;
+        const orderTime = new Date(order.createdAt || order.date).getTime();
+        if (isNaN(orderTime)) return true;
+        if (
+          now - orderTime > THIRTY_DAYS_MS &&
+          ["delivered", "cancelled", "bekor qilindi", "yetkazildi"].includes(
+            String(order.status || "").toLowerCase()
+          )
+        ) {
+          return false;
+        }
+        return true;
+      });
+      if (freshOrders.length !== state.orders.length) {
+        state.orders = freshOrders;
+        safeSetLocalStorage("eurotex_orders", JSON.stringify(state.orders));
+      }
+    }
+
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith("eurotex_tmp_")) {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(key));
+          if (parsed && parsed.expiry && now > parsed.expiry) {
+            localStorage.removeItem(key);
+          }
+        } catch {
+          localStorage.removeItem(key);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Storage cleanup notice:", err);
+  }
+}
+
+// Fix 9: Real-time cart prices synchronization with catalog pool
+function syncCartPricesWithCatalog() {
+  if (!state.cart || !Array.isArray(state.cart) || state.cart.length === 0) return;
+  const pool = typeof getGlobalProductsPool === "function" ? getGlobalProductsPool() : EUROTEX_PRODUCTS;
+  if (!pool || !pool.length) return;
+
+  let changed = false;
+  state.cart.forEach((cartItem) => {
+    const prod = pool.find(
+      (p) =>
+        String(p.id) === String(cartItem.id) ||
+        String(p.customId) === String(cartItem.id)
+    );
+    if (prod) {
+      const catalogPrice = Number(prod.priceUsd || prod.price || 0);
+      if (catalogPrice > 0 && cartItem.price !== catalogPrice) {
+        cartItem.price = catalogPrice;
+        if (prod.oldPrice) cartItem.oldPrice = prod.oldPrice;
+        changed = true;
+      }
+    }
+  });
+
+  if (changed) {
+    safeSetLocalStorage("eurotex_cart", JSON.stringify(state.cart));
+  }
+}
+
+// Fix 12: Dynamic document title based on URL route
+function setDynamicDocumentTitle(route) {
+  const path = (route || window.location.pathname || "").toLowerCase().replace(/\/$/, "");
+  const baseTitle = "Eurotex — Erkaklar Kiyimlari & Kostyumlar Ulgurji Do'koni";
+
+  if (!path || path === "/" || path === "/index.html") {
+    document.title = baseTitle;
+    return;
+  }
+  if (path.includes("/cart") || path.includes("/savat")) {
+    document.title = "Savatcha 🛒 | Eurotex";
+  } else if (path.includes("/wishlist") || path.includes("/saralangan")) {
+    document.title = "Saralangan Mahsulotlar ❤️ | Eurotex";
+  } else if (path.includes("/checkout") || path.includes("/rasmiylashtirish")) {
+    document.title = "Buyurtmani Rasmiylashtirish 📋 | Eurotex";
+  } else if (path.includes("/orders") || path.includes("/buyurtmalar")) {
+    document.title = "Buyurtmalar Tarixi 📦 | Eurotex";
+  } else if (path.includes("/suits") || path.includes("/kostyum")) {
+    document.title = "Kostyum-Shimlar To'plami 🤵 | Eurotex";
+  } else if (path.includes("/tuxedos") || path.includes("/smoking")) {
+    document.title = "Smoking & To'y Kostyumlari 🎩 | Eurotex";
+  } else if (path.includes("/trousers") || path.includes("/shim")) {
+    document.title = "Klassik Shimlar 👖 | Eurotex";
+  } else if (path.includes("/blazers") || path.includes("/pijak")) {
+    document.title = "Pijaklar & Blazerlar 🧥 | Eurotex";
+  } else if (path.includes("/shirts") || path.includes("/koylak")) {
+    document.title = "Erkaklar Ko'ylaklari 👔 | Eurotex";
+  } else if (path.includes("/accessories") || path.includes("/aksessuar")) {
+    document.title = "Aksessuarlar 🎗️ | Eurotex";
+  } else if (path.includes("/admin")) {
+    document.title = "Admin Panel ⚙️ | Eurotex";
+  } else {
+    document.title = `Eurotex | ${path.replace(/^\//, "").toUpperCase()}`;
   }
 }
 
@@ -1503,6 +1635,37 @@ function resetFilters() {
 
 // Setup Event Listeners
 function setupEventListeners() {
+  // Fix 11: Global keydown listener for Escape key to close active modals & drawers
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" || e.keyCode === 27) {
+      closeAllModals();
+      if (typeof closeCartDrawer === "function") closeCartDrawer();
+      const activeModals = document.querySelectorAll(".modal, .modal-overlay, .custom-modal, [id$='Modal']");
+      activeModals.forEach((m) => {
+        if (m.classList.contains("show") || m.classList.contains("active") || m.style.display === "block" || m.style.display === "flex") {
+          m.classList.remove("show", "active");
+          m.style.display = "none";
+          m.style.opacity = "0";
+          m.style.visibility = "hidden";
+          m.style.pointerEvents = "none";
+        }
+      });
+      document.body.style.overflow = "";
+      const searchPop = document.getElementById("searchSuggestions");
+      if (searchPop) searchPop.classList.remove("show");
+    }
+  });
+
+  // Fix 13: Enter key listener on #promoCodeInput to apply promo code
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && e.target && e.target.id === "promoCodeInput") {
+      e.preventDefault();
+      if (typeof applyPromoCode === "function") {
+        applyPromoCode();
+      }
+    }
+  });
+
   // Language Option Selection
   document.querySelectorAll(".lang-option").forEach((opt) => {
     opt.addEventListener("click", () => {
@@ -1780,8 +1943,9 @@ function renderSearchSuggestions(query) {
   const qTranslit = transliterateUzbek(q);
   const tokens = [...new Set([...q.split(/[\s,;._\-+]+/), ...(qTranslit ? qTranslit.split(/[\s,;._\-+]+/) : [])])].filter((t) => t.length > 0);
 
-  // Filter matching products (up to 5)
-  const matches = (EUROTEX_PRODUCTS || []).filter((item) => {
+  // Filter matching products (up to 5) (Fix 8)
+  const searchPool = (typeof getGlobalProductsPool === "function" ? getGlobalProductsPool() : EUROTEX_PRODUCTS) || [];
+  const matches = searchPool.filter((item) => {
     const titleUz = (item.title_uz || item.title || "").toLowerCase();
     const titleRu = (
       item.title_ru ||
@@ -2384,6 +2548,9 @@ function updateCartQtyByIndex(index, change, ev) {
 }
 
 function updateCartUI() {
+  // Fix 9: Sync cart items with fresh catalog pricing before rendering
+  syncCartPricesWithCatalog();
+
   const lang = state.currentLang;
   const dict = TRANSLATIONS[lang];
 
@@ -3158,6 +3325,7 @@ function updateURLRoute(path) {
   if (window.location.pathname !== path) {
     history.pushState({ route: path }, document.title, path);
   }
+  setDynamicDocumentTitle(path);
 }
 
 function navigateTo(path) {
@@ -3167,6 +3335,7 @@ function navigateTo(path) {
 
 function handleURLRouting() {
   const raw = window.location.pathname.toLowerCase().replace(/\/$/, "") || "/";
+  setDynamicDocumentTitle(raw);
 
   // Helper to select a category tab
   function setCategoryRoute(catKey) {

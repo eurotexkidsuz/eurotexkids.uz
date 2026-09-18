@@ -226,17 +226,63 @@ router.post("/", async (req, res) => {
       });
     }
 
+    // 1. Tovar narxlarini bazadan tekshirish va manipulyatsiyadan himoyalash
+    const prodsFile = path.join(__dirname, "../products_db.json");
+    let prodsMap = new Map();
+    if (fs.existsSync(prodsFile)) {
+      try {
+        const fileContent = JSON.parse(fs.readFileSync(prodsFile, "utf8") || "[]");
+        fileContent.forEach((p) => prodsMap.set(String(p.id || p.customId), p));
+      } catch (e) {}
+    }
+
+    let verifiedTotalUsd = 0;
+    const validatedItems = items.map((it) => {
+      const realProd = prodsMap.get(String(it.id || it.customId));
+      let itemPriceUsd = Number(it.priceUsd || it.price || 0);
+      if (realProd) {
+        const officialPrice = Number(realProd.pachkaPriceUsd || realProd.priceUsd || 0);
+        if (officialPrice > 0) {
+          itemPriceUsd = officialPrice;
+        }
+      }
+      const qty = Math.max(1, Number(it.quantity) || 1);
+      verifiedTotalUsd += itemPriceUsd * qty;
+      return {
+        ...it,
+        priceUsd: itemPriceUsd,
+        quantity: qty,
+      };
+    });
+
     const computedUsdRate = Number(usdRateApplied) || 12650;
-    const computedTotalUsd =
-      Number(totalPriceUsd) ||
-      Number(total) ||
-      items.reduce(
-        (s, it) => s + Number(it.priceUsd || it.totalUsd || 0) * (it.quantity || 1),
-        0
+    let computedDiscountUsd = 0;
+    if (discountAmount) {
+      computedDiscountUsd = Math.min(
+        verifiedTotalUsd,
+        Number(discountAmount) > 1000
+          ? Math.round(Number(discountAmount) / computedUsdRate)
+          : Number(discountAmount)
       );
-    const computedTotalUzs =
-      Number(totalPriceUzs) ||
-      (computedTotalUsd > 0 ? Math.round(computedTotalUsd * computedUsdRate) : 0);
+    }
+    const computedTotalUsd = Math.max(0, verifiedTotalUsd - computedDiscountUsd);
+    const computedTotalUzs = Math.round(computedTotalUsd * computedUsdRate);
+
+    // 2. Promokod ishlatilgan bo'lsa usedCount hisoblagichini oshirish
+    if (promoCode) {
+      const promosFile = path.join(__dirname, "../data/promocodes.json");
+      if (fs.existsSync(promosFile)) {
+        try {
+          const promoList = JSON.parse(fs.readFileSync(promosFile, "utf8") || "[]");
+          const cleanPCode = String(promoCode).trim().toUpperCase();
+          const targetPromo = promoList.find((p) => p.code && p.code.toUpperCase() === cleanPCode);
+          if (targetPromo) {
+            targetPromo.usedCount = (targetPromo.usedCount || 0) + 1;
+            fs.writeFileSync(promosFile, JSON.stringify(promoList, null, 2), "utf8");
+          }
+        } catch (e) {}
+      }
+    }
 
     const generatedId =
       orderId ||
@@ -256,9 +302,9 @@ router.post("/", async (req, res) => {
       district: district || "",
       deliveryType: deliveryType || "courier",
       paymentMethod: paymentMethod || "cash",
-      items: items || [],
-      itemsCount: items.reduce((sum, it) => sum + (it.quantity || 1), 0),
-      total: Number(total) || computedTotalUsd,
+      items: validatedItems || items || [],
+      itemsCount: (validatedItems || items || []).reduce((sum, it) => sum + (it.quantity || 1), 0),
+      total: computedTotalUsd,
       totalPriceUsd: computedTotalUsd,
       totalPriceUzs: computedTotalUzs,
       usdRateApplied: computedUsdRate,

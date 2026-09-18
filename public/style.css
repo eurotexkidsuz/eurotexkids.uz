@@ -2000,7 +2000,7 @@ html[data-theme="dark"] .main-header.scrolled {
 .card-image-wrap {
   position: relative;
   width: 100%;
-  padding-top: 125%; /* 4:5 aspect ratio */
+  aspect-ratio: 3 / 4;
   overflow: hidden;
   background: #0f172a;
 }
@@ -2010,6 +2010,7 @@ html[data-theme="dark"] .main-header.scrolled {
   inset: 0;
   width: 100%;
   height: 100%;
+  aspect-ratio: 3 / 4;
   object-fit: contain;
   object-position: center;
   background: #0f172a;
@@ -11386,4 +11387,69 @@ body.dark-mode .crm-badge-new {
 .btn-crm-profile:hover {
   transform: translateY(-1px) !important;
   box-shadow: 0 4px 14px rgba(136, 0, 27, 0.4) !important;
+}
+
+/* ==========================================================================
+   Fix 15: Clean Print Stylesheet for Receipts, Invoices & Order Slips
+   ========================================================================== */
+@media print {
+  *,
+  *::before,
+  *::after {
+    background: transparent !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 12pt !important;
+    margin: 0 !important;
+    padding: 10mm !important;
+  }
+
+  /* Hide interactive, navigation, and marketing widgets during print */
+  header,
+  footer,
+  nav,
+  .site-header,
+  .site-footer,
+  .mobile-bottom-nav,
+  .carousel,
+  .hero-slider,
+  .banner,
+  .toast,
+  .btn,
+  button,
+  .no-print,
+  #preloader,
+  .modal-overlay:not(.show),
+  .floating-contact,
+  .pagination,
+  .search-container {
+    display: none !important;
+  }
+
+  /* Optimize modal / receipt print layout */
+  .receipt-container,
+  .order-receipt,
+  .invoice-box,
+  #orderReceiptModal,
+  .print-area {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  a[href]:after {
+    content: none !important;
+  }
 }
