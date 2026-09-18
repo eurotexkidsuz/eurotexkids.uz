@@ -4349,48 +4349,52 @@ html[data-theme="dark"] .modal-close:hover {
 .social-links-text-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
 }
 
 .social-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.06);
-  color: #cbd5e1;
-  padding: 6px 12px;
-  border-radius: 9999px;
-  font-size: 12px;
-  font-weight: 600;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  transition: all 0.25s ease;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.07);
+  color: #ffffff;
+  padding: 0;
+  font-size: 19px;
+  line-height: 1;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
 .social-btn:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.18);
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.25);
-  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-3px) scale(1.08);
 }
 
 .social-btn.insta-btn:hover {
   background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
   border-color: transparent;
-  box-shadow: 0 4px 14px rgba(220, 39, 67, 0.4);
+  box-shadow: 0 6px 18px rgba(220, 39, 67, 0.45);
 }
 
 .social-btn.kids:hover {
-  background: #ec4899;
-  border-color: #ec4899;
-  box-shadow: 0 4px 14px rgba(236, 72, 153, 0.4);
+  background: #0088cc;
+  border-color: #0088cc;
+  box-shadow: 0 6px 18px rgba(0, 136, 204, 0.45);
 }
 
 .social-btn.admin-btn:hover {
-  background: #0088cc;
-  border-color: #0088cc;
-  box-shadow: 0 4px 14px rgba(0, 136, 204, 0.4);
+  background: #0ea5e9;
+  border-color: #0ea5e9;
+  box-shadow: 0 6px 18px rgba(14, 165, 233, 0.45);
 }
 
 .social-btn.wa-btn {
@@ -4400,7 +4404,7 @@ html[data-theme="dark"] .modal-close:hover {
 .social-btn.wa-btn:hover {
   background: #25d366;
   border-color: #25d366;
-  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.4);
+  box-shadow: 0 6px 18px rgba(37, 211, 102, 0.45);
   color: #ffffff;
 }
 
@@ -4411,8 +4415,7 @@ html[data-theme="dark"] .modal-close:hover {
 .social-btn.taplink-btn:hover {
   background: linear-gradient(135deg, #00f2fe, #4facfe);
   border-color: transparent;
-  color: #04070e;
-  box-shadow: 0 4px 14px rgba(0, 242, 254, 0.4);
+  box-shadow: 0 6px 18px rgba(0, 242, 254, 0.45);
 }
 
 /* Footer Contact Details - Ultra-Clean Flex Alignment */
