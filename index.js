@@ -101,12 +101,60 @@ app.use((req, res, next) => {
   next();
 });
 
-// ── 🌐 EXPRESS SPA NAVIGATION FALLBACK ────────────────────────────────────────
-// Har qanday brauzer sahifasi ochilganda (/orders, /buyurtmalar, /products,
-// /savat, /cart, /checkout, /suits, /admin, va har qanday / manzil) — doim index.html qaytariladi.
-// Brauzerda xom JSON chiqib qolmaydi, to'liq Eurotex veb-sayt interfeysi ochiladi.
-// Dasturiy API va AJAX (fetch/axios) so'rovlari esa o'zining JSON ma'lumotlarini oladi.
+// ── 🌐 EXPRESS SPA ZERO-LATENCY HYDRATION (0ms Wait / No Flicker) ─────────────
+const fs = require("fs");
 const path = require("path");
+
+let cachedHydratedHtml = "";
+let lastHydratedAt = 0;
+
+function getHydratedHtml() {
+  const now = Date.now();
+  if (cachedHydratedHtml && now - lastHydratedAt < 2000) {
+    return cachedHydratedHtml;
+  }
+
+  const htmlPath = path.join(__dirname, "public", "index.html");
+  const prodsPath = path.join(__dirname, "products_db.json");
+  const slidesPath = path.join(__dirname, "slides.json");
+
+  try {
+    let html = fs.readFileSync(htmlPath, "utf8");
+    let prods = [];
+    if (fs.existsSync(prodsPath)) {
+      prods = JSON.parse(fs.readFileSync(prodsPath, "utf8") || "[]");
+    }
+    let slides = {};
+    if (fs.existsSync(slidesPath)) {
+      slides = JSON.parse(fs.readFileSync(slidesPath, "utf8") || "{}");
+    }
+
+    if (slides && slides["0"]) {
+      html = html.replace(
+        /(id=["']heroSlideImg_0["'][^>]*src=["'])[^"']*(["'])/,
+        `$1${slides["0"]}$2`
+      );
+    }
+
+    const injection = `
+    <!-- Eurotex Instant Zero-Latency Hydration (0ms) -->
+    <script id="__EUROTEX_SSR_HYDRATION__">
+      window.__SERVER_PRODUCTS__ = ${JSON.stringify(prods)};
+      window.__SERVER_SLIDES__ = ${JSON.stringify(slides)};
+    </script>
+    </head>`;
+
+    cachedHydratedHtml = html.replace("</head>", injection);
+    lastHydratedAt = now;
+    return cachedHydratedHtml;
+  } catch (err) {
+    console.warn("SSR Hydration fallback:", err.message);
+    if (fs.existsSync(htmlPath)) {
+      return fs.readFileSync(htmlPath, "utf8");
+    }
+    return cachedHydratedHtml || "Eurotexkids";
+  }
+}
 
 app.use((req, res, next) => {
   if (req.method === "GET") {
@@ -121,7 +169,8 @@ app.use((req, res, next) => {
       res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
       res.setHeader("Pragma", "no-cache");
       res.setHeader("Expires", "0");
-      return res.sendFile(path.join(__dirname, "public", "index.html"));
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      return res.send(getHydratedHtml());
     }
   }
   next();
@@ -151,7 +200,8 @@ app.use((req, res, next) => {
       res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
       res.setHeader("Pragma", "no-cache");
       res.setHeader("Expires", "0");
-      return res.sendFile(path.join(__dirname, "public", "index.html"));
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      return res.send(getHydratedHtml());
     }
   }
   next();

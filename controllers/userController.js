@@ -1366,6 +1366,23 @@ const saveSlideImage = async (req, res) => {
       return res.status(400).json({ message: "Noto'g'ri rasm manbai!" });
     }
 
+    let finalImgUrl = imgData;
+    if (imgData.startsWith("data:image")) {
+      try {
+        const uploadDir = path.join(__dirname, "../public/images/uploads");
+        if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+        const parts = imgData.split(",");
+        const mimeMatch = parts[0].match(/:(.*?);/);
+        const mime = mimeMatch ? mimeMatch[1] : "image/jpeg";
+        const ext = mime.includes("png") ? "png" : mime.includes("webp") ? "webp" : "jpg";
+        const filename = `hero_slide_${slideIndex}_${Date.now()}.${ext}`;
+        fs.writeFileSync(path.join(uploadDir, filename), Buffer.from(parts[1], "base64"));
+        finalImgUrl = `/images/uploads/${filename}`;
+      } catch (e) {
+        console.error("Slide image file write error:", e.message);
+      }
+    }
+
     let slides = {};
     if (fs.existsSync(SLIDES_FILE)) {
       try {
@@ -1375,7 +1392,7 @@ const saveSlideImage = async (req, res) => {
       }
     }
 
-    slides[slideIndex] = imgData;
+    slides[slideIndex] = finalImgUrl;
     fs.writeFileSync(SLIDES_FILE, JSON.stringify(slides), "utf8");
 
     slideVersion = Date.now();
@@ -1384,7 +1401,7 @@ const saveSlideImage = async (req, res) => {
     sseClients.forEach((client) => {
       try {
         client.res.write(
-          `data: ${JSON.stringify({ version: slideVersion, slideIndex, imgData })}\n\n`,
+          `data: ${JSON.stringify({ version: slideVersion, slideIndex, imgData: finalImgUrl })}\n\n`,
         );
       } catch (e) {}
     });

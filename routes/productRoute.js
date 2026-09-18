@@ -28,6 +28,46 @@ function writeLocalProducts(products) {
   }
 }
 
+function extractAndSaveBase64Images(pData) {
+  const uploadDir = path.join(__dirname, "../public/images/uploads");
+  if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+  const prodKey = String(pData.customId || pData.id || ("prod_" + Date.now())).replace(/[^a-zA-Z0-9_-]/g, "_");
+
+  if (pData.image && typeof pData.image === "string" && pData.image.startsWith("data:image")) {
+    try {
+      const parts = pData.image.split(",");
+      const mimeMatch = parts[0].match(/:(.*?);/);
+      const mime = mimeMatch ? mimeMatch[1] : "image/jpeg";
+      const ext = mime.includes("png") ? "png" : (mime.includes("webp") ? "webp" : "jpg");
+      const filename = `${prodKey}_main_${Date.now()}.${ext}`;
+      fs.writeFileSync(path.join(uploadDir, filename), Buffer.from(parts[1], "base64"));
+      pData.image = `/images/uploads/${filename}`;
+    } catch (e) {
+      console.error("Error saving product main image:", e.message);
+    }
+  }
+
+  if (Array.isArray(pData.images)) {
+    pData.images = pData.images.map((imgStr, iIdx) => {
+      if (typeof imgStr === "string" && imgStr.startsWith("data:image")) {
+        try {
+          const parts = imgStr.split(",");
+          const mimeMatch = parts[0].match(/:(.*?);/);
+          const mime = mimeMatch ? mimeMatch[1] : "image/jpeg";
+          const ext = mime.includes("png") ? "png" : (mime.includes("webp") ? "webp" : "jpg");
+          const filename = `${prodKey}_gal_${iIdx}_${Date.now()}.${ext}`;
+          fs.writeFileSync(path.join(uploadDir, filename), Buffer.from(parts[1], "base64"));
+          return `/images/uploads/${filename}`;
+        } catch (e) {
+          return imgStr;
+        }
+      }
+      return imgStr;
+    });
+  }
+  return pData;
+}
+
 const FALLBACK_MONGO_URL = process.env.MONGO_URL;
 
 async function ensureDbConnected() {
@@ -143,6 +183,7 @@ router.post("/", requireAdmin, async (req, res) => {
       pData.priceUsd = pData.pachkaPriceUsd;
     }
     delete pData._id;
+    extractAndSaveBase64Images(pData);
 
     // 1. Save to MongoDB Atlas FIRST (Primary Database)
     let dbResult = null;
@@ -189,6 +230,7 @@ router.put("/:id", requireAdmin, async (req, res) => {
       pData.priceUsd = pData.pachkaPriceUsd;
     }
     delete pData._id;
+    extractAndSaveBase64Images(pData);
 
     // 1. Save to MongoDB Atlas FIRST (Primary Database)
     const queryConditions = [{ customId: id }, { id: id }];

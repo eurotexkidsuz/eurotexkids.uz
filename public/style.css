@@ -1699,6 +1699,8 @@ html[data-theme="dark"] .main-header.scrolled {
   padding: 0;
   opacity: 0;
   visibility: hidden;
+  will-change: opacity, transform;
+  transform: translateZ(0);
   transition:
     opacity 0.5s ease,
     visibility 0.5s ease;
@@ -1707,6 +1709,7 @@ html[data-theme="dark"] .main-header.scrolled {
 .carousel-slide.active {
   opacity: 1;
   visibility: visible;
+  transform: translateZ(0);
 }
 
 /* HIDE OVERLAY TEXT & BUTTONS completely per user request */
@@ -1975,6 +1978,9 @@ html[data-theme="dark"] .main-header.scrolled {
   flex-direction: column;
   position: relative;
   transition: transform 1.15s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease, border-color 0.4s ease, opacity 1.15s cubic-bezier(0.22, 1, 0.36, 1), filter 1.15s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  content-visibility: auto;
+  contain-intrinsic-size: 280px 420px;
+  transform: translateZ(0);
 }
 
 /* Luxury Slow Cinematic Reveal Animation (1.5x Sekinlashtirilgan Tepadan Suzib Tushish) */
