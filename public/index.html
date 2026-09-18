@@ -2851,28 +2851,28 @@
 
     <!-- MODAL: Standalone Dedicated Pop-up Cart Modal -->
     <div class="modal-overlay" id="cartPopModal">
-      <div class="modal-dialog modal-lg" style="max-width: 720px; border-radius: 24px; padding: 28px; background: #0b1322; color: #ffffff; border: 1px solid rgba(0, 242, 254, 0.25); box-shadow: 0 20px 60px rgba(0,0,0,0.6);">
-        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 20px;">
-          <h2 style="margin: 0; font-size: 22px; font-weight: 800; color: #ffffff; display: flex; align-items: center; gap: 10px;">
-            🛒 Mening Savatim <span id="cartPopHeaderCount" style="font-size: 14px; background: rgba(0, 242, 254, 0.15); color: #00f2fe; padding: 4px 12px; border-radius: 999px; font-weight: 700;">0 ta mahsulot</span>
+      <div class="modal-dialog modal-lg cart-pop-dialog">
+        <div class="cart-pop-header">
+          <h2 class="cart-pop-title">
+            🛒 Mening Savatim <span id="cartPopHeaderCount" class="cart-pop-count">0 ta mahsulot</span>
           </h2>
-          <button class="modal-close" onclick="closeModal('cartPopModal')" style="position: static; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.08); color: #fff; border: none; cursor: pointer;" title="Yopish">
+          <button class="modal-close cart-pop-close" onclick="closeModal('cartPopModal')" title="Yopish">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
         </div>
 
-        <div id="cartPopItemsList" style="max-height: 420px; overflow-y: auto; padding-right: 6px; margin-bottom: 20px;">
+        <div id="cartPopItemsList" class="cart-pop-items-list">
           <!-- Dynamically populated by updateCartUI() -->
         </div>
 
-        <div style="padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+        <div class="cart-pop-footer">
           <div>
-            <span style="font-size: 13px; color: #94a3b8; display: block;">Jami to'lov narxi:</span>
-            <strong id="cartPopTotal" style="font-size: 22px; color: #00f2fe; font-weight: 800;">$0 (0 so'm)</strong>
+            <span class="cart-pop-total-label">Jami to'lov narxi:</span>
+            <strong id="cartPopTotal" class="cart-pop-total-val">$0 (0 so'm)</strong>
           </div>
-          <div style="display: flex; gap: 10px;">
-            <button type="button" onclick="clearCart()" style="padding: 12px 18px; background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s;">🗑️ Tozalash</button>
-            <button type="button" onclick="closeModal('cartPopModal'); openCheckoutModal();" style="padding: 12px 24px; background: linear-gradient(135deg, #7000ff, #00f2fe); color: #fff; border: none; border-radius: 12px; font-weight: 800; font-size: 15px; cursor: pointer; box-shadow: 0 4px 16px rgba(112,0,255,0.4); transition: all 0.2s;">Buyurtmani rasmiylashtirish ⚡</button>
+          <div class="cart-pop-actions">
+            <button type="button" onclick="clearCart()" class="cart-clear-btn">🗑️ Tozalash</button>
+            <button type="button" onclick="closeModal('cartPopModal'); openCheckoutModal();" class="cart-order-btn">Buyurtmani rasmiylashtirish ⚡</button>
           </div>
         </div>
       </div>
@@ -2880,17 +2880,17 @@
 
     <!-- MODAL: Standalone Dedicated Pop-up Wishlist Modal -->
     <div class="modal-overlay" id="wishlistPopModal">
-      <div class="modal-dialog modal-lg" style="max-width: 840px; border-radius: 24px; padding: 28px; background: #0b1322; color: #ffffff; border: 1px solid rgba(255, 0, 128, 0.25); box-shadow: 0 20px 60px rgba(0,0,0,0.6);">
-        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 20px;">
-          <h2 style="margin: 0; font-size: 22px; font-weight: 800; color: #ffffff; display: flex; align-items: center; gap: 10px;">
-            ❤️ Mening Saralanganlarim <span id="wishlistPopHeaderCount" style="font-size: 14px; background: rgba(255, 0, 128, 0.15); color: #ff0080; padding: 4px 12px; border-radius: 999px; font-weight: 700;">0 ta mahsulot</span>
+      <div class="modal-dialog modal-lg wishlist-pop-dialog">
+        <div class="wishlist-pop-header">
+          <h2 class="wishlist-pop-title">
+            ❤️ Mening Saralanganlarim <span id="wishlistPopHeaderCount" class="wishlist-pop-count">0 ta mahsulot</span>
           </h2>
-          <button class="modal-close" onclick="closeModal('wishlistPopModal')" style="position: static; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.08); color: #fff; border: none; cursor: pointer;" title="Yopish">
+          <button class="modal-close wishlist-pop-close" onclick="closeModal('wishlistPopModal')" title="Yopish">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
         </div>
 
-        <div id="wishlistPopGrid" class="product-grid" style="max-height: 480px; overflow-y: auto; padding-right: 6px;">
+        <div id="wishlistPopGrid" class="product-grid wishlist-pop-grid">
           <!-- Dynamically populated by renderWishlist() -->
         </div>
       </div>
@@ -3123,59 +3123,59 @@
         </button>
         <div class="stores-modal-box">
           <div class="stores-modal-header">
-            <span class="stores-header-icon">🏬</span>
-            <div class="stores-header-text">
+            <span class="stores-modal-icon">🏬</span>
+            <div>
               <h3 class="stores-modal-title">Eurotex Rasmiy Do'konlarimiz</h3>
-              <p class="stores-modal-desc">Sizni do'konlarimizda kutib qolamiz!</p>
+              <p class="stores-modal-subtitle">Sizni do'konlarimizda kutib qolamiz!</p>
             </div>
           </div>
 
           <!-- Store Card 1 -->
           <div class="store-card store-card-primary">
             <div class="store-card-top">
-              <strong class="store-card-name">📍 1-Asosiy Do'kon:</strong>
-              <span class="store-chip store-chip-primary">Abu Saxiy</span>
+              <strong class="store-card-name name-abu-saxiy">📍 1-Asosiy Do'kon:</strong>
+              <span class="store-pill-badge badge-abu-saxiy">Abu Saxiy</span>
             </div>
-            <div class="store-card-location">
+            <div class="store-card-address">
               Abu Saxiy Centir 2-etaj, A48 do'kon
             </div>
             <div class="store-card-schedule">
               <div class="schedule-title">⏰ <b>Ish vaqti:</b></div>
               <div class="schedule-item">• <b>Seshanba – Juma:</b> 04:00 – 15:00</div>
               <div class="schedule-item">• <b>Shanba – Yakshanba:</b> 05:00 – 15:00</div>
-              <div class="schedule-item schedule-closed">• <b>Dushanba:</b> Dam olish kuni</div>
+              <div class="schedule-item closed">• <span class="store-closed-text"><b>Dushanba:</b> Dam olish kuni</span></div>
             </div>
             <div class="store-card-phone">
-              📞 <b>Telefon:</b> <a href="tel:+998905557775" class="store-phone-link">+998 (90) 555-77-75</a>
+              📞 <b>Telefon:</b> <a href="tel:+998905557775">+998 (90) 555-77-75</a>
             </div>
           </div>
 
           <!-- Store Card 2 -->
           <div class="store-card store-card-secondary">
             <div class="store-card-top">
-              <strong class="store-card-name">📍 2-Do'kon:</strong>
-              <span class="store-chip store-chip-secondary">Giper Market</span>
+              <strong class="store-card-name name-giper-market">📍 2-Do'kon:</strong>
+              <span class="store-pill-badge badge-giper-market">Giper Market</span>
             </div>
-            <div class="store-card-location">
+            <div class="store-card-address">
               Giper Market 2-etaj, 297 do'kon
             </div>
             <div class="store-card-schedule">
               <div class="schedule-title">⏰ <b>Ish vaqti:</b></div>
               <div class="schedule-item">• <b>Seshanba – Juma:</b> 04:00 – 15:00</div>
               <div class="schedule-item">• <b>Shanba – Yakshanba:</b> 05:00 – 15:00</div>
-              <div class="schedule-item schedule-closed">• <b>Dushanba:</b> Dam olish kuni</div>
+              <div class="schedule-item closed">• <span class="store-closed-text"><b>Dushanba:</b> Dam olish kuni</span></div>
             </div>
             <div class="store-card-phone">
-              📞 <b>Telefon:</b> <a href="tel:+998905557775" class="store-phone-link">+998 (90) 555-77-75</a>
+              📞 <b>Telefon:</b> <a href="tel:+998905557775">+998 (90) 555-77-75</a>
             </div>
           </div>
 
           <!-- Actions -->
-          <div class="store-modal-actions">
-            <a href="tel:+998905557775" class="btn store-action-call">
+          <div class="store-actions-row">
+            <a href="tel:+998905557775" class="btn store-call-btn">
               📞 Qo'ng'iroq qilish
             </a>
-            <a href="https://t.me/eurotex_admin" target="_blank" class="btn store-action-tg">
+            <a href="https://t.me/eurotex_admin" target="_blank" class="btn store-admin-btn">
               ✈️ Telegram Admin
             </a>
           </div>
