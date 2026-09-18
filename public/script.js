@@ -2598,13 +2598,18 @@ function toggleWishlist(productId) {
     }
   });
 
-  // Only re-render wishlist modal if it is currently open
+  // Re-render wishlist if currently viewing it (dashboard pane or modal)
+  const dPaneWishlist = document.getElementById("dPaneWishlist");
+  const isDashWishlistOpen =
+    dPaneWishlist &&
+    dPaneWishlist.style.display !== "none" &&
+    dPaneWishlist.style.display !== "";
   const wModal = document.getElementById("wishlistModal");
-  if (
+  const isWishlistModalOpen =
     wModal &&
-    wModal.classList.contains("active") &&
-    typeof renderWishlist === "function"
-  ) {
+    (wModal.classList.contains("active") || wModal.classList.contains("show"));
+
+  if ((isDashWishlistOpen || isWishlistModalOpen) && typeof renderWishlist === "function") {
     renderWishlist();
   }
 }
@@ -5931,7 +5936,7 @@ function handleOrderSubmit(e) {
   const rawDigits = phone.replace(/\D/g, "");
   const localDigits = rawDigits.startsWith("998") ? rawDigits.slice(3) : rawDigits;
   if (localDigits.length < 9) {
-    showToast("❌ Iltimos, 9 xonali telefon raqamingizni to'liq kiriting (masalan: +998 90 123-45-67)!");
+    showToast("❌ Iltimos, 9 xonali telefon raqamingizni to'liq kiriting (masalan: +998 90 555-77-75)!");
     const pInput = document.getElementById("custPhone");
     if (pInput) pInput.focus();
     return;
@@ -6655,7 +6660,7 @@ function downloadReceiptPdf(orderId) {
           <div class="brand">EUROTEX KIDS</div>
           <div class="sub">Bolalar va o'smirlar kiyimlari fabrikasi</div>
           <div class="sub">Toshkent sh., Abu Saxiy Centir A48 / Giper Market 297</div>
-          <div class="sub">Tel: +998 90 000 77 75</div>
+          <div class="sub">Tel: +998 90 555 77 75</div>
         </div>
         <div style="text-align:right;">
           <h2 style="margin:0; color:#1e293b; font-size:20px;">RASMIY KVITANSIYA</h2>
@@ -9310,7 +9315,7 @@ function openAdminUserModal(userIdOrEmail) {
   ) || {
     name: "Mijoz",
     email: key,
-    phone: "+998 90 000 00 00",
+    phone: "+998 90 555 77 75",
     city: "Toshkent",
     address: "",
     birthDate: "",
@@ -9864,7 +9869,7 @@ let _maintenanceCache = {
   title: "Saytda texnik yangilanish ketmoqda 🛠️",
   message: "Hurmatli xaridorlar! EurotexKids tizimida profilaktika va texnik yangilanish ishlari olib borilmoqda. Yangi to'plamlar bilan tez orada xizmatingizda bo'lamiz!",
   estimatedTime: "Tez orada (bugun)",
-  contactPhone: "+998 90 123 45 67",
+  contactPhone: "+998 90 555 77 75",
   telegramUsername: "eurotexkids_admin"
 };
 

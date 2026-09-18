@@ -76,7 +76,7 @@ router.get("/leads", requireAdmin, (req, res) => {   // #6 — faqat admin
     {
       id: "lead_1",
       name: "Akmal Saidov",
-      phone: "+998 90 123 45 67",
+      phone: "+998 90 555 77 75",
       productTitle: "Eurotex Royal Navy Slim Fit Kostyum",
       size: "36",
       color: "To'q ko'k (Navy)",
@@ -601,7 +601,7 @@ router.get("/nasiya", requireAdmin, (req, res) => { // #6 — Faqat admin (paspo
     {
       id: "nas_1",
       name: "Rustam Qosimov",
-      phone: "+998 93 456 78 90",
+      phone: "+998 90 555 77 75",
       passport: "AB 1234567",
       productTitle: "Slim Fit Bolalar Kostyumi (2 pachka)",
       totalAmount: "1 200 000 so'm",
@@ -730,7 +730,7 @@ const DEFAULT_MAINTENANCE = {
   title: "Saytda texnik yangilanish ketmoqda 🛠️",
   message: "Hurmatli xaridorlar! EurotexKids tizimida texnik yangilanish va profilaktika ishlari olib borilmoqda. Yangi to'plamlar va qulayliklar bilan tez orada xizmatingizda bo'lamiz!",
   estimatedTime: "Tez orada (bugun)",
-  contactPhone: "+998 90 123 45 67",
+  contactPhone: "+998 90 555 77 75",
   telegramUsername: "eurotexkids_admin",
   updatedAt: new Date().toISOString(),
 };
