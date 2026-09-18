@@ -7614,13 +7614,6 @@ function renderAdminProducts() {
                                     <span class="detail-label">Jami so'mda:</span>
                                     <span class="detail-value cyan" id="cardTotalSom_${idx}">${totalSomFormatted} so'm ${p.discountPercent ? `<span style="color:#ef4444; font-size:11.5px; font-weight:800; margin-left:4px;">(-${p.discountPercent}%)</span>` : ""}</span>
                                 </div>
-
-                                <div class="detail-line" style="margin-top: 4px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); font-size: 11.5px; color: #94a3b8; display: flex; justify-content: space-between; align-items: center;">
-                                    <span>Mato: <b>${(p.fabric_uz || p.fabric || "Turkiya Jun").slice(0, 18)}...</b></span>
-                                    <button type="button" onclick="openEditProductModal(${idx})" style="background: none; border: none; color: #38bdf8; font-weight: 700; cursor: pointer; text-decoration: underline; font-size: 11.5px; padding: 0;">
-                                        Tahrirlash ⚙️
-                                    </button>
-                                </div>
                             </div>
                         </div>
                     </div>
