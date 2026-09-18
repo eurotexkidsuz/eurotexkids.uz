@@ -1954,7 +1954,7 @@ function renderProducts() {
             <div class="product-card ${isOutOfStock ? "out-of-stock-card" : ""}" data-id="${product.id || "prod-1"}" onclick="openQuickView('${product.id || "prod-1"}')">
                 <div class="card-image-wrap">
                     <img src="${imgSrc}" alt="${title}" loading="lazy" decoding="async" onerror="this.src='/images/navy_suit.jpg'">
-                    ${isOutOfStock ? `<span class="card-badge-tag" style="background:#ef4444; color:#fff; font-weight:800;">Sotuvda yo'q</span>` : (badgeText ? `<span class="card-badge-tag ${badgeType}">${badgeText}</span>` : "")}
+                    ${isOutOfStock ? `<span class="card-badge-tag badge-out-of-stock">Sotuvda yo'q</span>` : (badgeText ? `<span class="card-badge-tag ${badgeType}">${badgeText}</span>` : "")}
                     <button class="wishlist-heart-btn ${isWishlisted ? "active" : ""}" 
                             onclick="event.stopPropagation(); toggleWishlist('${product.id || "prod-1"}')" 
                             title="Wishlist">
@@ -1962,25 +1962,25 @@ function renderProducts() {
                     </button>
                 </div>
                 <div class="card-body">
-                    <div style="background:#fef08a; color:#854d0e; font-weight:800; font-size:11px; padding:3px 8px; border-radius:4px; margin-bottom:6px; display:inline-block;">
+                    <div class="pachka-series-badge">
                         📦 1 Pachka (${product.pachkaItems || 6} ta seriya)
                     </div>
-                    <div class="card-price-row" style="margin-top: 0; margin-bottom: 4px; white-space: nowrap !important;">
-                        <div class="price-group" style="display: flex; flex-direction: column; gap: 2px; white-space: nowrap !important;">
-                            <span class="current-price" style="font-size:14px; font-weight:800; color:var(--color-navy); white-space: nowrap !important; display: inline-block;">${formattedPrice} <small style="font-size:11px; font-weight:600; color:#059669; white-space: nowrap !important;">/pachka</small></span>
-                            <span class="old-price" style="font-size:11px; color:#94a3b8; text-decoration: line-through; white-space: nowrap !important; display: inline-block;">${formattedOldPrice}</span>
+                    <div class="card-price-row">
+                        <div class="price-group">
+                            <span class="current-price">${formattedPrice} <small class="price-unit-tag">/pachka</small></span>
+                            <span class="old-price">${formattedOldPrice}</span>
                         </div>
                     </div>
-                    <h3 class="card-title" style="margin-bottom: 4px;">${title}</h3>
-                    <div class="card-rating" style="margin-bottom: 8px;">
+                    <h3 class="card-title">${title}</h3>
+                    <div class="card-rating">
                         <span>⭐ ${product.rating || 4.9}</span>
                         <span>(${product.reviewsCount || 186} sharhlar)</span>
                     </div>
                     ${isOutOfStock ? `
-                    <button type="button" disabled class="btn btn-secondary btn-block" style="margin-top: auto; height: 42px; border-radius: 12px; font-weight: 700; font-size: 13px; background: #94a3b8; color: #fff; border: none; cursor: not-allowed; opacity: 0.8;">
+                    <button type="button" disabled class="btn product-out-stock-btn">
                         Sotuvda qolmagan ❌
                     </button>` : `
-                    <button type="button" onclick="event.stopPropagation(); addToCart('${product.id || "prod-1"}', '48', 'Klassik', event);" class="btn btn-primary btn-block" style="margin-top: auto; height: 42px; border-radius: 12px; font-weight: 800; font-size: 14px; background: #7000ff; color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(112,0,255,0.25);">
+                    <button type="button" onclick="event.stopPropagation(); addToCart('${product.id || "prod-1"}', '48', 'Klassik', event);" class="btn product-add-cart-btn">
                         Savatga qo'shish 🛒
                     </button>`}
                 </div>
@@ -1993,8 +1993,8 @@ function renderProducts() {
       })
       .join("") +
     (filtered.length > visibleItems.length
-      ? `<div style="grid-column: 1/-1; text-align: center; padding: 28px 0;">
-         <button type="button" class="btn btn-primary btn-large" onclick="loadMoreProducts()" style="padding: 14px 36px; border-radius: 12px; font-weight: 800; font-size: 15px; background: linear-gradient(135deg, #7000ff, #4c00b0); color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(112, 0, 255, 0.3);">
+      ? `<div class="load-more-container">
+         <button type="button" class="btn load-more-btn" onclick="loadMoreProducts()">
            🚀 Yana ${filtered.length - visibleItems.length} ta mahsulotni ko'rsatish
          </button>
        </div>`
@@ -3069,35 +3069,35 @@ function updateCartUI() {
               const badgeText = item.badge_uz || "LUXURY PACHKA";
 
               return `
-                <div class="product-card cart-product-card cart-item-row" data-cart-idx="${idx}" data-id="${item.id}" style="background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 4px 20px rgba(0,0,0,0.06); display: flex; flex-direction: column;">
-                  <div class="card-image-wrap" style="position: relative; width: 100%; padding-top: 125%; background: #0f172a; overflow: hidden;">
-                    <img src="${item.image}" alt="${item.title}" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center; background: #0f172a;" onerror="this.src='/images/navy_suit.jpg'">
-                    <span class="card-badge-tag ${badgeType}" style="position: absolute; top: 10px; left: 10px; z-index: 2;">${badgeText}</span>
-                    <button type="button" onclick="removeCartItemByIndex(${idx}, event)" title="Savatdan o'chirish" style="position: absolute; top: 10px; right: 10px; z-index: 3; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); font-size: 14px;">🗑️</button>
+                <div class="product-card cart-product-card cart-item-row" data-cart-idx="${idx}" data-id="${item.id}">
+                  <div class="card-image-wrap">
+                    <img src="${item.image}" alt="${item.title}" onerror="this.src='/images/navy_suit.jpg'">
+                    <span class="card-badge-tag ${badgeType}">${badgeText}</span>
+                    <button type="button" onclick="removeCartItemByIndex(${idx}, event)" title="Savatdan o'chirish" class="cart-delete-btn">🗑️</button>
                   </div>
-                  <div class="card-body" style="padding: 14px; display: flex; flex-direction: column; flex: 1; gap: 8px;">
-                    <div style="background:#fef08a; color:#854d0e; font-weight:800; font-size:11px; padding:4px 8px; border-radius:6px; display:inline-block; width: fit-content;">
+                  <div class="card-body">
+                    <div class="pachka-series-badge">
                       📦 1 Pachka (${item.pachkaItems || 6} ta seriya)
                     </div>
-                    <div class="card-price-row" style="margin: 0; white-space: nowrap !important;">
-                      <div class="price-group" style="display: flex; flex-direction: column; gap: 2px; white-space: nowrap !important;">
-                        <span class="current-price" style="font-size:14px; font-weight:800; color:#0f172a; white-space: nowrap !important; display: inline-block;">${formattedPrice} <small style="font-size:11px; font-weight:600; color:#059669; white-space: nowrap !important;">/pachka</small></span>
-                        <span class="old-price" style="font-size:11px; color:#94a3b8; text-decoration: line-through; white-space: nowrap !important; display: inline-block;">${formattedOldPrice}</span>
+                    <div class="card-price-row">
+                      <div class="price-group">
+                        <span class="current-price">${formattedPrice} <small class="price-unit-tag">/pachka</small></span>
+                        <span class="old-price">${formattedOldPrice}</span>
                       </div>
                     </div>
-                    <h3 class="card-title" style="font-size: 13px; font-weight: 700; color: #1e293b; margin: 0; line-height: 1.3;">${item.title}</h3>
-                    <div style="font-size: 12px; color: #64748b;">
-                      O'lcham: <b style="color: #7000ff;">${item.size}</b> | Rangi: <b style="color: #7000ff;">${item.color || "Klassik"}</b>
+                    <h3 class="card-title">${item.title}</h3>
+                    <div class="card-meta-text">
+                      O'lcham: <b>${item.size}</b> | Rangi: <b>${item.color || "Klassik"}</b>
                     </div>
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.06);">
-                      <span style="font-size: 12px; font-weight: 700; color: #64748b;">Soni:</span>
-                      <div style="display: flex; align-items: center; background: #f1f5f9; border-radius: 8px; padding: 2px 6px; gap: 6px;">
-                        <button type="button" onclick="updateCartQtyByIndex(${idx}, -1, event)" style="background: none; border: none; font-size: 16px; font-weight: 700; color: #0f172a; width: 22px; cursor: pointer;">–</button>
-                        <span id="cartItemQtyVal_${idx}" style="font-size: 14px; font-weight: 800; color: #7000ff; min-width: 18px; text-align: center;">${item.quantity}</span>
-                        <button type="button" onclick="updateCartQtyByIndex(${idx}, 1, event)" style="background: none; border: none; font-size: 16px; font-weight: 700; color: #0f172a; width: 22px; cursor: pointer;">+</button>
+                    <div class="cart-qty-row">
+                      <span>Soni:</span>
+                      <div class="cart-qty-pill">
+                        <button type="button" onclick="updateCartQtyByIndex(${idx}, -1, event)" class="cart-qty-btn">–</button>
+                        <span id="cartItemQtyVal_${idx}" class="cart-qty-val">${item.quantity}</span>
+                        <button type="button" onclick="updateCartQtyByIndex(${idx}, 1, event)" class="cart-qty-btn">+</button>
                       </div>
                     </div>
-                    <button type="button" onclick="openCheckoutModal()" class="btn btn-primary btn-block" style="margin-top: 6px; height: 42px; border-radius: 10px; font-weight: 800; font-size: 14px; background: linear-gradient(135deg, #7000ff, #00f2fe); border: none; color: #fff; cursor: pointer; box-shadow: 0 4px 14px rgba(112,0,255,0.3);">
+                    <button type="button" onclick="openCheckoutModal()" class="btn cart-checkout-btn">
                       Buyurtma berish ⚡
                     </button>
                   </div>
@@ -3685,7 +3685,7 @@ function renderPdpRelatedProducts(currentProduct) {
             <div class="card-price-row">
               <span class="price-usd">${formatMoneySom(pPriceSom)} so'm</span>
             </div>
-            <button type="button" class="btn btn-primary btn-block" style="margin-top: auto; border-radius: 10px;" onclick="event.stopPropagation(); addToCart('${p.id}', '36', 'Qora', event);">
+            <button type="button" class="btn product-add-cart-btn" onclick="event.stopPropagation(); addToCart('${p.id}', '36', 'Qora', event);">
               Savatga 🛒
             </button>
           </div>
@@ -4454,36 +4454,36 @@ function renderWishlist() {
         product.image || product.img || "/images/navy_suit.jpg";
 
       return `
-        <div class="product-card" data-id="${product.id}" onclick="closeModal('wishlistPopModal'); openQuickView('${product.id}')" style="background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 4px 20px rgba(0,0,0,0.06); display: flex; flex-direction: column; cursor: pointer;">
-            <div class="card-image-wrap" style="position: relative; width: 100%; padding-top: 125%; background: #0f172a; overflow: hidden; cursor: pointer;">
-                <img src="${imgSrc}" alt="${title}" loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center; background: #0f172a;" onerror="this.src='/images/navy_suit.jpg'">
+        <div class="product-card" data-id="${product.id}" onclick="closeModal('wishlistPopModal'); openQuickView('${product.id}')">
+            <div class="card-image-wrap">
+                <img src="${imgSrc}" alt="${title}" loading="lazy" onerror="this.src='/images/navy_suit.jpg'">
                 ${hasDiscount && discPct > 0 ? `
-                  <span class="discount-badge-corner" style="position: absolute; top: 10px; left: 10px; z-index: 2; background: #ef4444; color: #ffffff; font-weight: 800; font-size: 12px; padding: 4px 8px; border-radius: 8px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4); display: inline-flex; align-items: center; gap: 2px;">
+                  <span class="discount-badge-corner">
                     -${discPct}%
                   </span>
                 ` : `
-                  <span class="card-badge-tag ${badgeType}" style="position: absolute; top: 10px; left: 10px; z-index: 2;">${badgeText}</span>
+                  <span class="card-badge-tag ${badgeType}">${badgeText}</span>
                 `}
-                <button class="wishlist-heart-btn active" onclick="event.stopPropagation(); toggleWishlist('${product.id}')" title="Wishlist" style="position: absolute; top: 10px; right: 10px; z-index: 3; background: rgba(255,255,255,0.95); border: none; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">❤️</button>
+                <button class="wishlist-heart-btn active" onclick="event.stopPropagation(); toggleWishlist('${product.id}')" title="Wishlist">❤️</button>
             </div>
-            <div class="card-body" style="padding: 14px; display: flex; flex-direction: column; flex: 1; gap: 8px;">
-                <div style="background:#fef08a; color:#854d0e; font-weight:800; font-size:11px; padding:4px 8px; border-radius:6px; display:inline-block; width: fit-content;">
+            <div class="card-body">
+                <div class="pachka-series-badge">
                     📦 1 Pachka (${product.pachkaItems || 6} ta seriya)
                 </div>
-                <div class="card-price-row" style="margin: 0; white-space: nowrap !important;">
-                    <div class="price-group" style="display: flex; flex-direction: column; gap: 2px; white-space: nowrap !important;">
-                        <span class="current-price" style="font-size:14px; font-weight:800; color:${hasDiscount && discPct > 0 ? "#ef4444" : "#0f172a"}; white-space: nowrap !important; display: inline-block;">${hasDiscount && discPct > 0 ? `-${formattedPrice}` : formattedPrice} <small style="font-size:11px; font-weight:600; color:#059669; white-space: nowrap !important;">/pachka</small></span>
+                <div class="card-price-row">
+                    <div class="price-group">
+                        <span class="current-price ${hasDiscount && discPct > 0 ? "has-discount-price" : ""}">${hasDiscount && discPct > 0 ? `-${formattedPrice}` : formattedPrice} <small class="price-unit-tag">/pachka</small></span>
                         ${hasDiscount && discPct > 0 ? `
-                          <span class="old-price" style="font-size:11px; color:#94a3b8; text-decoration: line-through; white-space: nowrap !important; display: inline-block;">${formattedOldPrice}</span>
+                          <span class="old-price">${formattedOldPrice}</span>
                         ` : ""}
                     </div>
                 </div>
-                <h3 class="card-title" style="font-size: 13px; font-weight: 700; color: #1e293b; margin: 0; line-height: 1.3; cursor: pointer;">${title}</h3>
-                <div class="card-rating" style="font-size: 12px; color: #64748b; display: flex; align-items: center; gap: 4px;">
-                    <span style="color: #f59e0b;">⭐</span>
-                    <span>${product.rating || 4.9} (${product.reviewsCount || 186} sharhlar)</span>
+                <h3 class="card-title">${title}</h3>
+                <div class="card-rating">
+                    <span>⭐ ${product.rating || 4.9}</span>
+                    <span>(${product.reviewsCount || 186} sharhlar)</span>
                 </div>
-                <button type="button" onclick="event.stopPropagation(); addToCart('${product.id}', '48', 'Klassik', event);" class="btn btn-primary btn-block" style="margin-top: auto; height: 42px; border-radius: 12px; font-weight: 800; font-size: 14px; background: #7000ff; color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(112,0,255,0.25);">
+                <button type="button" onclick="event.stopPropagation(); addToCart('${product.id}', '48', 'Klassik', event);" class="btn product-add-cart-btn">
                     Savatga qo'shish 🛒
                 </button>
             </div>

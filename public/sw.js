@@ -24,9 +24,9 @@ const OFFLINE_HTML = `<!DOCTYPE html>
 </body>
 </html>`;
 
-const CACHE_NAME = "eurotex-v5-precache";
+const CACHE_NAME = "eurotex-v6-precache";
 const CRITICAL_ASSETS = [
-  "/style.css?v=330.0.0",
+  "/style.css?v=331.0.0",
   "/images/eurotex-logo.png",
   "/manifest.json",
 ];
