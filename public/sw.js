@@ -24,9 +24,10 @@ const OFFLINE_HTML = `<!DOCTYPE html>
 </body>
 </html>`;
 
-const CACHE_NAME = "eurotex-v7-precache";
+const CACHE_NAME = "eurotex-v9-precache";
 const CRITICAL_ASSETS = [
-  "/style.css?v=332.0.0",
+  "/",
+  "/style.css?v=333.0.0",
   "/images/eurotex-logo.png",
   "/manifest.json",
 ];
@@ -54,19 +55,30 @@ self.addEventListener("activate", (e) => {
 });
 
 self.addEventListener("fetch", (e) => {
+  // Only intercept valid http/https GET requests
+  if (e.request.method !== "GET" || !e.request.url.startsWith("http")) {
+    return;
+  }
+
+  // Navigation requests: Network-first, fallback to cache, then offline HTML
   if (e.request.mode === "navigate") {
     e.respondWith(
-      fetch(e.request).catch(() => {
-        return new Response(OFFLINE_HTML, {
-          headers: { "Content-Type": "text/html; charset=utf-8" },
-        });
-      }),
+      fetch(e.request)
+        .catch(() => caches.match(e.request))
+        .then((response) => {
+          if (response) return response;
+          return new Response(OFFLINE_HTML, {
+            status: 200,
+            headers: { "Content-Type": "text/html; charset=utf-8" },
+          });
+        }),
     );
     return;
   }
 
   const url = new URL(e.request.url);
-  // Network-first for scripts, dynamic data, and uploads to guarantee fresh updates
+
+  // Network-first for dynamic API endpoints, scripts and uploaded images
   if (
     url.pathname.endsWith(".js") ||
     url.pathname.startsWith("/api") ||
@@ -75,15 +87,23 @@ self.addEventListener("fetch", (e) => {
     url.pathname.startsWith("/images/uploads")
   ) {
     e.respondWith(
-      fetch(e.request).catch(() => caches.match(e.request))
+      fetch(e.request)
+        .catch(() => caches.match(e.request))
+        .then((res) => {
+          if (res) return res;
+          return new Response("", { status: 408, statusText: "Request Timeout" });
+        }),
     );
     return;
   }
 
+  // Cache-first for static assets (css, images, fonts)
   e.respondWith(
     caches.match(e.request).then((cachedResponse) => {
       if (cachedResponse) return cachedResponse;
-      return fetch(e.request).catch(() => null);
+      return fetch(e.request).catch(() => {
+        return new Response("", { status: 404, statusText: "Not Found" });
+      });
     }),
   );
 });

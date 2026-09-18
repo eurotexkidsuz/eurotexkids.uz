@@ -44,6 +44,7 @@
     <!-- Theme & Favicon & PWA Icons -->
     <meta name="theme-color" content="#0f172a" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="icon" type="image/png" href="/images/eurotex-logo.png" />
     <link rel="apple-touch-icon" href="/images/eurotex-logo.png" />
@@ -54,7 +55,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/style.css?v=332.0.0" />
+    <link rel="stylesheet" href="/style.css?v=333.0.0" />
     <!-- Schema.org JSON-LD Structured Data (Google Sitelinks & Store Entity) -->
     <script type="application/ld+json">
     {
@@ -171,7 +172,6 @@
             class="pwa-install-btn"
             id="pwaInstallBtn"
             onclick="installPWAApp()"
-            style="display: none"
             title="Ilovani o'rnatish"
           >
             📱 Ilovani o'rnatish
@@ -3114,6 +3114,64 @@
     </div>
 
     <!-- =========================================================================
+         📲 EUROTEX PWA ILOVANI O'RNATISH MODALI
+         ========================================================================= -->
+    <div class="modal-overlay" id="pwaInstallModal">
+      <div class="modal-dialog modal-md pwa-install-dialog">
+        <button class="modal-close" onclick="closeModal('pwaInstallModal')" title="Yopish">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <div class="pwa-modal-box">
+          <div class="pwa-modal-icon-wrap">
+            <img src="/images/eurotex-logo.png" alt="Eurotex App" class="pwa-modal-app-icon" onerror="this.src='/images/eurotex_icon.png'" />
+            <span class="pwa-badge-verified">✓ Rasmiy</span>
+          </div>
+          <h3 class="pwa-modal-title">Eurotex Kids Ilovasini O'rnatish</h3>
+          <p class="pwa-modal-desc">
+            Smartfoningiz yoki kompyuteringizga o'rnatib, eng yangi kostyumlar va ulgurji pachka narxlarni qulay kuzatib boring!
+          </p>
+
+          <div class="pwa-features-list">
+            <div class="pwa-feature-item">
+              <span class="pwa-feat-icon">⚡</span>
+              <div class="pwa-feat-text">
+                <b>Tezkor yuklanish</b>
+                <p>Oddiy saytlardan 3 barobar tezroq ishlaydi</p>
+              </div>
+            </div>
+            <div class="pwa-feature-item">
+              <span class="pwa-feat-icon">📦</span>
+              <div class="pwa-feat-text">
+                <b>Ulgurji Pachka Narxlar</b>
+                <p>Do'konlar va xaridorlar uchun to'g'ridan-to'g'ri narxlar</p>
+              </div>
+            </div>
+            <div class="pwa-feature-item">
+              <span class="pwa-feat-icon">📶</span>
+              <div class="pwa-feat-text">
+                <b>Oflayn Rejim</b>
+                <p>Internet uzilib qolganda ham buyurtmalar tarixi ko'rinadi</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="pwa-install-actions">
+            <button type="button" class="btn btn-pwa-confirm" id="pwaConfirmInstallBtn" onclick="executePwaInstall()">
+              📲 Ilovani O'rnatish
+            </button>
+            <button type="button" class="btn btn-pwa-dismiss" onclick="closeModal('pwaInstallModal')">
+              Keyinroq
+            </button>
+          </div>
+
+          <div class="pwa-ios-instructions" id="pwaIosInstructions" style="display: none;">
+            <span>ℹ️ iPhone (Safari) uchun: pastdagi <b>«Ulashish» (Share)</b> tugmasini bosib, <b>«Asosiy ekranga qo'shish» (Add to Home Screen)</b> ni tanlang.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================================
          🏬 EUROTEX RASMIY DO'KONLAR MANZILLARI MODALI
          ========================================================================= -->
     <div class="modal-overlay" id="storesModal">
@@ -4677,7 +4735,7 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=331.0.0" defer></script>
+    <script src="/script.js?v=333.0.0" defer></script>
     <script src="/eurotex-engine.js?v=18.0.0" defer></script>
   </body>
 </html>

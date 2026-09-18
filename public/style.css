@@ -12192,6 +12192,225 @@ body.dark-mode .store-admin-btn:hover {
 }
 
 /* ==========================================================================
+   📲 EUROTEX PWA ILOVA O'RNATISH MODALI (PWA INSTALL MODAL)
+   ========================================================================== */
+.pwa-install-dialog {
+  max-width: 480px;
+  border-radius: 28px !important;
+  overflow: hidden;
+  padding: 0 !important;
+  background: #ffffff !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25) !important;
+  border: 1.5px solid rgba(0, 0, 0, 0.08) !important;
+  text-align: center;
+}
+
+html[data-theme="dark"] .pwa-install-dialog,
+body.dark-mode .pwa-install-dialog {
+  background: linear-gradient(180deg, #131c31 0%, #0c1322 100%) !important;
+  border-color: rgba(112, 0, 255, 0.3) !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65) !important;
+}
+
+.pwa-modal-box {
+  padding: 36px 28px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pwa-modal-icon-wrap {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  margin-bottom: 20px;
+}
+
+.pwa-modal-app-icon {
+  width: 100%;
+  height: 100%;
+  border-radius: 22px;
+  object-fit: cover;
+  box-shadow: 0 10px 30px rgba(112, 0, 255, 0.35);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  background: #0f172a;
+}
+
+.pwa-badge-verified {
+  position: absolute;
+  bottom: -6px;
+  right: -6px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
+.pwa-modal-title {
+  font-size: 22px;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+  line-height: 1.25;
+}
+
+html[data-theme="dark"] .pwa-modal-title,
+body.dark-mode .pwa-modal-title {
+  color: #ffffff !important;
+}
+
+.pwa-modal-desc {
+  font-size: 13.5px;
+  color: #64748b;
+  margin: 0 0 22px 0;
+  line-height: 1.55;
+  max-width: 380px;
+}
+
+html[data-theme="dark"] .pwa-modal-desc,
+body.dark-mode .pwa-modal-desc {
+  color: #94a3b8 !important;
+}
+
+.pwa-features-list {
+  width: 100%;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 14px 16px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+html[data-theme="dark"] .pwa-features-list,
+body.dark-mode .pwa-features-list {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.pwa-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.pwa-feat-icon {
+  font-size: 18px;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: rgba(112, 0, 255, 0.1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pwa-feat-text b {
+  font-size: 13.5px;
+  color: #0f172a;
+  display: block;
+}
+
+html[data-theme="dark"] .pwa-feat-text b,
+body.dark-mode .pwa-feat-text b {
+  color: #f8fafc !important;
+}
+
+.pwa-feat-text p {
+  font-size: 12px;
+  color: #64748b;
+  margin: 2px 0 0 0;
+}
+
+html[data-theme="dark"] .pwa-feat-text p,
+body.dark-mode .pwa-feat-text p {
+  color: #94a3b8 !important;
+}
+
+.pwa-install-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.btn-pwa-confirm {
+  width: 100%;
+  background: linear-gradient(135deg, #7000ff 0%, #00f2fe 100%) !important;
+  color: #ffffff !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  padding: 14px 20px !important;
+  border-radius: 14px !important;
+  border: none !important;
+  box-shadow: 0 4px 18px rgba(112, 0, 255, 0.4) !important;
+  cursor: pointer !important;
+  transition: all 0.25s ease !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-pwa-confirm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(112, 0, 255, 0.55) !important;
+}
+
+.btn-pwa-dismiss {
+  width: 100%;
+  background: transparent !important;
+  color: #64748b !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  padding: 10px !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: color 0.2s ease !important;
+}
+
+.btn-pwa-dismiss:hover {
+  color: #0f172a !important;
+}
+
+html[data-theme="dark"] .btn-pwa-dismiss,
+body.dark-mode .btn-pwa-dismiss {
+  color: #94a3b8 !important;
+}
+
+html[data-theme="dark"] .btn-pwa-dismiss:hover,
+body.dark-mode .btn-pwa-dismiss:hover {
+  color: #ffffff !important;
+}
+
+.pwa-ios-instructions {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 12px;
+  font-size: 12.5px;
+  color: #b45309;
+  line-height: 1.5;
+  text-align: left;
+}
+
+html[data-theme="dark"] .pwa-ios-instructions,
+body.dark-mode .pwa-ios-instructions {
+  background: rgba(245, 158, 11, 0.15) !important;
+  color: #fcd34d !important;
+  border-color: rgba(245, 158, 11, 0.35) !important;
+}
+
+/* ==========================================================================
    🛒 CART POPUP & WISHLIST POPUP MODALS
    ========================================================================== */
 .cart-pop-dialog,

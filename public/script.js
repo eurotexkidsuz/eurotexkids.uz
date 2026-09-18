@@ -6609,12 +6609,9 @@ function prefillReturnOrder(orderId) {
 let deferredPwaPrompt = null;
 function initPWA() {
   if ("serviceWorker" in navigator) {
-    caches.keys().then((keys) => {
-      keys.forEach((key) => caches.delete(key));
-    });
     navigator.serviceWorker
-      .register("/sw.js?v=" + Date.now())
-      .catch((err) => console.log("SW Register Error:", err));
+      .register("/sw.js")
+      .catch((err) => console.warn("SW Register:", err));
   }
 
   window.addEventListener("beforeinstallprompt", (e) => {
@@ -6622,6 +6619,13 @@ function initPWA() {
     deferredPwaPrompt = e;
     const btn = document.getElementById("pwaInstallBtn");
     if (btn) btn.style.display = "inline-flex";
+  });
+
+  window.addEventListener("appinstalled", () => {
+    showToast("Eurotex Ilovasi o'rnatildi! Rahmat! 📱");
+    deferredPwaPrompt = null;
+    const btn = document.getElementById("pwaInstallBtn");
+    if (btn) btn.style.display = "none";
   });
 }
 
@@ -6637,9 +6641,29 @@ function installPWAApp() {
       deferredPwaPrompt = null;
     });
   } else {
-    showToast(
-      "Eurotex ilovasini o'rnatish uchun brauzeringiz menyusidan 'Add to Home Screen' tugmasini bosing 📱",
-    );
+    openModal("pwaInstallModal");
+  }
+}
+
+function executePwaInstall() {
+  if (deferredPwaPrompt) {
+    closeModal("pwaInstallModal");
+    deferredPwaPrompt.prompt();
+    deferredPwaPrompt.userChoice.then((choice) => {
+      if (choice.outcome === "accepted") {
+        showToast("Eurotex Ilovasi qurilmangizga muvaffaqiyatli o'rnatildi! 📱");
+      }
+      deferredPwaPrompt = null;
+    });
+  } else {
+    const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const iosBox = document.getElementById("pwaIosInstructions");
+    if (isIos && iosBox) {
+      iosBox.style.display = "block";
+    } else {
+      showToast("Brauzeringiz menyusidan 'Ilovani o'rnatish' (Install app) ni tanlang 📲");
+      closeModal("pwaInstallModal");
+    }
   }
 }
 
