@@ -55,8 +55,67 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/style.css?v=314.0.0" />
-    <!-- Google Identity Services -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Schema.org JSON-LD Structured Data (Google Sitelinks & Store Entity) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "ClothingStore",
+          "@id": "https://eurotexkids.uz/#store",
+          "name": "Eurotex Kids Tashkent",
+          "url": "https://eurotexkids.uz/",
+          "logo": "https://eurotexkids.uz/images/eurotex-logo.png",
+          "image": "https://eurotexkids.uz/images/navy_suit.jpg",
+          "description": "O'zbekistondagi yetakchi erkaklar kostyum-shimlari, klassik shimlar va pijaklar do'koni. Ulgurji va chakana savdo, Eurotex Nasiya.",
+          "telephone": "+998905557775",
+          "priceRange": "$$",
+          "currenciesAccepted": "UZS, USD",
+          "paymentAccepted": "Cash, Credit Card, Click, Payme, Eurotex Nasiya",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Chilonzor tumani",
+            "addressLocality": "Toshkent",
+            "addressRegion": "Toshkent",
+            "addressCountry": "UZ"
+          },
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 41.2995,
+            "longitude": 69.2401
+          },
+          "openingHoursSpecification": {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": [
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday",
+              "Saturday",
+              "Sunday"
+            ],
+            "opens": "09:00",
+            "closes": "21:00"
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://eurotexkids.uz/#website",
+          "url": "https://eurotexkids.uz/",
+          "name": "Eurotex Kids",
+          "publisher": {
+            "@id": "https://eurotexkids.uz/#store"
+          },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://eurotexkids.uz/?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
     <!-- Preloader Screen -->

@@ -1,0 +1,20 @@
+﻿User-agent: *
+Allow: /
+Allow: /suits
+Allow: /trousers
+Allow: /blazers
+Allow: /tuxedos
+Allow: /shirts
+Allow: /accessories
+Allow: /pachkalab-sotuv
+Allow: /images/
+
+Disallow: /api/
+Disallow: /admin
+Disallow: /admin/
+Disallow: /users/auth/
+Disallow: /checkout
+Disallow: /cart
+Disallow: /orders
+
+Sitemap: https://eurotexkids.uz/sitemap.xml

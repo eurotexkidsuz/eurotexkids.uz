@@ -173,7 +173,7 @@ router.post("/", requireAdmin, async (req, res) => {
     return res.json({ success: true, product: dbResult || pData });
   } catch (err) {
     console.error("Error in POST /products:", err);
-    return res.json({ success: true, product: req.body, message: err.message });
+    return res.status(500).json({ success: false, message: "Mahsulot qo'shishda xatolik: " + err.message });
   }
 });
 
@@ -221,7 +221,7 @@ router.put("/:id", requireAdmin, async (req, res) => {
 
     return res.json({ success: true, product: dbResult || pData });
   } catch (err) {
-    return res.json({ success: true, error: err.message });
+    return res.status(500).json({ success: false, message: "Mahsulotni yangilashda xatolik: " + err.message });
   }
 });
 
@@ -254,7 +254,7 @@ router.delete("/:id", requireAdmin, async (req, res) => {
 
     return res.json({ success: true, message: "Product deleted" });
   } catch (err) {
-    return res.json({ success: true, error: err.message });
+    return res.status(500).json({ success: false, message: "Mahsulotni o'chirishda xatolik: " + err.message });
   }
 });
 

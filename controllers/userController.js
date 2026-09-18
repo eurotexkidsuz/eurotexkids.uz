@@ -1345,6 +1345,27 @@ const saveSlideImage = async (req, res) => {
         .json({ message: "slideIndex va imgData kiritilishi shart!" });
     }
 
+    // Item 15: Base64 rasm MIME formati va hajmini qat'iy tekshirish
+    if (typeof imgData !== "string") {
+      return res.status(400).json({ message: "Noto'g'ri rasm formati!" });
+    }
+    const approximateBytes = Math.ceil((imgData.length * 3) / 4);
+    if (approximateBytes > 5 * 1024 * 1024) {
+      return res
+        .status(400)
+        .json({ message: "Rasm hajmi juda katta (maksimal 5MB ruxsat etiladi)!" });
+    }
+    if (imgData.startsWith("data:")) {
+      const isAllowedMime = /^data:image\/(jpeg|png|webp|gif);base64,/i.test(imgData);
+      if (!isAllowedMime) {
+        return res
+          .status(400)
+          .json({ message: "Faqat JPG, PNG, WEBP yoki GIF rasmlari qabul qilinadi!" });
+      }
+    } else if (!imgData.startsWith("/images/") && !imgData.startsWith("http")) {
+      return res.status(400).json({ message: "Noto'g'ri rasm manbai!" });
+    }
+
     let slides = {};
     if (fs.existsSync(SLIDES_FILE)) {
       try {

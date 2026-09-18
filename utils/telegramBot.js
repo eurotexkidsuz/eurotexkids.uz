@@ -54,22 +54,31 @@ async function sendTelegramMessage(text) {
   }
 }
 
+function escapeTelegramHtml(str) {
+  if (!str && str !== 0) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 // 1. Yangi Buyurtma Bildirishnomasi
 async function sendNewOrderNotification(order) {
   const itemsText = (order.items || [])
     .map(
       (item, idx) =>
-        `   ${idx + 1}. <b>${item.title || item.name || "Kastyum"}</b> (${item.size || "-"} o'lcham, ${item.color || "-"}) x ${item.quantity || 1} ta`,
+        `   ${idx + 1}. <b>${escapeTelegramHtml(item.title || item.name || "Kostyum")}</b> (${escapeTelegramHtml(item.size || "-")} o'lcham, ${escapeTelegramHtml(item.color || "-")}) x ${Number(item.quantity) || 1} ta`,
     )
     .join("\n");
 
   const msg = `
-👑 <b>YANGI BUYURTMA # ${order.orderId || "Yangi"}</b>
+👑 <b>YANGI BUYURTMA # ${escapeTelegramHtml(order.orderId || "Yangi")}</b>
 ━━━━━━━━━━━━━━━━━━━━
-👤 <b>Mijoz:</b> ${order.customerName || order.recipient || "Noma'lum"}
-📞 <b>Telefon:</b> <code>${order.phone || "-"}</code>
-📍 <b>Manzil:</b> ${order.region || ""} ${order.district || ""} ${order.address || ""}
-💳 <b>To'lov:</b> ${order.paymentMethod || "Naqd"}
+👤 <b>Mijoz:</b> ${escapeTelegramHtml(order.customerName || order.recipient || "Noma'lum")}
+📞 <b>Telefon:</b> <code>${escapeTelegramHtml(order.phone || "-")}</code>
+📍 <b>Manzil:</b> ${escapeTelegramHtml(order.region || "")} ${escapeTelegramHtml(order.district || "")} ${escapeTelegramHtml(order.address || "")}
+💳 <b>To'lov:</b> ${escapeTelegramHtml(order.paymentMethod || "Naqd")}
 💰 <b>Jami Summa:</b> <b>${(order.totalPriceUzs || order.total || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} so'm</b> (${order.totalPriceUsd || 0}$)
 
 📦 <b>Mahsulotlar:</b>
@@ -86,11 +95,11 @@ async function sendQuickLeadNotification(lead) {
   const msg = `
 ⚡ <b>SHOSHILINCH: 1-KLIKDA BUYURTMA!</b>
 ━━━━━━━━━━━━━━━━━━━━
-👤 <b>Mijoz:</b> ${lead.name || "Xaridor"}
-📞 <b>Telefon:</b> <code>${lead.phone}</code>
-🧥 <b>Mahsulot:</b> <b>${lead.productTitle || "Kostyum"}</b>
-📐 <b>O'lchami:</b> ${lead.size || "-"} | 🎨 <b>Rangi:</b> ${lead.color || "-"}
-💰 <b>Narxi:</b> ${lead.price || "-"}
+👤 <b>Mijoz:</b> ${escapeTelegramHtml(lead.name || "Xaridor")}
+📞 <b>Telefon:</b> <code>${escapeTelegramHtml(lead.phone)}</code>
+🧥 <b>Mahsulot:</b> <b>${escapeTelegramHtml(lead.productTitle || "Kostyum")}</b>
+📐 <b>O'lchami:</b> ${escapeTelegramHtml(lead.size || "-")} | 🎨 <b>Rangi:</b> ${escapeTelegramHtml(lead.color || "-")}
+💰 <b>Narxi:</b> ${escapeTelegramHtml(lead.price || "-")}
 
 ⏰ <i>Operatorlar darhol mijozga qo'ng'iroq qiling!</i>
 `.trim();
@@ -103,13 +112,13 @@ async function sendNasiyaNotification(nasiya) {
   const msg = `
 🤝 <b>YANGI "EUROTEX NASIYA" ARIZASI!</b>
 ━━━━━━━━━━━━━━━━━━━━
-👤 <b>Ariza beruvchi:</b> ${nasiya.name || "-"}
-📞 <b>Telefon:</b> <code>${nasiya.phone}</code>
-🪪 <b>Pasport/JSHSHIR:</b> <code>${nasiya.passport || "-"}</code>
+👤 <b>Ariza beruvchi:</b> ${escapeTelegramHtml(nasiya.name || "-")}
+📞 <b>Telefon:</b> <code>${escapeTelegramHtml(nasiya.phone)}</code>
+🪪 <b>Pasport/JSHSHIR:</b> <code>${escapeTelegramHtml(nasiya.passport || "-")}</code>
 ⏳ <b>Muddat:</b> <b>${nasiya.months || 6} oy</b>
-🧥 <b>Mahsulot:</b> ${nasiya.productTitle || "Eurotex Kostyum"}
-💰 <b>Umumiy narx:</b> ${nasiya.totalAmount || "-"}
-💵 <b>Oylik to'lov:</b> <b>${nasiya.monthlyPayment || "-"}</b>
+🧥 <b>Mahsulot:</b> ${escapeTelegramHtml(nasiya.productTitle || "Eurotex Kostyum")}
+💰 <b>Umumiy narx:</b> ${escapeTelegramHtml(nasiya.totalAmount || "-")}
+💵 <b>Oylik to'lov:</b> <b>${escapeTelegramHtml(nasiya.monthlyPayment || "-")}</b>
 
 📑 <i>Iltimos, admin paneldan tekshirib tasdiqlang!</i>
 `.trim();

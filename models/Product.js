@@ -77,5 +77,13 @@ productSchema.pre("save", function (next) {
 
 productSchema.index({ category: 1, inStock: 1 });
 productSchema.index({ createdAt: -1 });
+productSchema.index({
+  title_uz: "text",
+  title_ru: "text",
+  title_en: "text",
+  desc_uz: "text",
+  color_uz: "text",
+  fabric_uz: "text",
+});
 
 module.exports = mongoose.model("Product", productSchema);

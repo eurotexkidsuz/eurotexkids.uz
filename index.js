@@ -81,11 +81,22 @@ connectToDB();
 // Routes
 app.get("/favicon.ico", (req, res) => res.status(204).end());
 
-// ── #14 Sensitive fayllarni himoyalash ────────────────────────────────────────
+// ── Sensitive fayllar va ma'lumotlar bazasini himoyalash ─────────────────────
 app.use((req, res, next) => {
-  const blockedPaths = [".env", "telegram_config.json", "package.json", "package-lock.json"];
-  if (blockedPaths.some((f) => req.path.includes(f))) {
-    return res.status(403).send("Forbidden");
+  const blockedPaths = [
+    ".env",
+    "telegram_config.json",
+    "package.json",
+    "package-lock.json",
+    "database.json",
+    "products_db.json",
+    "slides.json",
+    "data/",
+    ".git",
+  ];
+  const lowerPath = req.path.toLowerCase();
+  if (blockedPaths.some((f) => lowerPath.includes(f.toLowerCase()))) {
+    return res.status(403).type("text/plain").send("Forbidden");
   }
   next();
 });

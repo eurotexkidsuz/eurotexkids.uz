@@ -24,13 +24,32 @@ const OFFLINE_HTML = `<!DOCTYPE html>
 </body>
 </html>`;
 
+const CACHE_NAME = "eurotex-v4-precache";
+const CRITICAL_ASSETS = [
+  "/style.css?v=314.0.0",
+  "/images/eurotex-logo.png",
+  "/manifest.json",
+  "/images/navy_suit.jpg",
+];
+
 self.addEventListener("install", (e) => {
+  e.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(CRITICAL_ASSETS).catch((err) => {
+        console.warn("SW precache partial warning:", err);
+      });
+    }),
+  );
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (e) => {
   e.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k)))),
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)),
+      ),
+    ),
   );
   self.clients.claim();
 });
@@ -46,5 +65,10 @@ self.addEventListener("fetch", (e) => {
     );
     return;
   }
-  e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+  e.respondWith(
+    caches.match(e.request).then((cachedResponse) => {
+      if (cachedResponse) return cachedResponse;
+      return fetch(e.request).catch(() => null);
+    }),
+  );
 });

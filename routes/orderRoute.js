@@ -9,6 +9,8 @@ const path = require("path");
 const router = express.Router();
 const Order = require("../models/Order");
 const { requireAdmin, parseCookies } = require("../middleware/adminAuth");
+const jwt = require("jsonwebtoken");
+const JWT_SECRET = process.env.JWT_SECRET || "eurotex_secret_2026";
 const ADMIN_EMAILS = ["0600quetry@gmail.com", "eurotexkids7775@gmail.com"];
 
 const ORDERS_FILE = path.join(__dirname, "../data/orders.json");
@@ -105,7 +107,7 @@ router.get("/", async (req, res) => {
     let merged = Array.from(orderMap.values());
     const { email, status, limit = 200, adminEmail } = req.query;
 
-    // Maxfiylik tekshiruvi (Fix 5): Faqat admin butun buyurtmalar bazasini ko'ra oladi
+    // Maxfiylik tekshiruvi: Faqat tasdiqlangan admin butun buyurtmalar bazasini ko'ra oladi
     const cookies = parseCookies(req);
     const token =
       cookies.eurotex_session ||
@@ -113,15 +115,17 @@ router.get("/", async (req, res) => {
         ? req.headers.authorization.slice(7)
         : null) ||
       req.headers["x-admin-token"];
-    const headerAdminEmail = (
-      req.headers["x-admin-email"] ||
-      adminEmail ||
-      ""
-    ).toLowerCase().trim();
 
-    const isAdmin =
-      ADMIN_EMAILS.includes(headerAdminEmail) ||
-      token === "admin_master_token_2026";
+    let isAdmin = token === "admin_master_token_2026";
+    if (!isAdmin && token) {
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const decEmail = String(decoded.email || "").toLowerCase().trim();
+        if (decoded.role === "admin" || ADMIN_EMAILS.includes(decEmail)) {
+          isAdmin = true;
+        }
+      } catch (e) {}
+    }
 
     if (!isAdmin) {
       // Oddiy foydalanuvchi: faqat o'z emailiga tegishli buyurtmalarni ko'ra oladi
@@ -191,6 +195,63 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// Item 12: Xavfsiz ommaviy kuzatuv (Guest Order Tracking by orderId and phone)
+router.get("/track/:orderId", async (req, res) => {
+  try {
+    const rawOrderId = String(req.params.orderId || "").trim();
+    const reqPhone = String(req.query.phone || "").replace(/\D/g, "");
+
+    if (!rawOrderId) {
+      return res.status(400).json({ success: false, message: "Buyurtma ID si kiritilmadi!" });
+    }
+
+    const isConnected = await ensureDbConnected();
+    let foundOrder = null;
+    if (isConnected) {
+      try {
+        foundOrder = await Order.findOne({
+          $or: [{ orderId: rawOrderId }, { _id: mongoose.isValidObjectId(rawOrderId) ? rawOrderId : null }],
+        }).lean();
+      } catch (e) {}
+    }
+
+    if (!foundOrder) {
+      const localOrders = readLocalOrders();
+      foundOrder = localOrders.find((o) => String(o.orderId || o.id) === rawOrderId);
+    }
+
+    if (!foundOrder) {
+      return res.status(404).json({ success: false, message: "Buyurtma topilmadi!" });
+    }
+
+    // Telefon raqami berilgan bo'lsa, mosligini tekshirish
+    const orderPhoneDigits = String(foundOrder.phone || "").replace(/\D/g, "");
+    if (reqPhone && reqPhone.length >= 4) {
+      if (!orderPhoneDigits.endsWith(reqPhone) && !orderPhoneDigits.includes(reqPhone)) {
+        return res.status(403).json({ success: false, message: "Telefon raqami buyurtmaga mos kelmadi!" });
+      }
+    }
+
+    const trackingInfo = {
+      orderId: foundOrder.orderId,
+      status: foundOrder.status,
+      statusStep: foundOrder.statusStep,
+      statusDetails: ORDER_STATUS_STEPS[foundOrder.statusStep] || ORDER_STATUS_STEPS[1],
+      createdAt: foundOrder.createdAt || foundOrder.date,
+      deliveryType: foundOrder.deliveryType,
+      region: foundOrder.region,
+      district: foundOrder.district,
+      itemsCount: foundOrder.itemsCount || (foundOrder.items ? foundOrder.items.length : 0),
+      totalPriceUzs: foundOrder.totalPriceUzs,
+      totalPriceUsd: foundOrder.totalPriceUsd,
+    };
+
+    return res.status(200).json({ success: true, tracking: trackingInfo });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 router.post("/", async (req, res) => {
   try {
     const {
@@ -219,7 +280,23 @@ router.post("/", async (req, res) => {
       customerNotes,
     } = req.body;
 
-    if (!items || items.length === 0) {
+    // Item 11: Oluvchi ismi va telefon raqamini majburiy tekshirish
+    const cleanRecipient = String(recipient || customerName || "").trim();
+    const cleanPhone = String(phone || "").replace(/\D/g, "");
+    if (!cleanRecipient || cleanRecipient.length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: "Iltimos, oluvchining ism va familiyasini to'liq kiriting!",
+      });
+    }
+    if (!cleanPhone || cleanPhone.length < 9) {
+      return res.status(400).json({
+        success: false,
+        message: "Iltimos, haqiqiy telefon raqamingizni kiriting (+998...)!",
+      });
+    }
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({
         success: false,
         message: "Buyurtma mahsulotlari yetarli emas!",
@@ -234,6 +311,19 @@ router.post("/", async (req, res) => {
         const fileContent = JSON.parse(fs.readFileSync(prodsFile, "utf8") || "[]");
         fileContent.forEach((p) => prodsMap.set(String(p.id || p.customId), p));
       } catch (e) {}
+    }
+
+    // Item 4: Ghost tovarlarni (mavjud bo'lmagan soxta ID) tekshirish va rad etish
+    if (prodsMap.size > 0) {
+      for (const it of items) {
+        const prodId = String(it.id || it.customId || "");
+        if (!prodId || !prodsMap.has(prodId)) {
+          return res.status(400).json({
+            success: false,
+            message: `Buyurtmadagi mahsulot katalogda topilmadi (ID: ${prodId})!`,
+          });
+        }
+      }
     }
 
     let verifiedTotalUsd = 0;
@@ -523,7 +613,7 @@ router.delete("/:id", requireAdmin, async (req, res) => {
   }
 });
 
-router.get("/stats/summary", async (req, res) => {
+router.get("/stats/summary", requireAdmin, async (req, res) => {
   try {
     const isConnected = await ensureDbConnected(res);
     if (!isConnected) {

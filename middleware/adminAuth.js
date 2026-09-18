@@ -16,7 +16,7 @@ function parseCookies(req) {
   return list;
 }
 
-// Admin API himoya middleware — faqat admin tokenini qabul qiladi
+// Admin API himoya middleware — faqat tasdiqlangan admin tokenini qabul qiladi
 function requireAdmin(req, res, next) {
   const cookies = parseCookies(req);
   const token =
@@ -26,28 +26,17 @@ function requireAdmin(req, res, next) {
       : null) ||
     req.headers["x-admin-token"];
 
-  const adminEmail = (
-    req.headers["x-admin-email"] ||
-    req.query?.adminEmail ||
-    ""
-  ).toLowerCase().trim();
-
-  // 1. Agar x-admin-email rasmiy ADMIN_EMAILS ichida bo'lsa (eurotexkids7775@gmail.com, 0600quetry@gmail.com)
-  if (adminEmail && ADMIN_EMAILS.includes(adminEmail)) {
-    req.adminUser = { email: adminEmail, role: "admin" };
-    return next();
-  }
-
-  // 2. Master local admin token check
+  // 1. Master local admin token check (xavfsiz server kaliti)
   if (token === "admin_master_token_2026") {
-    req.adminUser = { email: adminEmail || ADMIN_EMAILS[0], role: "admin" };
+    const adminEmail = (req.headers["x-admin-email"] || req.query?.adminEmail || ADMIN_EMAILS[0]).toLowerCase().trim();
+    req.adminUser = { email: adminEmail, role: "admin" };
     return next();
   }
 
   if (!token) {
     return res.status(401).json({
       success: false,
-      message: "Ruxsat yo'q. Iltimos tizimga kiring.",
+      message: "Ruxsat yo'q. Iltimos, admin sifatida tizimga kiring.",
     });
   }
 
@@ -66,12 +55,6 @@ function requireAdmin(req, res, next) {
     req.adminUser = decoded;
     next();
   } catch (err) {
-    // Agar token tekshiruvi xato bo'lsa ham, lekin adminEmail tasdiqlangan bo'lsa:
-    if (adminEmail && ADMIN_EMAILS.includes(adminEmail)) {
-      req.adminUser = { email: adminEmail, role: "admin" };
-      return next();
-    }
-
     return res.status(401).json({
       success: false,
       message: "Token noto'g'ri yoki muddati tugagan. Qayta kiring.",
