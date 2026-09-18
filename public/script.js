@@ -27,7 +27,7 @@ const TRANSLATIONS = {
   uz: {
     cityLabel: "Shahar:",
     deliveryPromo:
-      "⚡ 1 kunda tekin yetkazib berish (Butun O'zbekiston bo'yicha)",
+      "yetkazib berish (Butun O'zbekiston bo'yicha)",
     phoneLink: "📞 +998 (90) 555-77-75",
     atelierLink: "📦 Ulgurji Sotuv (Pachkalab)",
     catalogBtn: "Katalog",
@@ -131,7 +131,7 @@ const TRANSLATIONS = {
   },
   ru: {
     cityLabel: "Город:",
-    deliveryPromo: "⚡ Бесплатная доставка за 1 день (По всему Узбекистану)",
+    deliveryPromo: "Доставка (По всему Узбекистану)",
     phoneLink: "📞 +998 (90) 555-77-75",
     atelierLink: "📦 Оптовые Продажи (Пачками)",
     catalogBtn: "Каталог",
@@ -235,7 +235,7 @@ const TRANSLATIONS = {
   },
   en: {
     cityLabel: "City:",
-    deliveryPromo: "⚡ Free 1-day delivery (All over Uzbekistan)",
+    deliveryPromo: "Delivery (All over Uzbekistan)",
     phoneLink: "📞 +998 (90) 555-77-75",
     atelierLink: "📦 Wholesale Packs",
     catalogBtn: "Catalog",
