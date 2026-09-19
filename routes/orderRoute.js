@@ -464,6 +464,30 @@ router.post("/", async (req, res) => {
     }
     writeLocalOrders(localList);
 
+    // 🛒 #6 Savatdagi tovarlar zaxirasini (Stock reservation) yangilash
+    try {
+      const prodsFile = path.join(__dirname, "../products_db.json");
+      if (fs.existsSync(prodsFile)) {
+        let prods = JSON.parse(fs.readFileSync(prodsFile, "utf8") || "[]");
+        let prodsModified = false;
+        (orderData.items || []).forEach((it) => {
+          const p = prods.find((x) => String(x.id) === String(it.id));
+          if (p && typeof p.stockQty === "number") {
+            p.stockQty = Math.max(0, p.stockQty - (it.quantity || 1));
+            if (p.stockQty === 0) p.inStock = false;
+            prodsModified = true;
+          }
+        });
+        if (prodsModified) {
+          const tmpProds = prodsFile + ".tmp";
+          fs.writeFileSync(tmpProds, JSON.stringify(prods, null, 2), "utf8");
+          fs.renameSync(tmpProds, prodsFile);
+        }
+      }
+    } catch (stkErr) {
+      console.warn("Stock reservation warning:", stkErr.message);
+    }
+
     // 2. Save to MongoDB Atlas if connected
     let finalOrder = orderData;
     const isConnected = await ensureDbConnected();

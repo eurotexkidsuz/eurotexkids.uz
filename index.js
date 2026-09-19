@@ -36,6 +36,17 @@ app.use(cors({
   credentials: true,
 }));
 
+// 🔒 #2 CSRF HIMOYASI: Begona saytlardan kelgan zararli POST/PUT/DELETE so'rovlarni bloklash
+app.use((req, res, next) => {
+  if (["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) {
+    const secFetchSite = req.headers["sec-fetch-site"];
+    if (secFetchSite === "cross-site") {
+      return res.status(403).json({ success: false, message: "CSRF: Cross-site so'rov rad etildi." });
+    }
+  }
+  next();
+});
+
 // ── #3 BODY SIZE — 100mb → 2mb (DoS himoyasi) ─────────────────────────────────
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ limit: "2mb", extended: true }));
@@ -263,8 +274,21 @@ app.use((req, res, next) => {
   }
 });
 
-// ── 📦 STATIC FILES & ASSETS ──────────────────────────────────────────────────
-app.use(express.static(path.join(__dirname, "public")));
+// ── 📦 #1 IMMUTABLE CACHE: Rasmlar, SVG va Fontlarni 1 yilga brauzerda keshlash (Trafikni 5-10x tejash) ──
+app.use(
+  express.static(path.join(__dirname, "public"), {
+    maxAge: "365d",
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith(".html")) {
+        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+      } else if (/\.(jpg|jpeg|png|webp|svg|ico|woff2|woff|ttf)$/i.test(filePath)) {
+        res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      } else if (/\.(css|js)$/i.test(filePath)) {
+        res.setHeader("Cache-Control", "public, max-age=86400"); // 1 kun
+      }
+    },
+  })
+);
 
 // ── 🔌 REST API ROUTES (JSON DATA ENDPOINTS) ───────────────────────────────────
 const { users } = require("./routes/userRoute");
@@ -306,6 +330,24 @@ const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
   console.log(`🚀 Server: http://localhost:${PORT}`);
 });
+
+// 🚦 #3 Slowloris va HTTP DoS himoyasi uchun Server Timeout sozlamalari
+server.headersTimeout = 65000;   // 65 soniya (Node.js standartidan yuqori)
+server.requestTimeout = 30000;   // 30 soniya
+server.keepAliveTimeout = 61000; // 61 soniya
+
+// 📉 #11 Memory Leak Monitoring: har 4 soatda xotirani tekshirish
+setInterval(() => {
+  const mem = process.memoryUsage();
+  const heapMB = Math.round(mem.heapUsed / 1024 / 1024);
+  const rssMB = Math.round(mem.rss / 1024 / 1024);
+  if (heapMB > 450) {
+    console.warn(`⚠️ [Memory Monitor] Yuqori xotira sarfi: Heap=${heapMB}MB, RSS=${rssMB}MB`);
+    if (global.gc) {
+      try { global.gc(); } catch (_) {}
+    }
+  }
+}, 4 * 60 * 60 * 1000).unref();
 
 // Graceful Shutdown (Band 5)
 function gracefulShutdown(signal) {

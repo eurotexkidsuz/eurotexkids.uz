@@ -19,6 +19,11 @@
       html[data-theme="dark"], html[data-theme="dark"] body { background-color: #0b1329 !important; color: #f8fafc; }
       html[data-theme="light"], html[data-theme="light"] body { background-color: #ffffff !important; }
     </style>
+    <!-- ⚡ #9 Preconnect va DNS-Prefetch: Tashqi domenlarga 300-500ms tezroq ulanish -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://api.telegram.org" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
       Eurotexkids.uz — Premial Erkaklar Kostyum-Shimlari va Kiyim-kechaklari |
@@ -1682,9 +1687,14 @@
                       </div>
 
                       <div class="form-group" style="margin-top: 16px">
-                        <label for="custAddress"
-                          >Kuryer olib borishi uchun aniq manzilingizni kiriting:</label
-                        >
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 6px;">
+                          <label for="custAddress" style="margin: 0;"
+                            >Kuryer olib borishi uchun aniq manzilingizni kiriting:</label
+                          >
+                          <button type="button" onclick="detectCurrentLocation('custAddress')" style="background: rgba(56, 189, 248, 0.15); color: #0284c7; border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 8px; padding: 4px 10px; font-size: 11.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                            📍 Joylashuvimni aniqlash
+                          </button>
+                        </div>
                         <input
                           type="text"
                           id="custAddress"

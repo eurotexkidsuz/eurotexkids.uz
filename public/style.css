@@ -12869,3 +12869,27 @@ body.dark-mode .cart-pop-total-val {
 .badge-pulse-animate {
   animation: badgeBouncePulse 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
 }
+
+/* 🔍 #5 Qidiruv natijalarida kalit so'zni yorqin ajratish */
+mark.search-highlight {
+  background: rgba(245, 158, 11, 0.28) !important;
+  color: #d97706 !important;
+  font-weight: 800;
+  padding: 0 3px;
+  border-radius: 4px;
+}
+html[data-theme="dark"] mark.search-highlight {
+  background: rgba(245, 158, 11, 0.35) !important;
+  color: #fbbf24 !important;
+}
+
+/* 📱 #4 Mobil modalda pastga surish indikatori */
+.modal-swipe-bar {
+  width: 44px;
+  height: 5px;
+  background: rgba(148, 163, 184, 0.5);
+  border-radius: 10px;
+  margin: 8px auto 14px auto;
+  display: block;
+}
+

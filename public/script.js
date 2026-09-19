@@ -2017,7 +2017,7 @@ function renderProducts() {
                             <span class="old-price">${formattedOldPrice}</span>
                         </div>
                     </div>
-                    <h3 class="card-title">${title}</h3>
+                    <h3 class="card-title">${state.searchQuery ? highlightSearchTerm(title, state.searchQuery) : title}</h3>
                     <div class="card-rating">
                         <span>⭐ ${product.rating || 4.9}</span>
                         <span>(${product.reviewsCount || 186} sharhlar)</span>
@@ -10819,3 +10819,213 @@ function compressImageFile(file, maxWidth = 1200, quality = 0.85) {
     reader.readAsDataURL(file);
   });
 }
+
+// =============================================================================
+// 📋 #7 TELEFON RAQAMNI REAL-TIME AVTOMATIK FORMATLASH (PHONE INPUT MASK)
+// =============================================================================
+function formatUzbekPhone(value) {
+  if (!value) return "";
+  const digits = value.replace(/\D/g, "");
+  let clean = digits;
+  if (clean.startsWith("998")) clean = clean.slice(3);
+  clean = clean.slice(0, 9); // 9 ta raqam (masalan: 905557775)
+
+  let formatted = "+998";
+  if (clean.length > 0) formatted += " (" + clean.slice(0, 2);
+  if (clean.length >= 2) formatted += ") ";
+  if (clean.length > 2) formatted += clean.slice(2, 5);
+  if (clean.length >= 5) formatted += " ";
+  if (clean.length > 5) formatted += clean.slice(5, 7);
+  if (clean.length >= 7) formatted += " ";
+  if (clean.length > 7) formatted += clean.slice(7, 9);
+  return formatted;
+}
+
+function initPhoneInputMasks() {
+  const phoneSelectors = [
+    "#orderPhone",
+    "#onboardingPhone",
+    "#ocbPhone",
+    "#nasiyaPhone",
+    "#contactPhone",
+    "#leadPhone",
+    "#profilePhoneInput",
+    "input[type='tel']"
+  ];
+  document.querySelectorAll(phoneSelectors.join(",")).forEach((input) => {
+    if (!input || input.dataset.maskAttached) return;
+    input.dataset.maskAttached = "true";
+
+    input.addEventListener("input", (e) => {
+      const raw = e.target.value;
+      if (!raw) return;
+      const formatted = formatUzbekPhone(raw);
+      e.target.value = formatted;
+    });
+
+    input.addEventListener("focus", (e) => {
+      if (!e.target.value) e.target.value = "+998 (";
+    });
+
+    input.addEventListener("blur", (e) => {
+      if (e.target.value === "+998 (" || e.target.value === "+998") e.target.value = "";
+    });
+  });
+}
+
+// =============================================================================
+// 📱 #4 TOUCH GESTURE (SWIPE-DOWN TO CLOSE) MAHSULOT MODALIDA
+// =============================================================================
+function initSwipeToCloseModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+  const content = modal.querySelector(".modal-content") || modal.firstElementChild;
+  if (!content) return;
+
+  let startY = 0;
+  let currentY = 0;
+  let isSwiping = false;
+
+  content.addEventListener("touchstart", (e) => {
+    if (content.scrollTop > 0) return; // scroll tepasida bo'lmasa surilmaydi
+    startY = e.touches[0].clientY;
+    isSwiping = true;
+  }, { passive: true });
+
+  content.addEventListener("touchmove", (e) => {
+    if (!isSwiping) return;
+    currentY = e.touches[0].clientY;
+    const diff = currentY - startY;
+    if (diff > 0) {
+      content.style.transform = `translateY(${Math.min(diff, 200)}px)`;
+      content.style.transition = "none";
+    }
+  }, { passive: true });
+
+  content.addEventListener("touchend", () => {
+    if (!isSwiping) return;
+    isSwiping = false;
+    const diff = currentY - startY;
+    content.style.transition = "transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+    if (diff > 85) {
+      content.style.transform = "translateY(100%)";
+      setTimeout(() => {
+        if (typeof closeModal === "function") closeModal(modalId);
+        content.style.transform = "";
+      }, 200);
+    } else {
+      content.style.transform = "";
+    }
+  });
+}
+
+// =============================================================================
+// 🔍 #5 QIDIRUVDA KALIT SO'ZNI AJRATISH (SEARCH HIGHLIGHT)
+// =============================================================================
+function highlightSearchTerm(text, query) {
+  if (!text || !query || typeof query !== "string") return text || "";
+  const cleanQ = query.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  if (!cleanQ) return text;
+  const regex = new RegExp(`(${cleanQ})`, "gi");
+  return String(text).replace(regex, `<mark class="search-highlight">$1</mark>`);
+}
+
+// =============================================================================
+// 🌐 #12 AVTOMATIK TILNI BRAUZER ORQALI ANIQLASH (AUTO-DETECT LANGUAGE)
+// =============================================================================
+function autoDetectLanguageOnFirstVisit() {
+  const saved = localStorage.getItem("eurotex_lang");
+  if (!saved && navigator.language) {
+    const userLang = navigator.language.toLowerCase();
+    let detected = "uz";
+    if (userLang.startsWith("ru")) detected = "ru";
+    else if (userLang.startsWith("en")) detected = "en";
+    localStorage.setItem("eurotex_lang", detected);
+    if (typeof setLanguage === "function") {
+      setLanguage(detected);
+    }
+  }
+}
+
+// =============================================================================
+// 📦 #13 TELEGRAM UCHUN GPS JOYLANUVNI ANIQLASH (GEOLOCATION API)
+// =============================================================================
+function detectCurrentLocation(addressInputId) {
+  const input = document.getElementById(addressInputId);
+  if (!input) return;
+  if (!navigator.geolocation) {
+    if (typeof showToast === "function") showToast("⚠️ Qurilmangizda Geolocation qo'llab-quvvatlanmaydi", "warning");
+    return;
+  }
+  if (typeof showToast === "function") showToast("📍 Joylashuvingiz aniqlanmoqda...", "info");
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const lat = pos.coords.latitude.toFixed(6);
+      const lon = pos.coords.longitude.toFixed(6);
+      const mapsUrl = `https://maps.google.com/?q=${lat},${lon}`;
+      const prevVal = input.value.trim();
+      input.value = prevVal ? `${prevVal} (📍 Lokatsiya: ${mapsUrl})` : `📍 Lokatsiya: ${mapsUrl}`;
+      if (typeof showToast === "function") showToast("✅ Aniq lokatsiya manzilga biriktirildi! 📍", "success");
+    },
+    (err) => {
+      if (typeof showToast === "function") showToast("⚠️ Joylashuvni aniqlashga ruxsat berilmadi", "warning");
+    },
+    { enableHighAccuracy: true, timeout: 8000 }
+  );
+}
+
+// =============================================================================
+// 🧩 #14 OFFLINE REJIMDA RASMLARNI BRENDLANGAN SVG BILAN ALMASHTIRISH
+// =============================================================================
+const EUROTEX_FALLBACK_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'><rect width='400' height='400' fill='%230f172a'/><text x='50%25' y='48%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='32' font-weight='bold' fill='%23c5a059'>EUROTEX</text><text x='50%25' y='58%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%2394a3b8'>Premium Kostyumlar</text></svg>";
+
+window.addEventListener("error", (e) => {
+  if (e.target && e.target.tagName === "IMG") {
+    if (!e.target.dataset.hasFallback) {
+      e.target.dataset.hasFallback = "true";
+      e.target.src = EUROTEX_FALLBACK_SVG;
+    }
+  }
+}, true);
+
+// =============================================================================
+// 🔔 #15 BRAUZER PWA WEB PUSH BILDIRISHNOMALARI (AKSIYA VA CHEGIRMALAR)
+// =============================================================================
+async function requestPushNotificationPermission() {
+  if (!("Notification" in window)) return false;
+  if (Notification.permission === "granted") return true;
+  if (Notification.permission !== "denied") {
+    const permission = await Notification.requestPermission();
+    return permission === "granted";
+  }
+  return false;
+}
+
+function showBrowserNotification(title, options = {}) {
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  const defaultOpts = {
+    icon: "/images/eurotex-logo.png",
+    badge: "/images/eurotex_icon.png",
+    vibrate: [200, 100, 200],
+    ...options
+  };
+  try {
+    navigator.serviceWorker.ready.then((reg) => {
+      reg.showNotification(title, defaultOpts);
+    }).catch(() => {
+      new Notification(title, defaultOpts);
+    });
+  } catch (_) {
+    try { new Notification(title, defaultOpts); } catch (_) {}
+  }
+}
+
+// Barcha boshlang'ich initsializatsiyalarni ulash
+document.addEventListener("DOMContentLoaded", () => {
+  initPhoneInputMasks();
+  autoDetectLanguageOnFirstVisit();
+  initSwipeToCloseModal("quickViewModal");
+  initSwipeToCloseModal("productModal");
+  initSwipeToCloseModal("cartPopModal");
+});
