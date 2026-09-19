@@ -65,7 +65,7 @@ async function connectToDB() {
     return;
   }
   try {
-    await connect(MONGO_URI, {
+    await mongoose.connect(MONGO_URI, {
       serverSelectionTimeoutMS: 8000,
       connectTimeoutMS: 8000,
       socketTimeoutMS: 10000,
