@@ -6,6 +6,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 const router = express.Router();
 const Order = require("../models/Order");
 const { requireAdmin, parseCookies } = require("../middleware/adminAuth");
@@ -61,16 +62,23 @@ async function ensureDbConnected() {
   }
 }
 
+// 🛡️ #4 IP Spoofing Himoyasi: req.ip va tozalangan birinchi ishonchli proksi IP
 function getClientIp(req) {
-  return (
-    req.headers["x-forwarded-for"] ||
-    req.headers["x-real-ip"] ||
-    req.connection.remoteAddress ||
-    req.socket.remoteAddress ||
-    ""
-  )
-    .split(",")[0]
-    .trim();
+  let ip = req.ip || "";
+  if (!ip) {
+    const rawXff = req.headers["x-forwarded-for"];
+    if (typeof rawXff === "string") {
+      ip = rawXff.split(",")[0].trim();
+    } else {
+      ip = req.headers["x-real-ip"] || (req.socket && req.socket.remoteAddress) || "";
+    }
+  }
+  // IPv6 mapped IPv4 tozalash (::ffff:127.0.0.1 -> 127.0.0.1)
+  if (ip.startsWith("::ffff:")) {
+    ip = ip.substring(7);
+  }
+  // Noqonuniy belgilar va xavfli sarlavhalardan xoli qilish
+  return ip.replace(/[^0-9a-fA-F:.]/g, "").slice(0, 45) || "127.0.0.1";
 }
 
 function normalizePhoneNumber(rawPhone) {
@@ -385,17 +393,35 @@ router.post("/", async (req, res) => {
             if (userKey && !targetPromo.usedBy.includes(userKey)) {
               targetPromo.usedBy.push(userKey);
             }
-            fs.writeFileSync(promosFile, JSON.stringify(promoList, null, 2), "utf8");
+            // 💾 #1 ATOMAR FAYL YOZISH: promocodes.json
+            const tmpPromoPath = promosFile + ".tmp";
+            fs.writeFileSync(tmpPromoPath, JSON.stringify(promoList, null, 2), "utf8");
+            fs.renameSync(tmpPromoPath, promosFile);
           }
         } catch (e) {}
       }
     }
 
-    const generatedId =
-      orderId ||
-      "EUR-" +
-        new Date().getFullYear().toString().slice(-2) +
-        Math.floor(100000 + Math.random() * 900000);
+    // 🆔 #11 Unikal to'qnashuvsiz crypto Order ID
+    const yearSuffix = new Date().getFullYear().toString().slice(-2);
+    let generatedId = orderId;
+    if (!generatedId) {
+      const existingOrders = readLocalOrders();
+      let uniqueFound = false;
+      let attempts = 0;
+      while (!uniqueFound && attempts < 10) {
+        attempts++;
+        const rnd = crypto.randomInt(100000, 999999);
+        const candidate = `EUR-${yearSuffix}${rnd}`;
+        if (!existingOrders.some((o) => o.id === candidate || o.orderId === candidate)) {
+          generatedId = candidate;
+          uniqueFound = true;
+        }
+      }
+      if (!generatedId) {
+        generatedId = `EUR-${yearSuffix}${Date.now().toString().slice(-6)}`;
+      }
+    }
 
     const orderData = {
       orderId: generatedId,

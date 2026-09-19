@@ -1732,11 +1732,11 @@ function safeFormatMoney(priceVal) {
     const num = parseFloat(priceVal) || 45;
 
     if (num >= 100000) {
-      uzs = Math.round(num);
+      uzs = Math.round(num / 500) * 500;
       usd = Math.round(uzs / rate);
     } else {
       usd = Math.round(num);
-      uzs = Math.round(usd * rate);
+      uzs = Math.round((usd * rate) / 500) * 500;
     }
 
     const formattedUsd = `$${usd.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")}`;
@@ -1758,14 +1758,43 @@ function escapeHtml(str) {
     .replace(/'/g, "&#039;");
 }
 
-// 💾 Xavfsiz LocalStorage saqlagich (Fix 13: QuotaExceeded va Private mode himoyasi)
+// 📴 #10 Xavfsiz LocalStorage (QuotaExceededError va Safari Private Mode Himoyasi)
+window._inMemoryStorage = window._inMemoryStorage || {};
+
 function safeSetLocalStorage(key, val) {
+  const serialized = typeof val === "string" ? val : JSON.stringify(val);
   try {
-    const serialized = typeof val === "string" ? val : JSON.stringify(val);
     localStorage.setItem(key, serialized);
   } catch (e) {
-    console.warn(`[Eurotex Storage] localStorage "${key}" saqlash cheklandi:`, e.message);
+    console.warn(`[Eurotex Storage] QuotaExceeded: "${key}" xotiraga yozilmoqda:`, e.message);
+    // 1-bosqich: eski kesh kalitlarini tozalab qayta urinib ko'rish
+    try {
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        if (k && (k.startsWith("eurotex_cache_") || k.startsWith("eurotex_temp_") || k.startsWith("eurotex_search_"))) {
+          localStorage.removeItem(k);
+        }
+      }
+      localStorage.setItem(key, serialized);
+      return;
+    } catch (_) {}
+
+    // 2-bosqich: In-memory xotiraga o'tish (Crash va oq ekranning 100% oldi olinadi)
+    window._inMemoryStorage[key] = serialized;
   }
+}
+
+// safeLocalStorageSet sinonimi
+const safeLocalStorageSet = safeSetLocalStorage;
+
+function safeGetLocalStorage(key, defaultVal = null) {
+  try {
+    const val = localStorage.getItem(key);
+    if (val !== null) return val;
+  } catch (_) {}
+  return window._inMemoryStorage && window._inMemoryStorage[key] !== undefined
+    ? window._inMemoryStorage[key]
+    : defaultVal;
 }
 
 // 🔤 Kirill <-> Lotin o'zbekcha qidiruv transliteratsiyasi (Fix 3)
@@ -2232,17 +2261,16 @@ function setupEventListeners() {
       state.searchQuery = q;
       state.activeSearchQuery = q;
 
-      if (q.length > 0) {
-        renderSearchSuggestions(q);
-      } else {
-        if (searchSuggestions) searchSuggestions.classList.remove("show");
-      }
-
-      // Live filter catalog products with 200ms debounce
+      // 🔍 #5 250ms Debounce: Foydalanuvchi yozishdan to'xtagandan keyin tavsiya va filtrlash
       clearTimeout(searchDebounceTimer);
       searchDebounceTimer = setTimeout(() => {
+        if (q.length > 0) {
+          renderSearchSuggestions(q);
+        } else {
+          if (searchSuggestions) searchSuggestions.classList.remove("show");
+        }
         renderProducts();
-      }, 200);
+      }, 250);
     });
 
     // Press Enter key to execute search
@@ -2461,7 +2489,7 @@ function renderSearchSuggestions(query) {
                         );
                         return `
                             <div class="suggest-prod-item" onclick="executeSearch(decodeURIComponent('${safeTitle}'));">
-                                <img src="${item.image}" alt="" class="suggest-prod-img" onerror="this.onerror=null;this.src='/images/navy_suit.jpg'" />
+                                <img src="${item.image}" alt="" class="suggest-prod-img" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/navy_suit.jpg'" />
                                 <div class="suggest-prod-info">
                                     <div class="suggest-prod-title">${item.title_uz}</div>
                                     <div class="suggest-prod-meta">
@@ -3058,7 +3086,7 @@ function updateCartUI() {
           (item, idx) => `
             <div class="cart-item-row" data-cart-idx="${idx}" style="display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; margin-bottom: 10px;">
               <div style="display: flex; align-items: center; gap: 12px;">
-                <img src="${item.image}" style="width: 60px; height: 75px; object-fit: cover; border-radius: 10px;" alt="${item.title}" onerror="this.onerror=null;this.src='/images/navy_suit.jpg'">
+                <img src="${item.image}" style="width: 60px; height: 75px; object-fit: cover; border-radius: 10px;" alt="${item.title}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/navy_suit.jpg'">
                 <div>
                   <div style="font-weight: 700; font-size: 14px; color: #ffffff; margin-bottom: 4px;">${item.title}</div>
                   <div style="font-size: 12px; color: #94a3b8;">O'lcham: <b style="color: #00f2fe;">${item.size}</b> | Rangi: <b style="color: #00f2fe;">${item.color || "Klassik"}</b></div>
@@ -3112,7 +3140,7 @@ function updateCartUI() {
               return `
                 <div class="product-card cart-product-card cart-item-row" data-cart-idx="${idx}" data-id="${item.id}">
                   <div class="card-image-wrap">
-                    <img src="${item.image}" alt="${item.title}" onerror="this.src='/images/navy_suit.jpg'">
+                    <img src="${item.image}" alt="${item.title}" loading="lazy" decoding="async" onerror="this.src='/images/navy_suit.jpg'">
                     <span class="card-badge-tag ${badgeType}">${badgeText}</span>
                     <button type="button" onclick="removeCartItemByIndex(${idx}, event)" title="Savatdan o'chirish" class="cart-delete-btn">🗑️</button>
                   </div>
@@ -4526,7 +4554,7 @@ function renderWishlist() {
       return `
         <div class="product-card" data-id="${product.id}" onclick="closeModal('wishlistPopModal'); openQuickView('${product.id}')">
             <div class="card-image-wrap">
-                <img src="${imgSrc}" alt="${title}" loading="lazy" onerror="this.src='/images/navy_suit.jpg'">
+                <img src="${imgSrc}" alt="${title}" loading="lazy" decoding="async" onerror="this.src='/images/navy_suit.jpg'">
                 ${hasDiscount && discPct > 0 ? `
                   <span class="discount-badge-corner">
                     -${discPct}%
@@ -6048,7 +6076,53 @@ function handleOrderSubmit(e) {
   showToast(
     `Buyurtma #${orderId} muvaffaqiyatli qabul qilindi! Rahmat, ${name}! 🎉`,
   );
+  // 🧾 #15 Muvaffaqiyatli buyurtmadan so'ng chekni darhol yuklab olish tugmasi
+  showReceiptDownloadNotice(orderId);
   openDashboardView("orders");
+}
+
+function showReceiptDownloadNotice(orderId) {
+  let box = document.getElementById("eurotexReceiptNotice");
+  if (!box) {
+    box = document.createElement("div");
+    box.id = "eurotexReceiptNotice";
+    box.style.cssText = `
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      z-index: 999999;
+      background: linear-gradient(135deg, #0b1329 0%, #1e293b 100%);
+      color: #ffffff;
+      border: 1px solid #38bdf8;
+      border-radius: 16px;
+      padding: 16px 20px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      animation: slideInRight 0.4s ease;
+      max-width: 380px;
+    `;
+    document.body.appendChild(box);
+  }
+  box.innerHTML = `
+    <div style="font-size: 28px;">🧾</div>
+    <div>
+      <div style="font-weight: 800; font-size: 14px; color: #38bdf8;">Buyurtma rasmiylashtirildi!</div>
+      <div style="font-size: 12.5px; color: #cbd5e1; margin-top: 2px;">Buyurtma #${escapeHtml(orderId)} kvitansiyasini saqlab oling.</div>
+      <div style="margin-top: 10px; display: flex; gap: 8px;">
+        <button type="button" onclick="downloadReceiptPdf('${escapeHtml(orderId)}'); this.closest('#eurotexReceiptNotice').remove();" class="btn btn-sm" style="background: #0284c7; color: #fff; font-size: 12px; font-weight: 800; padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer;">
+          📄 Chekni yuklab olish (PDF)
+        </button>
+        <button type="button" onclick="this.closest('#eurotexReceiptNotice').remove()" class="btn btn-sm" style="background: rgba(255,255,255,0.1); color: #cbd5e1; font-size: 12px; padding: 6px 10px; border-radius: 8px; border: none; cursor: pointer;">
+          ✕
+        </button>
+      </div>
+    </div>
+  `;
+  setTimeout(() => {
+    if (box && box.parentElement) box.remove();
+  }, 12000);
 }
 
 const orderSyncChannel =
@@ -7450,7 +7524,7 @@ function renderAdminOrders() {
             <div class="admin-product-card">
               <!-- Top Image Box (Screenshot 3 Design) -->
               <div class="admin-card-media">
-                <img src="${itemImg}" alt="${itemTitle}" class="admin-card-img" onerror="this.onerror=null;this.src='/images/navy_suit.jpg'">
+                <img src="${itemImg}" alt="${itemTitle}" class="admin-card-img" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/navy_suit.jpg'">
                 <span class="admin-card-badge">Pachka: ${pachkaQty} dona</span>
               </div>
 
@@ -7570,7 +7644,7 @@ function renderAdminProducts() {
                     <div class="admin-product-card">
                         <!-- Top Image Box -->
                         <div class="admin-card-media">
-                            <img src="${p.image}" alt="${p.title_uz}" class="admin-card-img" onerror="this.onerror=null;this.src='/images/navy_suit.jpg'">
+                            <img src="${p.image}" alt="${p.title_uz}" class="admin-card-img" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/navy_suit.jpg'">
                             <span class="admin-card-badge">📦 Pachka: ${p.pachkaQty || 6} dona ${p.discountPercent ? `<b style="background:#ef4444; color:#fff; padding:1px 6px; border-radius:6px; margin-left:4px;">-${p.discountPercent}%</b>` : ""}</span>
                         </div>
 
@@ -10335,20 +10409,14 @@ function triggerSlideImageUpload(slideIndex) {
   if (fileInput) fileInput.click();
 }
 
-function handleSlideImageUpload(event, slideIndex) {
+async function handleSlideImageUpload(event, slideIndex) {
   const file = event.target.files[0];
   if (!file) return;
 
-  const reader = new FileReader();
-  reader.onload = async function (e) {
-    let imgData = e.target.result;
-    try {
-      imgData = await compressBase64Image(imgData, 1280, 0.8);
-    } catch (err) {}
-
+  try {
+    let imgData = await compressImageFile(file, 1200, 0.85);
     const slideImg = document.getElementById("heroSlideImg_" + slideIndex);
     if (slideImg) slideImg.src = imgData;
-
     safeSetLocalStorage("eurotex_hero_slide_img_" + slideIndex, imgData);
 
     // Upload to server so ALL users see the updated banner
@@ -10369,8 +10437,10 @@ function handleSlideImageUpload(event, slideIndex) {
       console.error("Slide upload server sync error:", err);
       showToast("🖼️ Banner lokal saqlandi ✅");
     }
-  };
-  reader.readAsDataURL(file);
+  } catch (err) {
+    console.error("Slide image compression error:", err);
+    showToast("⚠️ Rasm yuklashda xatolik yuz berdi", "error");
+  }
 }
 
 function openSlideTextEditModal(slideIndex) {
@@ -10650,6 +10720,66 @@ function exportOrdersToCSV() {
 
   if (typeof showToast === "function") {
     showToast(`✅ ${orders.length} ta buyurtma CSV formatida yuklab olindi!`, "success");
+  }
+}
+
+// 📊 #3 ADMIN MIJOZLARINI CSV FORMATDA EKSPORT QILISH
+function exportUsersToCSV() {
+  const users = Array.isArray(window.currentAdminUsersList) && window.currentAdminUsersList.length > 0
+    ? window.currentAdminUsersList
+    : (Array.isArray(window.adminUsersCache) ? window.adminUsersCache : []);
+
+  if (users.length === 0) {
+    if (typeof showToast === "function") {
+      showToast("⚠️ Eksport qilish uchun hech qanday mijoz topilmadi!", "warning");
+    } else {
+      alert("Hech qanday mijoz topilmadi!");
+    }
+    return;
+  }
+
+  const headers = [
+    "ID / Email",
+    "Ism",
+    "Telefon",
+    "Qo'shimcha Tel",
+    "Telegram",
+    "Viloyat / Shahar",
+    "Manzil",
+    "Kostyum O'lchami",
+    "Tug'ilgan Sana",
+    "Ro'yxatdan O'tgan Sana"
+  ];
+
+  const rows = users.map((u) => {
+    return [
+      `"${(u.email || u._id || "").replace(/"/g, '""')}"`,
+      `"${(u.name || u.customerName || "-").replace(/"/g, '""')}"`,
+      `"${(u.phone || "-").replace(/"/g, '""')}"`,
+      `"${(u.extraPhone || "-").replace(/"/g, '""')}"`,
+      `"${(u.telegram || "-").replace(/"/g, '""')}"`,
+      `"${(u.city || u.region || "-").replace(/"/g, '""')}"`,
+      `"${(u.address || "-").replace(/"/g, '""')}"`,
+      `"${(u.suitSize || "-").replace(/"/g, '""')}"`,
+      `"${(u.birthDate || "-").replace(/"/g, '""')}"`,
+      `"${(u.createdAt ? new Date(u.createdAt).toLocaleDateString("uz-UZ") : "-").replace(/"/g, '""')}"`
+    ].join(",");
+  });
+
+  const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\r\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const today = new Date().toISOString().split("T")[0];
+  a.href = url;
+  a.download = `eurotex_customers_${today}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  if (typeof showToast === "function") {
+    showToast(`✅ ${users.length} ta mijoz CSV formatida yuklab olindi!`, "success");
   }
 }
 

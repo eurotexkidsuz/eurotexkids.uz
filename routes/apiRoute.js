@@ -57,7 +57,15 @@ function writeJsonFile(filename, data) {
 // Anti-spam rate limiter for Telegram lead/nasiya alerts (har 2 daqiqada max 3 ta so'rov)
 const spamCooldownMap = new Map();
 function checkSpamLimit(req, keyPrefix = "lead") {
-  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "ip_unknown";
+  // 🛡️ #4 IP Spoofing Himoyasi
+  let ip = req.ip || "";
+  if (!ip) {
+    const rawXff = req.headers["x-forwarded-for"];
+    ip = typeof rawXff === "string" ? rawXff.split(",")[0].trim() : (req.socket && req.socket.remoteAddress) || "";
+  }
+  if (ip.startsWith("::ffff:")) ip = ip.substring(7);
+  ip = ip.replace(/[^0-9a-fA-F:.]/g, "").slice(0, 45) || "unknown_ip";
+
   const key = `${keyPrefix}_${ip}`;
   const now = Date.now();
   const record = spamCooldownMap.get(key) || { count: 0, firstTime: now };
@@ -363,7 +371,10 @@ router.post("/user/update-profile", async (req, res) => {
             updatedAt: new Date(),
           });
         }
-        fs.writeFileSync(localDbFile, JSON.stringify(db, null, 4), "utf8");
+        // 💾 #1 ATOMAR FAYL YOZISH: database.json
+        const tmpDbFile = localDbFile + ".tmp";
+        fs.writeFileSync(tmpDbFile, JSON.stringify(db, null, 4), "utf8");
+        fs.renameSync(tmpDbFile, localDbFile);
       } catch (e) {}
     }
 

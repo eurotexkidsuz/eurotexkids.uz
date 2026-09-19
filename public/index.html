@@ -15,6 +15,10 @@
         } catch(e) {}
       })();
     </script>
+    <style>
+      html[data-theme="dark"], html[data-theme="dark"] body { background-color: #0b1329 !important; color: #f8fafc; }
+      html[data-theme="light"], html[data-theme="light"] body { background-color: #ffffff !important; }
+    </style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
       Eurotexkids.uz — Premial Erkaklar Kostyum-Shimlari va Kiyim-kechaklari |
@@ -2594,8 +2598,12 @@
                         <h3 class="admin-sec-title">Mijozlar Bazasi (CRM)</h3>
                         <p class="admin-sec-subtitle">Barcha ro'yxatdan o'tgan mijozlar va ularning xarid statistikasi</p>
                       </div>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                      <input type="text" id="adminUserSearchInput" placeholder="🔍 Qidirish (ism, telefon, shahar)..." oninput="filterAdminUsersTable(this.value)" style="padding: 10px 16px; border-radius: 12px; background: #0b1329; border: 1px solid rgba(255,255,255,0.15); color: #fff; min-width: 250px;" />
+                      <button type="button" onclick="exportUsersToCSV()" class="btn btn-secondary btn-sm" style="font-size: 13px; font-weight: 700; background: #0284c7; color: #fff; border: none; padding: 10px 16px; border-radius: 12px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+                        📥 Eksport CSV
+                      </button>
                     </div>
-                    <input type="text" id="adminUserSearchInput" placeholder="🔍 Qidirish (ism, telefon, shahar)..." oninput="filterAdminUsersTable(this.value)" style="padding: 10px 16px; border-radius: 12px; background: #0b1329; border: 1px solid rgba(255,255,255,0.15); color: #fff; min-width: 250px;" />
                   </div>
                   <div id="adminUsersTableContainer">
                     <!-- Populated dynamically -->

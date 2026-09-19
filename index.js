@@ -126,25 +126,34 @@ function isSocialBot(req) {
 
 // 🌐 #2 — OG meta taglarini mahsulot ma'lumotlariga almashtirish (SSR)
 function injectProductOgTags(html, product) {
-  const title = encodeURIComponent(product.title_uz || product.title || "Eurotex Kiyim");
-  const desc  = encodeURIComponent(
-    `Narxi: $${product.priceUsd || product.price || ""} | ${product.category_uz || "Erkaklar kiyimi"} | eurotexkids.uz`
-  );
-  const img   = product.image || product.img || "https://eurotexkids.uz/images/eurotex-logo.png";
-  const url   = `https://eurotexkids.uz/product/${encodeURIComponent(product.id)}`;
+  const safeTitle = (product.title_uz || product.title || "Eurotex Kiyim").replace(/"/g, '&quot;');
+  const safeDesc  = `Narxi: $${product.priceUsd || product.price || ""} (${product.priceSom ? product.priceSom.toLocaleString() + " so'm" : ""}) | ${product.category_uz || "Erkaklar kiyimi"} | Butun O'zbekiston bo'yicha yetkazib berish | eurotexkids.uz`.replace(/"/g, '&quot;');
+  const img       = product.image || product.img || "https://eurotexkids.uz/images/eurotex-logo.png";
+  const url       = `https://eurotexkids.uz/product/${encodeURIComponent(product.id)}`;
+  const price     = product.priceUsd || product.price || 0;
 
   const ogBlock = `
-    <meta property="og:title" content="${decodeURIComponent(title)}" />
-    <meta property="og:description" content="${decodeURIComponent(desc)}" />
+    <!-- 🌐 Dynamic SSR Open Graph Tags for Telegram, WhatsApp, Facebook -->
+    <meta property="og:site_name" content="Eurotexkids.uz" />
+    <meta property="og:title" content="${safeTitle} — Eurotex" />
+    <meta property="og:description" content="${safeDesc}" />
     <meta property="og:image" content="${img}" />
+    <meta property="og:image:secure_url" content="${img}" />
+    <meta property="og:image:alt" content="${safeTitle}" />
     <meta property="og:url" content="${url}" />
     <meta property="og:type" content="product" />
+    <meta property="product:price:amount" content="${price}" />
+    <meta property="product:price:currency" content="USD" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="${decodeURIComponent(title)}" />
+    <meta name="twitter:title" content="${safeTitle} — Eurotex" />
+    <meta name="twitter:description" content="${safeDesc}" />
     <meta name="twitter:image" content="${img}" />`;
 
-  // Eski og: meta taglarini yangi bilan almashtir
-  return html.replace(/<meta property="og:[^"]*"[^>]*>/g, "").replace("</head>", ogBlock + "\n</head>");
+  // <title> va eski og: meta taglarini yangi bilan to'liq SSR almashtir
+  let result = html.replace(/<title>[\s\S]*?<\/title>/i, `<title>${safeTitle} — Eurotexkids.uz</title>`);
+  result = result.replace(/<meta\s+property="og:[^"]*"[^>]*>/gi, "");
+  result = result.replace(/<meta\s+name="twitter:[^"]*"[^>]*>/gi, "");
+  return result.replace("</head>", ogBlock + "\n</head>");
 }
 
 function getHydratedHtml() {
@@ -226,14 +235,24 @@ app.use((req, res, next) => {
 });
 
 // ── 🌐 #2 OG META SSR — Ijtimoiy tarmoq botlari uchun mahsulot og: taglarini inject qilish ──
-app.get("/product/:id", (req, res, next) => {
-  if (!isSocialBot(req)) return next();
+app.use((req, res, next) => {
+  if (req.method !== "GET" || !isSocialBot(req)) return next();
+  
+  let targetProdId = null;
+  if (req.path.startsWith("/product/")) {
+    targetProdId = req.path.replace("/product/", "").split("/")[0].split("?")[0];
+  } else if (req.query.p || req.query.prod || req.query.product) {
+    targetProdId = req.query.p || req.query.prod || req.query.product;
+  }
+
+  if (!targetProdId) return next();
+
   const prodsPath = path.join(__dirname, "products_db.json");
   try {
     const prods = fs.existsSync(prodsPath)
       ? JSON.parse(fs.readFileSync(prodsPath, "utf8") || "[]")
       : [];
-    const product = prods.find((p) => String(p.id) === String(req.params.id));
+    const product = prods.find((p) => String(p.id) === String(targetProdId));
     if (!product) return next();
     let html = getHydratedHtml();
     html = injectProductOgTags(html, product);

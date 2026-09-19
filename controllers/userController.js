@@ -901,8 +901,21 @@ const deleteAccount = async (req, res) => {
 
     await User.deleteOne({ email });
 
-    // 🗑️ #12 KASKADLI TOZALASH: Cookie + Session + Lokal ma'lumotlar
-    // Auth cookie-larni o'chirish
+    // 🗑️ #12 KASKADLI TOZALASH: Lokal database.json dan ham o'chirish
+    try {
+      const dbFile = path.join(__dirname, "../database.json");
+      if (fs.existsSync(dbFile)) {
+        let db = JSON.parse(fs.readFileSync(dbFile, "utf8") || "[]");
+        if (Array.isArray(db)) {
+          db = db.filter((u) => u && String(u.email).toLowerCase() !== cleanEmail);
+          const tmpDb = dbFile + ".tmp";
+          fs.writeFileSync(tmpDb, JSON.stringify(db, null, 4), "utf8");
+          fs.renameSync(tmpDb, dbFile);
+        }
+      }
+    } catch (_) {}
+
+    // Auth cookie va sessiyalarni o'chirish
     res.clearCookie("authToken", { path: "/", httpOnly: true, sameSite: "lax" });
     res.clearCookie("eurotex_session", { path: "/" });
 
@@ -1420,7 +1433,15 @@ const saveSlideImage = async (req, res) => {
     }
 
     slides[slideIndex] = finalImgUrl;
-    fs.writeFileSync(SLIDES_FILE, JSON.stringify(slides), "utf8");
+    // 💾 #1 ATOMAR FAYL YOZISH: slides.json
+    const tmpSlidesPath = SLIDES_FILE + ".tmp";
+    try {
+      fs.writeFileSync(tmpSlidesPath, JSON.stringify(slides), "utf8");
+      fs.renameSync(tmpSlidesPath, SLIDES_FILE);
+    } catch (err) {
+      console.error("Slides write error:", err);
+      try { fs.unlinkSync(tmpSlidesPath); } catch (_) {}
+    }
 
     slideVersion = Date.now();
 

@@ -20,11 +20,15 @@ function readLocalProducts() {
   return [];
 }
 
+// 💾 #1 ATOMAR FAYL YOZISH: products_db.json buzilishidan 100% himoya
 function writeLocalProducts(products) {
+  const tmpPath = PRODUCTS_FILE + ".tmp";
   try {
-    fs.writeFileSync(PRODUCTS_FILE, JSON.stringify(products, null, 2), "utf8");
+    fs.writeFileSync(tmpPath, JSON.stringify(products, null, 2), "utf8");
+    fs.renameSync(tmpPath, PRODUCTS_FILE);
   } catch (e) {
     console.error("Error writing products_db.json:", e);
+    try { fs.unlinkSync(tmpPath); } catch (_) {}
   }
 }
 

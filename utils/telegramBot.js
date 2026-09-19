@@ -18,12 +18,16 @@ function getTelegramConfig() {
   return { token, chatId };
 }
 
+// 💾 #1 ATOMAR FAYL YOZISH: telegram_config.json
 function saveTelegramConfig(token, chatId) {
+  const tmpPath = CONFIG_FILE + ".tmp";
   try {
-    fs.writeFileSync(CONFIG_FILE, JSON.stringify({ token, chatId }, null, 2), "utf8");
+    fs.writeFileSync(tmpPath, JSON.stringify({ token, chatId }, null, 2), "utf8");
+    fs.renameSync(tmpPath, CONFIG_FILE);
     return true;
   } catch (e) {
     console.error("Error saving telegram_config.json:", e);
+    try { fs.unlinkSync(tmpPath); } catch (_) {}
     return false;
   }
 }

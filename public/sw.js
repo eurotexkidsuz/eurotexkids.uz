@@ -24,10 +24,10 @@ const OFFLINE_HTML = `<!DOCTYPE html>
 </body>
 </html>`;
 
-const CACHE_NAME = "eurotex-v9-precache";
+const CACHE_NAME = "eurotex-v10-fresh";
 const CRITICAL_ASSETS = [
   "/",
-  "/style.css?v=333.0.0",
+  "/style.css?v=333.1.0",
   "/images/eurotex-logo.png",
   "/manifest.json",
 ];
@@ -43,11 +43,17 @@ self.addEventListener("install", (e) => {
   self.skipWaiting();
 });
 
+// 🔄 #14 Eski barcha kesh qutilarini tozalash (Cache Cleanup on Activate)
 self.addEventListener("activate", (e) => {
   e.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
-        keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)),
+        keys.map((k) => {
+          if (k !== CACHE_NAME) {
+            console.log(`[SW] Eski kesh tozalandi: ${k}`);
+            return caches.delete(k);
+          }
+        }),
       ),
     ),
   );
