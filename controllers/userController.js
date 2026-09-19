@@ -7,6 +7,14 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { OAuth2Client } = require("google-auth-library");
 const path = require("path");
+const {
+  safeCompare,
+  revokeToken,
+  isTokenRevoked,
+  checkLoginBruteForce,
+  recordFailedLogin,
+  clearLoginAttempts,
+} = require("../middleware/adminAuth");
 
 const JWT_SECRET = process.env.JWT_SECRET || "eurotex_secret_2026";
 const ADMIN_EMAILS = ["0600quetry@gmail.com", "eurotexkids7775@gmail.com"];
@@ -268,6 +276,16 @@ const sendCode = async (req, res) => {
       email += "@gmail.com";
     }
 
+    // 🛡️ #10 Brute-force Login tekshiruvi
+    const brute = checkLoginBruteForce(email);
+    if (!brute.allowed) {
+      return res.status(429).json({
+        success: false,
+        message: `Xavfsizlik tizimi: Juda ko'p muvaffaqiyatsiz urinish! Iltimos, ${brute.minutesLeft} daqiqadan so'ng qayta urining.`,
+        blockedMinutes: brute.minutesLeft,
+      });
+    }
+
     const deviceInfo = getDeviceInfo(req);
     const now = new Date();
 
@@ -344,6 +362,16 @@ const verifyCode = async (req, res) => {
         .json({ message: "Email va kod kiritilishi shart!" });
 
     email = email.toLowerCase().trim();
+
+    // 🛡️ #10 Brute-force tekshiruvi
+    const brute = checkLoginBruteForce(email);
+    if (!brute.allowed) {
+      return res.status(429).json({
+        message: `Xavfsizlik tizimi: Juda ko'p xato urinish! Iltimos, ${brute.minutesLeft} daqiqadan so'ng qayta urining.`,
+        blockedMinutes: brute.minutesLeft,
+      });
+    }
+
     const deviceInfo = getDeviceInfo(req);
     const now = new Date();
 
@@ -376,9 +404,11 @@ const verifyCode = async (req, res) => {
       });
     }
 
-    const isCodeValid = Boolean(storedCode && storedCode.length === 6 && inputCode.length === 6 && inputCode === storedCode);
+    // 🛡️ #3 Timing Attack himoyasi (safeCompare)
+    const isCodeValid = Boolean(storedCode && storedCode.length === 6 && inputCode.length === 6 && safeCompare(inputCode, storedCode));
 
     if (!isCodeValid) {
+      recordFailedLogin(email);
       user.loginLogs.push({ ...deviceInfo, status: "failed" });
       user.failedAttempts = (user.failedAttempts || 0) + 1;
 
@@ -400,6 +430,7 @@ const verifyCode = async (req, res) => {
       });
     }
 
+    clearLoginAttempts(email);
     user.resendCount = 0;
     user.failedAttempts = 0;
     user.blockCount = 0;
@@ -521,6 +552,10 @@ const getProfile = async (req, res) => {
     if (!sessionToken) {
       return res.status(401).json({ message: "Sessiya tokeni topilmadi!" });
     }
+    // 🛡️ #9 JWT Token Revocation List
+    if (isTokenRevoked(sessionToken)) {
+      return res.status(401).json({ message: "Sessiya bekor qilingan yoki eskirgan. Qayta kiring!" });
+    }
     try {
       const decoded = jwt.verify(sessionToken, JWT_SECRET);
       if (decoded.email !== email) {
@@ -573,6 +608,9 @@ const removeSession = async (req, res) => {
     } catch {
       return res.status(403).json({ message: "Token yaroqsiz yoki eskirgan!" });
     }
+
+    // 🛡️ #9 JWT Token Revocation: token qora ro'yxatga kiritiladi
+    revokeToken(sessionToken);
 
     const user = await User.findOne({ email });
     if (!user)
@@ -900,6 +938,7 @@ const deleteAccount = async (req, res) => {
     }
 
     await User.deleteOne({ email });
+    revokeToken(token);
 
     // 🗑️ #12 KASKADLI TOZALASH: Lokal database.json dan ham o'chirish
     try {

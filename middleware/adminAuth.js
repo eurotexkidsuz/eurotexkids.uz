@@ -16,6 +16,62 @@ function parseCookies(req) {
   return list;
 }
 
+const crypto = require("crypto");
+
+// 🛡️ #3 Timing Attack himoyasi (Timing-Safe Comparison)
+function safeCompare(a, b) {
+  if (typeof a !== "string" || typeof b !== "string") return false;
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) {
+    crypto.timingSafeEqual(bufA, bufA);
+    return false;
+  }
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
+// 🛡️ #9 JWT Token Revocation List (Qora ro'yxat)
+const revokedTokens = new Set();
+function revokeToken(token) {
+  if (token && typeof token === "string") {
+    revokedTokens.add(token);
+    setTimeout(() => { revokedTokens.delete(token); }, 7 * 24 * 60 * 60 * 1000).unref();
+  }
+}
+function isTokenRevoked(token) {
+  if (!token) return true;
+  return revokedTokens.has(token);
+}
+
+// 🛡️ #10 Brute-Force Login Blokirovkasi (5 marta xato bo'lsa 15 daqiqa blok)
+const loginAttempts = new Map();
+function checkLoginBruteForce(identifier) {
+  const key = String(identifier).toLowerCase().trim();
+  const record = loginAttempts.get(key);
+  if (!record) return { allowed: true, remaining: 5 };
+  const now = Date.now();
+  if (now > record.blockedUntil) {
+    loginAttempts.delete(key);
+    return { allowed: true, remaining: 5 };
+  }
+  if (record.attempts >= 5) {
+    const minutesLeft = Math.ceil((record.blockedUntil - now) / 60000);
+    return { allowed: false, minutesLeft };
+  }
+  return { allowed: true, remaining: 5 - record.attempts };
+}
+function recordFailedLogin(identifier) {
+  const key = String(identifier).toLowerCase().trim();
+  const now = Date.now();
+  const record = loginAttempts.get(key) || { attempts: 0, blockedUntil: 0 };
+  record.attempts += 1;
+  record.blockedUntil = now + (record.attempts >= 5 ? 15 * 60 * 1000 : 5 * 60 * 1000);
+  loginAttempts.set(key, record);
+}
+function clearLoginAttempts(identifier) {
+  loginAttempts.delete(String(identifier).toLowerCase().trim());
+}
+
 // Admin API himoya middleware — faqat tasdiqlangan admin tokenini qabul qiladi
 function requireAdmin(req, res, next) {
   const cookies = parseCookies(req);
@@ -26,17 +82,17 @@ function requireAdmin(req, res, next) {
       : null) ||
     req.headers["x-admin-token"];
 
-  // 1. Master local admin token check (xavfsiz server kaliti)
-  if (token === "admin_master_token_2026") {
+  // 1. Master local admin token check (Timing-Safe)
+  if (safeCompare(token || "", "admin_master_token_2026")) {
     const adminEmail = (req.headers["x-admin-email"] || req.query?.adminEmail || ADMIN_EMAILS[0]).toLowerCase().trim();
     req.adminUser = { email: adminEmail, role: "admin" };
     return next();
   }
 
-  if (!token) {
+  if (!token || isTokenRevoked(token)) {
     return res.status(401).json({
       success: false,
-      message: "Ruxsat yo'q. Iltimos, admin sifatida tizimga kiring.",
+      message: "Ruxsat yo'q yoki token bekor qilingan. Iltimos, qayta kiring.",
     });
   }
 
@@ -62,5 +118,14 @@ function requireAdmin(req, res, next) {
   }
 }
 
-module.exports = { requireAdmin, parseCookies };
+module.exports = {
+  requireAdmin,
+  parseCookies,
+  safeCompare,
+  revokeToken,
+  isTokenRevoked,
+  checkLoginBruteForce,
+  recordFailedLogin,
+  clearLoginAttempts,
+};
 

@@ -21,6 +21,15 @@ app.use(
   })
 );
 
+// 🛡️ #1 Explicit Security Headers (Clickjacking, MIME Sniffing, Referrer Policy)
+app.use((req, res, next) => {
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  next();
+});
+
 // ── #5 CORS — Faqat eurotexkids.uz ga ruxsat ──────────────────────────────────
 const allowedOrigins = [
   "https://eurotexkids.uz",
@@ -50,6 +59,35 @@ app.use((req, res, next) => {
 // ── #3 BODY SIZE — 100mb → 2mb (DoS himoyasi) ─────────────────────────────────
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ limit: "2mb", extended: true }));
+
+// 🛡️ #4 HPP (HTTP Parameter Pollution) query sanitizer
+app.use((req, res, next) => {
+  if (req.query && typeof req.query === "object") {
+    for (const key of Object.keys(req.query)) {
+      if (Array.isArray(req.query[key])) {
+        req.query[key] = req.query[key][req.query[key].length - 1];
+      }
+    }
+  }
+  next();
+});
+
+// 🛡️ #7 NoSQL Injection himoyasi ($gt, $ne, $where operatorlarini tozalash)
+function sanitizeNoSql(obj) {
+  if (!obj || typeof obj !== "object") return;
+  for (const key of Object.keys(obj)) {
+    if (key.startsWith("$") || key.includes(".")) {
+      delete obj[key];
+    } else if (typeof obj[key] === "object") {
+      sanitizeNoSql(obj[key]);
+    }
+  }
+}
+app.use((req, res, next) => {
+  if (req.body) sanitizeNoSql(req.body);
+  if (req.params) sanitizeNoSql(req.params);
+  next();
+});
 
 // ── #2 RATE LIMITING — DoS va brute-force hujumlaridan himoya ────────────────
 const apiLimiter = rateLimit({
