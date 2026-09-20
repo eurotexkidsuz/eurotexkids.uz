@@ -1342,12 +1342,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   initPreloader();
   initTheme();
   initPWA();
+  initSearchWorker();
   initScrollToTop();
   closeAllModals();
   checkGoogleAuthRedirect();
   updateUserAuthUI();
   checkMaintenanceStatus();
   await syncProductsWithBackendAndStorage(false);
+  syncSearchWorkerProducts();
   await fetchOrdersFromServer();
   await fetchExchangeRate();
   cleanupExpiredLocalStorage();
@@ -1832,6 +1834,100 @@ function resetSearchAndFilters() {
   showToast("Barcha filtrlar tozalandi! 🔄");
 }
 
+// ⚡ #4 AVIF-First Picture Generator with Zero-Layout-Shift (CLS < 0.05)
+function renderOptimizedPicture(imgSrc, altText) {
+  if (!imgSrc) imgSrc = "/images/navy_suit.jpg";
+  let avifSrc = imgSrc;
+  let webpSrc = imgSrc;
+  if (/\.(jpe?g|png)$/i.test(imgSrc)) {
+    avifSrc = imgSrc.replace(/\.(jpe?g|png)$/i, ".avif");
+    webpSrc = imgSrc.replace(/\.(jpe?g|png)$/i, ".webp");
+  }
+  const safeAlt = altText ? String(altText).replace(/"/g, "&quot;") : "Eurotex";
+  return `
+    <picture>
+      <source srcset="${avifSrc}" type="image/avif">
+      <source srcset="${webpSrc}" type="image/webp">
+      <img src="${imgSrc}" alt="${safeAlt}" width="300" height="300" loading="lazy" decoding="async" onerror="this.src='/images/navy_suit.jpg'">
+    </picture>
+  `;
+}
+
+// ⚡ #5 Resource Hints: Speculative Prefetch on Hover / Touch
+const _prefetchedProducts = new Set();
+function prefetchProductResources(productId) {
+  if (!productId || _prefetchedProducts.has(productId)) return;
+  _prefetchedProducts.add(productId);
+  try {
+    const pool = (typeof getGlobalProductsPool === "function" ? getGlobalProductsPool() : []) || [];
+    const prod = pool.find((p) => String(p.id) === String(productId));
+    if (!prod) return;
+    const toPreload = [prod.image, ...(Array.isArray(prod.images) ? prod.images : [])].filter(Boolean);
+    toPreload.slice(0, 3).forEach((src) => {
+      const link = document.createElement("link");
+      link.rel = "prefetch";
+      link.as = "image";
+      link.href = src;
+      document.head.appendChild(link);
+    });
+  } catch (_) {}
+}
+
+// ⚡ #3 Web Worker Background Search Engine
+let _searchWorker = null;
+let _searchWorkerReady = false;
+let _lastSearchRequestId = 0;
+
+function initSearchWorker() {
+  if (_searchWorker || typeof window === "undefined" || !window.Worker) return;
+  try {
+    _searchWorker = new Worker("/search-worker.js");
+    _searchWorker.onmessage = function (e) {
+      const data = e.data || {};
+      if (data.action === "PRODUCTS_SET") {
+        _searchWorkerReady = true;
+      } else if (data.action === "SEARCH_RESULTS" && data.requestId === _lastSearchRequestId) {
+        applyWorkerSearchResults(data.matchedIds);
+      }
+    };
+    syncSearchWorkerProducts();
+  } catch (err) {
+    console.warn("Search Worker init fallback:", err);
+    _searchWorker = null;
+  }
+}
+
+function syncSearchWorkerProducts() {
+  if (!_searchWorker) return;
+  try {
+    const pool = typeof getGlobalProductsPool === "function" ? getGlobalProductsPool() : [];
+    if (Array.isArray(pool) && pool.length > 0) {
+      _searchWorker.postMessage({ action: "SET_PRODUCTS", payload: pool });
+    }
+  } catch (_) {}
+}
+
+function applyWorkerSearchResults(matchedIds) {
+  if (Array.isArray(matchedIds)) {
+    state._workerMatchedIds = new Set(matchedIds);
+    renderProducts();
+  }
+}
+
+let _virtualScrollObserver = null;
+function initVirtualScrollObserver() {
+  if (!("IntersectionObserver" in window)) return;
+  const sentinel = document.getElementById("productsVirtualSentinel");
+  if (!sentinel) return;
+  if (_virtualScrollObserver) _virtualScrollObserver.disconnect();
+  _virtualScrollObserver = new IntersectionObserver((entries) => {
+    if (entries[0] && entries[0].isIntersecting) {
+      loadMoreProducts();
+    }
+  }, { rootMargin: "300px" });
+  _virtualScrollObserver.observe(sentinel);
+}
+
 function renderProducts() {
   const grid = document.getElementById("productGrid");
   const countBadge = document.getElementById("productCountBadge");
@@ -1853,6 +1949,9 @@ function renderProducts() {
 
   let filtered = pool.filter((item) => {
     if (!item) return false;
+    if (state._workerMatchedIds && activeSearch) {
+      return state._workerMatchedIds.has(String(item.id || item.customId));
+    }
     const titleUz = (item.title_uz || item.title || "").toLowerCase();
     const titleRu = (
       item.title_ru ||
@@ -1995,11 +2094,11 @@ function renderProducts() {
           const imgSrc =
             product.image || product.img || "/images/navy_suit.jpg";
 
-                    const isOutOfStock = product.inStock === false || (product.stockQty !== undefined && Number(product.stockQty) <= 0);
-                    return `
-            <div class="product-card ${isOutOfStock ? "out-of-stock-card" : ""}" data-id="${product.id || "prod-1"}" onclick="openQuickView('${product.id || "prod-1"}')">
+          const isOutOfStock = product.inStock === false || (product.stockQty !== undefined && Number(product.stockQty) <= 0);
+          return `
+            <div class="product-card ${isOutOfStock ? "out-of-stock-card" : ""}" data-id="${product.id || "prod-1"}" onclick="openQuickView('${product.id || "prod-1"}')" onmouseenter="prefetchProductResources('${product.id || "prod-1"}')" ontouchstart="prefetchProductResources('${product.id || "prod-1"}')">
                 <div class="card-image-wrap">
-                    <img src="${imgSrc}" alt="${title}" loading="lazy" decoding="async" onerror="this.src='/images/navy_suit.jpg'">
+                    ${renderOptimizedPicture(imgSrc, title)}
                     ${isOutOfStock ? `<span class="card-badge-tag badge-out-of-stock">Sotuvda yo'q</span>` : (badgeText ? `<span class="card-badge-tag ${badgeType}">${badgeText}</span>` : "")}
                     <button class="wishlist-heart-btn ${isWishlisted ? "active" : ""}" 
                             onclick="event.stopPropagation(); toggleWishlist('${product.id || "prod-1"}')" 
@@ -2039,15 +2138,21 @@ function renderProducts() {
       })
       .join("") +
     (filtered.length > visibleItems.length
-      ? `<div class="load-more-container">
-         <button type="button" class="btn load-more-btn" onclick="loadMoreProducts()">
-           🚀 Yana ${filtered.length - visibleItems.length} ta mahsulotni ko'rsatish
-         </button>
-       </div>`
+      ? `
+        <!-- ⚡ #2 Virtual DOM-free progressive scroll sentinel -->
+        <div id="productsVirtualSentinel" style="height: 24px; width: 100%; grid-column: 1 / -1;"></div>
+        <div class="load-more-container">
+          <button type="button" class="btn load-more-btn" onclick="loadMoreProducts()">
+            🚀 Yana ${filtered.length - visibleItems.length} ta mahsulotni ko'rsatish
+          </button>
+        </div>`
       : "");
 
-  // Initialize Luxury Scroll Reveal Animation
-  setTimeout(initProductScrollReveal, 30);
+  // Initialize Luxury Scroll Reveal Animation & Virtualization Observer
+  setTimeout(() => {
+    initProductScrollReveal();
+    initVirtualScrollObserver();
+  }, 30);
 }
 
 let _productScrollObserver = null;
@@ -2269,7 +2374,22 @@ function setupEventListeners() {
         } else {
           if (searchSuggestions) searchSuggestions.classList.remove("show");
         }
-        renderProducts();
+        if (_searchWorker && _searchWorkerReady) {
+          _lastSearchRequestId++;
+          _searchWorker.postMessage({
+            action: "SEARCH",
+            requestId: _lastSearchRequestId,
+            payload: {
+              query: q,
+              category: state.currentCategory,
+              sort: state.currentSort,
+              lang: state.currentLang,
+            },
+          });
+        } else {
+          state._workerMatchedIds = null;
+          renderProducts();
+        }
       }, 250);
     });
 
@@ -2408,7 +2528,23 @@ function executeSearch(query) {
   const defaultPill = document.querySelector('.nav-pill[data-category="all"]');
   if (defaultPill) defaultPill.classList.add("active");
 
-  renderProducts();
+  // ⚡ #3 Web Worker high-speed background search
+  if (_searchWorker && _searchWorkerReady) {
+    _lastSearchRequestId++;
+    _searchWorker.postMessage({
+      action: "SEARCH",
+      requestId: _lastSearchRequestId,
+      payload: {
+        query: q,
+        category: state.currentCategory,
+        sort: state.currentSort,
+        lang: state.currentLang,
+      },
+    });
+  } else {
+    state._workerMatchedIds = null;
+    renderProducts();
+  }
 
   const sec = document.getElementById("products-section");
   if (sec) {

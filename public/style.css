@@ -2096,9 +2096,19 @@ html[data-theme="dark"] .main-header.scrolled {
   aspect-ratio: 3 / 4;
   overflow: hidden;
   background: #0f172a;
+  contain: layout paint aspect-ratio;
 }
 
-.card-image-wrap img {
+.card-image-wrap picture {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.card-image-wrap img,
+.card-image-wrap picture img {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -2108,9 +2118,11 @@ html[data-theme="dark"] .main-header.scrolled {
   object-position: center;
   background: #0f172a;
   transition: transform 0.4s ease;
+  display: block;
 }
 
-.product-card:hover .card-image-wrap img {
+.product-card:hover .card-image-wrap img,
+.product-card:hover .card-image-wrap picture img {
   transform: scale(1.04);
 }
 

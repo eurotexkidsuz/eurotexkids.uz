@@ -11,7 +11,17 @@ const compression = require("compression");
 require("dotenv").config();
 const app = express();
 app.set("trust proxy", 1); // #2 Reverse proxy (Nginx, Cloudflare) ortida mijoz IP sini to'g'ri olish
-app.use(compression()); // HTTP javoblarni Gzip orqali siqish (tezlikni 4-5x oshiradi)
+
+// ⚡ #6 High-Efficiency Compression (Brotli/Gzip) with 1KB threshold
+app.use(
+  compression({
+    threshold: 1024,
+    filter: (req, res) => {
+      if (req.headers["x-no-compression"]) return false;
+      return compression.filter(req, res);
+    },
+  })
+);
 
 // ── #1 HELMET — XSS, Clickjacking, MIME sniffing himoyasi ─────────────────────
 app.use(
@@ -319,8 +329,9 @@ app.use(
     setHeaders: (res, filePath) => {
       if (filePath.endsWith(".html")) {
         res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-      } else if (/\.(jpg|jpeg|png|webp|svg|ico|woff2|woff|ttf)$/i.test(filePath)) {
+      } else if (/\.(jpg|jpeg|png|webp|avif|svg|ico|woff2|woff|ttf)$/i.test(filePath)) {
         res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        if (filePath.endsWith(".avif")) res.setHeader("Content-Type", "image/avif");
       } else if (/\.(css|js)$/i.test(filePath)) {
         res.setHeader("Cache-Control", "public, max-age=86400"); // 1 kun
       }
@@ -373,6 +384,8 @@ const server = app.listen(PORT, () => {
 server.headersTimeout = 65000;   // 65 soniya (Node.js standartidan yuqori)
 server.requestTimeout = 30000;   // 30 soniya
 server.keepAliveTimeout = 61000; // 61 soniya
+// ⚡ #10 HTTP/2 & Keep-Alive Multiplexing Tuning
+server.maxRequestsPerSocket = 1000; // Bitta socket orqali 1000 tagacha parallel/ketma-ket so'rovlarga ruxsat
 
 // 📉 #11 Memory Leak Monitoring: har 4 soatda xotirani tekshirish
 setInterval(() => {
