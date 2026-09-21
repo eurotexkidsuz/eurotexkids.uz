@@ -6733,35 +6733,22 @@ function renderOrdersHistory() {
     if (Array.isArray(savedIds)) savedIds.forEach((id) => localOrderIds.add(String(id)));
   } catch (e) {}
 
-  // Filter ONLY orders that strictly belong to THIS user
   const myOrders = (state.orders || []).filter((o) => {
     if (!o) return false;
     const ordId = String(o.orderId || o.id || "");
-
-    // 1. Matched by device's placed order IDs
     if (ordId && localOrderIds.has(ordId)) return true;
-
-    // 2. Matched by logged-in user email
     const oEmail = String(o.userEmail || o.email || "").toLowerCase().trim();
     if (uEmail && oEmail && oEmail === uEmail) return true;
-
-    // 3. Matched by primary phone number (exact suffix matching for 9 digits)
     const oPhone = String(o.phone || "").replace(/[^0-9]/g, "");
     if (uPhone && uPhone.length >= 9 && oPhone && (oPhone.endsWith(uPhone) || uPhone.endsWith(oPhone))) return true;
-
-    // 4. Matched by secondary extra phone number
     if (uExtraPhone && uExtraPhone.length >= 9 && oPhone && (oPhone.endsWith(uExtraPhone) || uExtraPhone.endsWith(oPhone))) return true;
-
-    // 5. Matched by telegram username if present in order
     if (uTelegram) {
       const oRecip = String(o.recipient || o.notes || "").toLowerCase();
       if (oRecip.includes("@" + uTelegram) || oRecip.includes(uTelegram)) return true;
     }
-
     return false;
   });
 
-  // Update order status tabs counts
   const countAll = myOrders.length;
   const countDelivering = myOrders.filter((o) => [1, 2, 3].includes(getOrderStatusStep(o))).length;
   const countCompleted = myOrders.filter((o) => getOrderStatusStep(o) === 4).length;
@@ -6778,15 +6765,11 @@ function renderOrdersHistory() {
 
   if (myOrders.length === 0) {
     container.innerHTML = `
-      <div style="text-align:center; padding:50px 20px; background:var(--bg-surface, #ffffff); border-radius:18px; border:1px solid var(--border-color, #e2e8f0); margin:20px 0; box-shadow:0 4px 15px rgba(0,0,0,0.02);">
-        <div style="font-size:52px; margin-bottom:12px;">📦</div>
-        <h3 style="font-size:18px; font-weight:800; color:var(--text-primary, #0f172a); margin:0 0 8px 0;">Sizda hali buyurtmalar mavjud emas</h3>
-        <p style="font-size:13.5px; color:var(--text-secondary, #64748b); margin:0 0 20px 0; max-width:440px; margin-left:auto; margin-right:auto;">
-          Siz ushbu hisob orqali hali buyurtma bermagansiz. Do'konimizdagi premium kostyum va kiyimlarni ko'rib chiqing va buyurtma bering!
-        </p>
-        <button type="button" onclick="closeDashboardView()" style="background:#88001b; color:#ffffff; border:none; border-radius:12px; padding:11px 24px; font-weight:800; font-size:14px; cursor:pointer; box-shadow:0 4px 14px rgba(136,0,27,0.3); transition:all 0.2s;">
-          Katalogga o'tish 🛍️
-        </button>
+      <div class="oh-empty-state">
+        <div class="oh-empty-icon">📦</div>
+        <h3 class="oh-empty-title">Sizda hali buyurtmalar mavjud emas</h3>
+        <p class="oh-empty-desc">Siz ushbu hisob orqali hali buyurtma bermagansiz. Do'konimizdagi premium kostyum va kiyimlarni ko'rib chiqing!</p>
+        <button type="button" class="btn btn-primary" onclick="closeDashboardView()" style="margin-top:4px;">Katalogga o'tish 🛍️</button>
       </div>
     `;
     return;
@@ -6803,115 +6786,198 @@ function renderOrdersHistory() {
 
   if (displayedOrders.length === 0) {
     container.innerHTML = `
-      <div style="text-align:center; padding:45px 20px; background:var(--bg-surface, #ffffff); border-radius:18px; border:1px solid var(--border-color, #e2e8f0); margin:20px 0;">
-        <div style="font-size:44px; margin-bottom:10px;">🔍</div>
-        <h3 style="font-size:16.5px; font-weight:800; color:var(--text-primary, #0f172a); margin:0 0 6px 0;">Ushbu holatda buyurtmalar mavjud emas</h3>
-        <p style="font-size:13px; color:var(--text-secondary, #64748b); margin:0 0 16px 0;">
-          Tanlangan holat bo'yicha hech qanday buyurtma topilmadi.
-        </p>
-        <button type="button" onclick="filterCustomerOrders('all')" style="background:rgba(136,0,27,0.08); color:#88001b; border:1px solid rgba(136,0,27,0.25); border-radius:10px; padding:8px 18px; font-weight:700; font-size:13px; cursor:pointer;">
-          Barcha buyurtmalarni ko'rish
-        </button>
+      <div class="oh-empty-state">
+        <div class="oh-empty-icon">🔍</div>
+        <h3 class="oh-empty-title">Ushbu holatda buyurtmalar mavjud emas</h3>
+        <p class="oh-empty-desc">Tanlangan holat bo'yicha hech qanday buyurtma topilmadi.</p>
+        <button type="button" onclick="filterCustomerOrders('all')" class="btn btn-outline-primary" style="margin-top:4px;">Barcha buyurtmalarni ko'rish</button>
       </div>
     `;
     return;
   }
 
-  container.innerHTML = displayedOrders
-    .map((order) => {
-      const step = getOrderStatusStep(order);
+  const usdRate = state.usdRate || 12650;
 
-      let badgeBg = "#fef3c7";
-      let badgeColor = "#92400e";
-      if (step === 4) {
-        badgeBg = "#dcfce7";
-        badgeColor = "#166534";
-      } else if (step === 3) {
-        badgeBg = "#e0e7ff";
-        badgeColor = "#3730a3";
-      } else if (step === 2) {
-        badgeBg = "#ffedd5";
-        badgeColor = "#9a3412";
-      } else if (step === 0) {
-        badgeBg = "#fee2e2";
-        badgeColor = "#991b1b";
-      }
+  container.innerHTML = displayedOrders.map((order) => {
+    const step = getOrderStatusStep(order);
 
-      let trackerHtml = "";
-      if (step === 0) {
-        trackerHtml = `
-          <div style="margin: 12px 0; padding: 12px 16px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 12px; display: flex; align-items: center; gap: 10px; color: #ef4444; font-weight: 700; font-size: 13px;">
-            <span style="font-size: 17px;">❌</span>
-            <span>Ushbu buyurtma bekor qilingan</span>
+    // ── Status badge config ──────────────────────────────────────────────────
+    const statusConfig = {
+      0: { emoji: "❌", label: "Bekor qilindi",  bg: "#fee2e2", color: "#991b1b" },
+      1: { emoji: "🟡", label: "Qabul qilindi",   bg: "#fef9c3", color: "#854d0e" },
+      2: { emoji: "📦", label: "Tayyorlanmoqda",  bg: "#ffedd5", color: "#9a3412" },
+      3: { emoji: "🚚", label: "Kuryer yo'lda",   bg: "#e0e7ff", color: "#3730a3" },
+      4: { emoji: "✅", label: "Yetkazildi",      bg: "#dcfce7", color: "#166534" },
+    };
+    const sc = statusConfig[step] || statusConfig[1];
+
+    // ── Live tracker ─────────────────────────────────────────────────────────
+    let trackerHtml = "";
+    if (step === 0) {
+      trackerHtml = `
+        <div class="oh-cancelled-banner">
+          <span>❌</span> Ushbu buyurtma bekor qilingan
+        </div>`;
+    } else {
+      const statusMsg = step === 4 ? "Muvaffaqiyatli yetkazildi ✅"
+                      : step === 3 ? "Kuryer topshirishga chiqdi 🚚"
+                      : step === 2 ? "Omborda qadoqlanmoqda 📦"
+                      : "Buyurtmangiz qabul qilindi 📋";
+      trackerHtml = `
+        <div class="order-live-tracker">
+          <div class="oh-tracker-header">
+            <span>🚚 Buyurtma Qayerda?</span>
+            <span class="oh-tracker-status-msg" style="color:${step === 4 ? "#10b981" : "#88001b"};">${statusMsg}</span>
           </div>
-        `;
-      } else {
-        trackerHtml = `
-          <div class="order-live-tracker">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; font-size:12.5px; color:var(--text-secondary, #64748b); font-weight:700;">
-              <span>🚚 Buyurtma Qayerda?</span>
-              <span style="color:${step === 4 ? "#10b981" : "#88001b"};">${step === 4 ? "Muvaffaqiyatli yetkazildi ✅" : (step === 3 ? "Kuryer topshirishga chiqdi 🚚" : (step === 2 ? "Omborda qadoqlanmoqda 📦" : "Buyurtmangiz qabul qilindi 📋"))}</span>
+          <div class="tracker-steps-bar">
+            <div class="tracker-node ${step >= 1 ? (step === 1 ? "current" : "done") : ""}">
+              <div class="node-circle">${step > 1 ? "✓" : "1"}</div>
+              <span class="node-label">Qabul qilindi</span>
+              <span class="node-sub">Tizimda</span>
             </div>
-            <div class="tracker-steps-bar">
-              <div class="tracker-node ${step >= 1 ? (step === 1 ? "current" : "done") : ""}">
-                <div class="node-circle">${step > 1 ? "✓" : "1"}</div>
-                <span class="node-label">Qabul qilindi</span>
-                <span class="node-sub">Tizimda</span>
-              </div>
-              <div class="tracker-connector ${step >= 2 ? "active" : ""}"></div>
-              <div class="tracker-node ${step >= 2 ? (step === 2 ? "current" : "done") : ""}">
-                <div class="node-circle">${step > 2 ? "✓" : "2"}</div>
-                <span class="node-label">Tayyorlanmoqda</span>
-                <span class="node-sub">Omborda</span>
-              </div>
-              <div class="tracker-connector ${step >= 3 ? "active" : ""}"></div>
-              <div class="tracker-node ${step >= 3 ? (step === 3 ? "current" : "done") : ""}">
-                <div class="node-circle">${step > 3 ? "✓" : "3"}</div>
-                <span class="node-label">Kuryer yo'lda</span>
-                <span class="node-sub">Yetkazilmoqda</span>
-              </div>
-              <div class="tracker-connector ${step >= 4 ? "active" : ""}"></div>
-              <div class="tracker-node ${step >= 4 ? "done current" : ""}">
-                <div class="node-circle">${step >= 4 ? "✓" : "4"}</div>
-                <span class="node-label">Yetkazildi</span>
-                <span class="node-sub">Topshirildi</span>
-              </div>
+            <div class="tracker-connector ${step >= 2 ? "active" : ""}"></div>
+            <div class="tracker-node ${step >= 2 ? (step === 2 ? "current" : "done") : ""}">
+              <div class="node-circle">${step > 2 ? "✓" : "2"}</div>
+              <span class="node-label">Tayyorlanmoqda</span>
+              <span class="node-sub">Omborda</span>
+            </div>
+            <div class="tracker-connector ${step >= 3 ? "active" : ""}"></div>
+            <div class="tracker-node ${step >= 3 ? (step === 3 ? "current" : "done") : ""}">
+              <div class="node-circle">${step > 3 ? "✓" : "3"}</div>
+              <span class="node-label">Kuryer yo'lda</span>
+              <span class="node-sub">Yetkazilmoqda</span>
+            </div>
+            <div class="tracker-connector ${step >= 4 ? "active" : ""}"></div>
+            <div class="tracker-node ${step >= 4 ? "done current" : ""}">
+              <div class="node-circle">${step >= 4 ? "✓" : "4"}</div>
+              <span class="node-label">Yetkazildi</span>
+              <span class="node-sub">Topshirildi</span>
             </div>
           </div>
-        `;
-      }
+        </div>`;
+    }
+
+    // ── Product rows ─────────────────────────────────────────────────────────
+    const items = order.items || [];
+    const itemsHtml = items.map((item) => {
+      const qty         = Number(item.quantity) || 1;
+      const priceUsd    = Number(item.priceUsd || item.price || 45);
+      const itemTotalUsd = priceUsd * qty;
+      const itemTotalSom = Math.round(itemTotalUsd * usdRate);
+
+      const sizeRange   = item.size  || "46-48-50";
+      const colorName   = item.color || "To'q ko'k (Navy)";
+      const style       = item.style || item.model || "Klassik";
 
       return `
-        <div class="checkout-card-box order-history-card" style="margin-bottom: 18px; border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; box-shadow: 0 3px 12px rgba(0,0,0,0.03);">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:12px;">
-                <div>
-                    <strong style="font-size:16px; color:var(--text-primary, #0f172a);">Buyurtma #${order.id}</strong>
-                    <span style="font-size:13px; color:var(--text-muted); margin-left:8px;">Sana: ${order.date}</span>
-                </div>
-                <span class="uzum-sub-badge" style="background:${badgeBg}; color:${badgeColor}; font-size:13px; font-weight:700; padding:4px 12px; border-radius:8px;">
-                    ${order.status || "Qabul qilindi 🟡"}
-                </span>
+        <div class="oh-product-row">
+          <div class="oh-product-left">
+            <div class="oh-product-dot">•</div>
+            <div class="oh-product-info">
+              <div class="oh-product-name">${escapeHtml(item.title || "Eurotex Mahsulot")}</div>
+              <div class="oh-product-meta">
+                <span class="oh-meta-chip oh-chip-qty">${qty}x Pachka</span>
+                <span class="oh-meta-chip oh-chip-size">📏 ${escapeHtml(sizeRange)}</span>
+                <span class="oh-meta-chip oh-chip-color">🎨 ${escapeHtml(colorName)}</span>
+                <span class="oh-meta-chip oh-chip-style">✂️ ${escapeHtml(style)}</span>
+              </div>
             </div>
-            
-            ${trackerHtml}
+          </div>
+          <div class="oh-product-price">
+            <div class="oh-price-usd">$${priceUsd} × ${qty}</div>
+            <div class="oh-price-som">${Math.round(itemTotalSom).toLocaleString("uz-UZ")} so'm</div>
+          </div>
+        </div>`;
+    }).join("");
 
-            <div style="font-size:13.5px; margin:12px 0 10px 0; color:var(--text-primary, #1e293b);">
-                ${(order.items || []).map((item) => `<div>• <b>${escapeHtml(item.title)}</b> (${item.quantity}x) — O'lcham: ${escapeHtml(item.size || "46")} / ${escapeHtml(item.color || "To'q ko'k (Navy)")}</div>`).join("")}
-            </div>
+    // ── Grand totals ─────────────────────────────────────────────────────────
+    const rawTotal    = Number(order.total || 0);
+    const totalUsd    = rawTotal > 5000 ? Math.round(rawTotal / usdRate) : rawTotal;
+    const totalSom    = totalUsd * usdRate;
 
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:12px; padding-top:10px; border-top:1px dashed var(--border-color); font-size:13px; color:var(--text-secondary, #475569);">
-                <div>Manzil: <b>${escapeHtml(order.address || "Toshkent sh., Chilonzor tumani, Lutfiy ko'chasi 14-uy")}</b></div>
-                <div>Jami: <strong style="font-size:16px; color:var(--text-primary, #0f172a);">${safeFormatMoney(order.total || 120)}</strong></div>
-            </div>
-            
-            <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
-                <button type="button" onclick="downloadReceiptPdf('${order.id}')" class="btn btn-secondary btn-sm" style="font-weight:700; font-size:12.5px; border-radius:8px;">📄 PDF Kvitansiya</button>
-                <button type="button" onclick="switchDashboardTab('returns'); prefillReturnOrder('${order.id}');" class="btn btn-primary btn-sm" style="font-weight:700; font-size:12.5px; border-radius:8px; background: linear-gradient(135deg, #88001b 0%, #5c0018 100%);">🔄 Almashtirish / Qaytarish</button>
-            </div>
+    // ── Delivery address with maps link ─────────────────────────────────────
+    const rawAddr = order.address || "";
+    const mapsUrl = rawAddr.includes("maps.google.com")
+      ? rawAddr.match(/https?:\/\/[^\s"')]+/)?.[0] || ""
+      : "";
+    const cleanAddr = mapsUrl
+      ? rawAddr.replace(/https?:\/\/[^\s"')]+/, "").replace(/Lokatsiya:\s*/i, "").trim()
+      : rawAddr;
+    const addrHtml = mapsUrl
+      ? `${escapeHtml(cleanAddr)} <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="oh-maps-link">📍 Xaritada ko'rish</a>`
+      : escapeHtml(cleanAddr || "Manzil kiritilmagan");
+
+    // ── Payment method label ─────────────────────────────────────────────────
+    const payLabel = order.paymentMethod === "payme" ? "💳 Payme"
+                   : order.paymentMethod === "click"  ? "💳 Click"
+                   : "💵 Naqd to'lov";
+
+    return `
+      <div class="oh-card">
+        <!-- Card Header -->
+        <div class="oh-card-header">
+          <div class="oh-card-id-wrap">
+            <span class="oh-card-id">Buyurtma #${escapeHtml(order.id || order.orderId || "")}</span>
+            <span class="oh-card-date">📅 ${escapeHtml(order.date || "")}</span>
+          </div>
+          <span class="oh-status-badge" style="background:${sc.bg}; color:${sc.color};">
+            ${sc.emoji} ${sc.label}
+          </span>
         </div>
-      `;
-    })
-    .join("");
+
+        <!-- Live Tracker -->
+        ${trackerHtml}
+
+        <!-- Products List -->
+        <div class="oh-products-section">
+          ${itemsHtml || '<div class="oh-no-items">Mahsulotlar ro\'yxati mavjud emas</div>'}
+        </div>
+
+        <!-- Divider -->
+        <div class="oh-divider"></div>
+
+        <!-- Order Details Row -->
+        <div class="oh-details-grid">
+          <div class="oh-detail-item">
+            <span class="oh-detail-label">📍 Manzil:</span>
+            <span class="oh-detail-value">${addrHtml}</span>
+          </div>
+          <div class="oh-detail-item">
+            <span class="oh-detail-label">💳 To'lov turi:</span>
+            <span class="oh-detail-value">${payLabel}</span>
+          </div>
+          <div class="oh-detail-item">
+            <span class="oh-detail-label">📦 Mahsulotlar soni:</span>
+            <span class="oh-detail-value">${items.reduce((s, i) => s + (Number(i.quantity) || 1), 0)} pachka</span>
+          </div>
+          <div class="oh-detail-item">
+            <span class="oh-detail-label">📅 Zakaz sanasi:</span>
+            <span class="oh-detail-value">${escapeHtml(order.date || "—")}</span>
+          </div>
+        </div>
+
+        <!-- Grand Total -->
+        <div class="oh-grand-total">
+          <span class="oh-grand-label">💰 Jami summa:</span>
+          <div class="oh-grand-amounts">
+            <span class="oh-grand-usd">$${totalUsd}</span>
+            <span class="oh-grand-som">${Math.round(totalSom).toLocaleString("uz-UZ")} so'm</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="oh-actions">
+          <button type="button" class="oh-btn-pdf" onclick="downloadReceiptPdf('${escapeHtml(order.id || "")}')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            PDF Kvitansiya
+          </button>
+          <button type="button" class="oh-btn-return" onclick="switchDashboardTab('returns'); prefillReturnOrder('${escapeHtml(order.id || "")}'); window.scrollTo({top:0,behavior:'smooth'});">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.36"/></svg>
+            Almashtirish / Qaytarish
+          </button>
+        </div>
+      </div>`;
+  }).join("");
 }
 
 // Rasmiy chek/kvitansiya shakllantirish va PDF sifatida yuklab berish
