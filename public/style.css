@@ -787,6 +787,40 @@ body {
   padding-bottom: 70px; /* Space for mobile nav */
 }
 
+/* 🌟 GLOBAL LUXURY EUROTEX WATERMARK BACKGROUND SYSTEM */
+.site-luxury-watermark {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: 
+    radial-gradient(circle at 12% 18%, rgba(212, 175, 55, 0.04) 0%, transparent 45%),
+    radial-gradient(circle at 88% 82%, rgba(212, 175, 55, 0.04) 0%, transparent 45%),
+    url('/images/eurotex-logo.png');
+  background-repeat: no-repeat, no-repeat, repeat;
+  background-size: auto, auto, 240px 240px;
+  background-position: center, center, center;
+  opacity: 0.024;
+  filter: grayscale(100%);
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+body.dark-mode .site-luxury-watermark,
+html[data-theme="dark"] .site-luxury-watermark {
+  opacity: 0.038;
+  filter: grayscale(100%) invert(1);
+}
+
+.top-utility-bar,
+.main-header,
+.category-nav-bar,
+.main-content,
+.main-footer {
+  position: relative;
+  z-index: 1;
+}
+
 @media (min-width: 768px) {
   body {
     padding-bottom: 0;
@@ -1730,6 +1764,7 @@ html[data-theme="dark"] .main-header.scrolled {
   transition:
     opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
     visibility 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 2;
 }
 
 .carousel-slide.active {
@@ -1750,10 +1785,172 @@ html[data-theme="dark"] .main-header.scrolled {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at center, rgba(30, 41, 59, 0.85) 0%, rgba(7, 11, 20, 0.98) 100%);
+  background: transparent !important;
   border-radius: 24px;
   overflow: hidden;
   padding: 12px 0;
+  z-index: 2;
+}
+
+/* ⚜️ LUXURY HERO BANNER BRAND WATERMARK & WINGS */
+.hero-brand-bg-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.hero-bg-ambient-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(212, 175, 55, 0.12) 0%,
+    rgba(30, 41, 59, 0.5) 45%,
+    rgba(7, 11, 20, 0.98) 100%
+  );
+  pointer-events: none;
+}
+
+.hero-watermark-wing {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 280px;
+  transition: opacity 0.3s ease;
+}
+
+.hero-wing-left {
+  align-items: flex-start;
+  text-align: left;
+  padding-left: 44px;
+}
+
+.hero-wing-right {
+  align-items: flex-end;
+  text-align: right;
+  padding-right: 44px;
+}
+
+.hero-watermark-emblem {
+  width: 130px;
+  height: 130px;
+  margin-bottom: 12px;
+  opacity: 0.11;
+  filter: grayscale(100%) brightness(2.2);
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-watermark-emblem img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.hero-carousel-section:hover .hero-watermark-emblem {
+  opacity: 0.18;
+  transform: scale(1.06);
+  filter: grayscale(0%) drop-shadow(0 0 16px rgba(212, 175, 55, 0.35));
+}
+
+.hero-wing-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hero-wing-sub {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3.5px;
+  color: #d4af37;
+  opacity: 0.65;
+  text-transform: uppercase;
+}
+
+.hero-wing-title {
+  font-family: var(--font-heading);
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: #ffffff;
+  opacity: 0.32;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.hero-wing-desc {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: #94a3b8;
+  opacity: 0.5;
+  text-transform: uppercase;
+}
+
+.hero-watermark-center-crest {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 360px;
+  height: 360px;
+  opacity: 0.055;
+  filter: grayscale(100%) brightness(2.2);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hero-watermark-center-crest img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+@media (max-width: 1024px) {
+  .hero-wing-left {
+    padding-left: 20px;
+  }
+  .hero-wing-right {
+    padding-right: 20px;
+  }
+  .hero-watermark-emblem {
+    width: 96px;
+    height: 96px;
+  }
+  .hero-wing-title {
+    font-size: 20px;
+    letter-spacing: 2px;
+  }
+  .hero-wing-sub,
+  .hero-wing-desc {
+    font-size: 9.5px;
+    letter-spacing: 1.5px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-watermark-wing {
+    display: none;
+  }
+  .hero-watermark-center-crest {
+    width: 220px;
+    height: 220px;
+    opacity: 0.08;
+  }
 }
 
 .slide-img {

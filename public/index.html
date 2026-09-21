@@ -87,6 +87,8 @@
       *, *::before, *::after { box-sizing: border-box; }
       body { margin: 0; padding: 0; font-family: var(--font-primary); background-color: var(--bg-body); color: var(--text-primary); -webkit-font-smoothing: antialiased; }
       .container { max-width: 1280px; margin: 0 auto; padding: 0 16px; }
+      .site-luxury-watermark { position: fixed; inset: 0; pointer-events: none; z-index: 0; background-image: radial-gradient(circle at 12% 18%, rgba(212, 175, 55, 0.04) 0%, transparent 45%), radial-gradient(circle at 88% 82%, rgba(212, 175, 55, 0.04) 0%, transparent 45%), url('/images/eurotex-logo.png'); background-repeat: no-repeat, no-repeat, repeat; background-size: auto, auto, 240px 240px; background-position: center; opacity: 0.024; filter: grayscale(100%); transform: translateZ(0); will-change: transform; }
+      body.dark-mode .site-luxury-watermark { opacity: 0.038; filter: grayscale(100%) invert(1); }
       .main-header { position: sticky; top: 0; z-index: 100; background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color); height: 70px; display: flex; align-items: center; }
       .header-flex { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; }
       .brand-logo-img { height: 42px; width: auto; aspect-ratio: 180 / 42; }
@@ -178,6 +180,9 @@
     </script>
   </head>
   <body>
+    <!-- 🌟 LUXURY EUROTEX GLOBAL BACKGROUND WATERMARK LAYER -->
+    <div class="site-luxury-watermark" aria-hidden="true"></div>
+
     <!-- Preloader Screen -->
     <div id="preloader" class="preloader">
       <div class="preloader-content">
@@ -562,6 +567,40 @@
           <!-- Hero Carousel Banner -->
           <section class="hero-carousel-section">
             <div class="carousel-container" id="heroCarousel">
+              <!-- ⚜️ LUXURY EUROTEX HERO BANNER BRANDING WATERMARK LAYER -->
+              <div class="hero-brand-bg-layer" aria-hidden="true">
+                <div class="hero-bg-ambient-glow"></div>
+
+                <!-- Left Wing Watermark & Haute Couture Branding -->
+                <div class="hero-watermark-wing hero-wing-left">
+                  <div class="hero-watermark-emblem">
+                    <img src="/images/eurotex-logo.png" alt="Eurotex Kids" />
+                  </div>
+                  <div class="hero-wing-meta">
+                    <span class="hero-wing-sub">HAUTE COUTURE</span>
+                    <strong class="hero-wing-title">EUROTEX</strong>
+                    <span class="hero-wing-desc">PREMIUM COLLECTION</span>
+                  </div>
+                </div>
+
+                <!-- Center Subtle Crest Behind Mannequin -->
+                <div class="hero-watermark-center-crest">
+                  <img src="/images/eurotex-logo.png" alt="Eurotex Crest" />
+                </div>
+
+                <!-- Right Wing Watermark & Italian Tailoring Branding -->
+                <div class="hero-watermark-wing hero-wing-right">
+                  <div class="hero-watermark-emblem">
+                    <img src="/images/eurotex-logo.png" alt="Eurotex Kids" />
+                  </div>
+                  <div class="hero-wing-meta">
+                    <span class="hero-wing-sub">EXCLUSIVE SUITS</span>
+                    <strong class="hero-wing-title">EST. 1998</strong>
+                    <span class="hero-wing-desc">ITALIAN WOOL FABRIC</span>
+                  </div>
+                </div>
+              </div>
+
               <!-- Slide 1 -->
               <div class="carousel-slide active" id="heroSlide_0">
                 <div class="slide-content">
