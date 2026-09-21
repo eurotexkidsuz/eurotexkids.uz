@@ -134,7 +134,7 @@
       rel="stylesheet"
     />
     <!-- ⚡ Standard Render-Blocking CSS (Completely Prevents Flash of Unstyled Content) -->
-    <link rel="stylesheet" href="/style.css?v=343.0.0" />
+    <link rel="stylesheet" href="/style.css?v=344.0.0" />
     <!-- Schema.org JSON-LD Structured Data (Google Sitelinks & Store Entity) -->
     <script type="application/ld+json">
     {
@@ -967,18 +967,26 @@
 
             <!-- Carousel Controls -->
             <button
+              type="button"
               class="carousel-arrow prev"
               id="carouselPrev"
               title="Oldingi"
+              aria-label="Oldingi"
             >
-              ❮
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
             </button>
             <button
+              type="button"
               class="carousel-arrow next"
               id="carouselNext"
               title="Keyingi"
+              aria-label="Keyingi"
             >
-              ❯
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
             </button>
             <div class="carousel-indicators" id="carouselIndicators">
               <span class="dot active" data-index="0"></span>
