@@ -805,7 +805,7 @@ body {
   padding-bottom: 70px; /* Space for mobile nav */
 }
 
-/* 🌟 GLOBAL LUXURY EUROTEX WATERMARK BACKGROUND SYSTEM (75PX / OZGINA KO'RINADIGAN 3.8% OPACITY) */
+/* 🌟 GLOBAL LUXURY EUROTEX WATERMARK BACKGROUND SYSTEM (80PX / KO'RINADIGAN 5.5% OPACITY) */
 .site-luxury-watermark {
   position: fixed;
   inset: 0;
@@ -813,9 +813,9 @@ body {
   z-index: 0;
   background-image: url('/images/eurotex-logo-transparent.png');
   background-repeat: repeat;
-  background-size: 75px 75px;
+  background-size: 80px 80px;
   background-position: center;
-  opacity: 0.038;
+  opacity: 0.055;
   filter: grayscale(100%);
   transform: translateZ(0);
   will-change: transform;
@@ -823,7 +823,7 @@ body {
 
 body.dark-mode .site-luxury-watermark,
 html[data-theme="dark"] .site-luxury-watermark {
-  opacity: 0.055;
+  opacity: 0.075;
   filter: grayscale(100%) invert(1);
 }
 
@@ -1082,13 +1082,13 @@ html[data-theme="dark"] .main-header.scrolled {
   background: #ffffff;
   border: 1px solid rgba(15, 23, 42, 0.10);
   border-radius: 10px;
-  padding: 3px 10px;
+  padding: 4px 12px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
-  height: 40px;
-  max-width: 105px;
+  height: 44px;
+  max-width: 130px;
   transition: var(--transition);
 }
 
@@ -1099,9 +1099,9 @@ html[data-theme="dark"] .main-header.scrolled {
 }
 
 .brand-logo-img {
-  height: 32px;
+  height: 36px;
   width: auto;
-  max-height: 32px;
+  max-height: 36px;
   max-width: 100%;
   object-fit: contain;
   image-rendering: -webkit-optimize-contrast;
@@ -4911,14 +4911,14 @@ html[data-theme="dark"] .modal-close:hover {
     flex-wrap: nowrap;
   }
   .brand-logo-container {
-    height: 36px;
-    padding: 2px 8px;
-    max-width: 95px;
+    height: 38px;
+    padding: 3px 10px;
+    max-width: 115px;
     flex-shrink: 0;
   }
   .brand-logo-img {
-    height: 28px;
-    max-height: 28px;
+    height: 30px;
+    max-height: 30px;
   }
   .logo-domain-badge {
     font-size: 10px;
@@ -5394,9 +5394,9 @@ html[data-theme="dark"] .modal-close:hover {
     padding: 0 10px;
   }
   .brand-logo-container {
-    height: 32px;
-    padding: 2px 6px;
-    max-width: 85px;
+    height: 35px;
+    padding: 2px 7px;
+    max-width: 100px;
   }
   .product-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -5477,9 +5477,9 @@ html[data-theme="dark"] .modal-close:hover {
     font-size: 20px;
   }
   .brand-logo-container {
-    height: 28px;
+    height: 30px;
     padding: 1px 5px;
-    max-width: 75px;
+    max-width: 85px;
   }
   .card-title {
     font-size: 11px;
