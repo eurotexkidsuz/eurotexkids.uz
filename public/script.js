@@ -2922,6 +2922,35 @@ function animateFlyToCart(sourceEl, triggerBtn = null) {
   };
 }
 
+// 🛒 Cart Persistence Engine (stays in cart until order, then completely clears)
+function persistCart() {
+  try {
+    const data = JSON.stringify(state.cart || []);
+    safeSetLocalStorage("eurotex_cart", data);
+    if (state.user && state.user.email) {
+      const userKey = state.user.email.toLowerCase().trim();
+      safeSetLocalStorage(`eurotex_cart_${userKey}`, data);
+    }
+  } catch (e) {}
+}
+
+function clearPersistedCart() {
+  state.cart = [];
+  state.appliedPromoCode = null;
+  state.appliedDiscountAmount = 0;
+  state.appliedDiscountUsd = 0;
+  state.discountRate = 0;
+  try {
+    localStorage.removeItem("eurotex_cart");
+    if (state.user && state.user.email) {
+      const userKey = state.user.email.toLowerCase().trim();
+      localStorage.removeItem(`eurotex_cart_${userKey}`);
+    }
+  } catch (e) {}
+  updateCartUI();
+  updateDashboardCounts();
+}
+
 // Cart Drawer Operations
 function addToCart(
   productId,
@@ -2992,19 +3021,14 @@ function addToCart(
     });
   }
 
-  localStorage.setItem("eurotex_cart", JSON.stringify(state.cart));
+  persistCart();
   updateCartUI();
+  updateDashboardCounts();
   showToast(`"${title.slice(0, 25)}..." savatga solindi 🛒`);
 }
 
 function clearCart() {
-  state.cart = [];
-  state.appliedPromoCode = null;
-  state.appliedDiscountAmount = 0;
-  state.appliedDiscountUsd = 0;
-  state.discountRate = 0;
-  localStorage.setItem("eurotex_cart", JSON.stringify(state.cart));
-  updateCartUI();
+  clearPersistedCart();
   showToast("Savat tozalandi");
 }
 
@@ -3012,8 +3036,9 @@ function removeCartItem(productId, size, color) {
   state.cart = state.cart.filter(
     (c) => !(c.id === productId && c.size === size && c.color === color),
   );
-  localStorage.setItem("eurotex_cart", JSON.stringify(state.cart));
+  persistCart();
   updateCartUI();
+  updateDashboardCounts();
   showToast("Mahsulot savatdan olib tashlandi 🗑️");
 }
 
@@ -3027,14 +3052,16 @@ function removeCartItemByIndex(index, ev) {
       itemEl.classList.add("cart-item-collapsing");
       setTimeout(() => {
         state.cart.splice(index, 1);
-        localStorage.setItem("eurotex_cart", JSON.stringify(state.cart));
+        persistCart();
         updateCartUI();
+        updateDashboardCounts();
         showToast("Mahsulot savatdan olib tashlandi 🗑️");
       }, 320);
     } else {
       state.cart.splice(index, 1);
-      localStorage.setItem("eurotex_cart", JSON.stringify(state.cart));
+      persistCart();
       updateCartUI();
+      updateDashboardCounts();
       showToast("Mahsulot savatdan olib tashlandi 🗑️");
     }
   }
@@ -3174,7 +3201,8 @@ function updateCartQtyByIndex(index, change, ev) {
       return;
     }
     state.cart[index].quantity += change;
-    localStorage.setItem("eurotex_cart", JSON.stringify(state.cart));
+    persistCart();
+    updateDashboardCounts();
 
     const qtySpan = document.getElementById(`cartItemQtyVal_${index}`);
     if (qtySpan) {
@@ -6309,16 +6337,21 @@ function handleOrderSubmit(e) {
       .catch((e) => console.error("POST /orders error:", e));
   } catch (err) {}
 
-  state.cart = [];
-  localStorage.removeItem("eurotex_cart");
-  updateCartUI();
+  clearPersistedCart();
 
   showToast(
     `Buyurtma #${orderId} muvaffaqiyatli qabul qilindi! Rahmat, ${name}! 🎉`,
   );
   // 🧾 #15 Muvaffaqiyatli buyurtmadan so'ng chekni darhol yuklab olish tugmasi
   showReceiptDownloadNotice(orderId);
+
+  // Buyurtmalar bo'limiga o'tish va filtrni 'all' ga o'rnatish
+  state.customerOrderFilter = "all";
+  document.querySelectorAll("#orderStatusTabs .order-tab-btn").forEach((b) => {
+    b.classList.toggle("active", b.getAttribute("data-status") === "all");
+  });
   openDashboardView("orders");
+  renderOrdersHistory();
 }
 
 function showReceiptDownloadNotice(orderId) {
@@ -6744,7 +6777,9 @@ function renderOrdersHistory() {
   const myOrders = (state.orders || []).filter((o) => {
     if (!o) return false;
     const ordId = String(o.orderId || o.id || "");
-    if (ordId && localOrderIds.has(ordId)) return true;
+    const rawId = String(o.id || "");
+    const rawOrdId = String(o.orderId || "");
+    if ((ordId && localOrderIds.has(ordId)) || (rawId && localOrderIds.has(rawId)) || (rawOrdId && localOrderIds.has(rawOrdId))) return true;
     const oEmail = String(o.userEmail || o.email || "").toLowerCase().trim();
     if (uEmail && oEmail && oEmail === uEmail) return true;
     const oPhone = String(o.phone || "").replace(/[^0-9]/g, "");

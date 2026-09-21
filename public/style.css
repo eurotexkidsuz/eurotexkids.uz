@@ -14246,37 +14246,70 @@ body.dark-mode .oh-empty-title {
   letter-spacing: -0.3px;
 }
 
-/* ── Responsive ── */
+/* ── Responsive: 1-talab to'liq bo'lsin (1 full-width card per row on mobile) ── */
 @media (max-width: 768px) {
   .cart-cards-grid {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 14px;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .ci-card {
+    width: 100% !important;
+  }
+
+  .ci-img-wrap {
+    aspect-ratio: 16/10 !important;
+    max-height: 250px;
+  }
+
+  .ci-body {
+    padding: 14px 16px 16px 16px;
+    gap: 10px;
+  }
+
+  .ci-name {
+    font-size: 15px;
+  }
+
+  .ci-price-input {
+    width: 70px;
+    font-size: 16px;
+  }
+
+  .ci-total-val {
+    font-size: 16px;
   }
 }
 
 @media (max-width: 480px) {
   .cart-cards-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  .ci-img-wrap {
+    aspect-ratio: 16/10 !important;
+    max-height: 220px;
   }
 
   .ci-body {
-    padding: 11px 12px 13px 12px;
-    gap: 7px;
+    padding: 12px 14px 14px 14px;
+    gap: 9px;
   }
 
   .ci-name {
-    font-size: 13px;
+    font-size: 14.5px;
   }
 
   .ci-total-val {
-    font-size: 13.5px;
+    font-size: 15px;
   }
 }
 
 @media (max-width: 360px) {
   .cart-cards-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
   }
 }
 
@@ -14638,11 +14671,35 @@ body.dark-mode .del-badge-speed {
   box-shadow: 0 6px 16px rgba(2, 132, 199, 0.35);
 }
 
+/* ── Responsive: Buyurtmalarda ham 1-talab to'liq bo'lsin (1 full-width card per row on mobile) ── */
 @media (max-width: 768px) {
   .oh-products-cards-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 10px;
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
   }
+
+  .oh-item-card {
+    width: 100% !important;
+  }
+
+  .oh-item-media {
+    aspect-ratio: 16/10 !important;
+    max-height: 240px;
+  }
+
+  .oh-item-body {
+    padding: 14px 16px 16px 16px;
+    gap: 9px;
+  }
+
+  .oh-item-title {
+    font-size: 15px;
+  }
+
+  .oh-total-num {
+    font-size: 16px;
+  }
+
   .oh-btn-check {
     flex: unset;
     width: 100%;
@@ -14654,23 +14711,32 @@ body.dark-mode .del-badge-speed {
 
 @media (max-width: 480px) {
   .oh-products-cards-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
   }
+
+  .oh-item-media {
+    aspect-ratio: 16/10 !important;
+    max-height: 210px;
+  }
+
   .oh-item-body {
-    padding: 10px;
-    gap: 6px;
+    padding: 12px 14px 14px 14px;
+    gap: 8px;
   }
+
   .oh-item-title {
-    font-size: 13px;
+    font-size: 14px;
   }
+
   .oh-total-num {
-    font-size: 13px;
+    font-size: 15px;
   }
 }
 
 @media (max-width: 360px) {
   .oh-products-cards-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
   }
 }

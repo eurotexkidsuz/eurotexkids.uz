@@ -1394,6 +1394,15 @@
       "/shirts": { type: "category", value: "shirts" },
       "/accessories": { type: "category", value: "accessories" },
       "/pachkalab-sotuv": { type: "category", value: "wholesale" },
+      "/cart": { type: "dashboard", value: "cart" },
+      "/savat": { type: "dashboard", value: "cart" },
+      "/orders": { type: "dashboard", value: "orders" },
+      "/buyurtmalar": { type: "dashboard", value: "orders" },
+      "/checkout": { type: "dashboard", value: "checkout" },
+      "/rasmiylashtirish": { type: "dashboard", value: "checkout" },
+      "/wishlist": { type: "dashboard", value: "wishlist" },
+      "/saralanganlar": { type: "dashboard", value: "wishlist" },
+      "/returns": { type: "dashboard", value: "returns" },
       "/admin": { type: "admin", value: "dashboard" },
       "/admin/orders": { type: "admin", value: "orders" },
       "/admin/users": { type: "admin", value: "users" },
@@ -1446,6 +1455,15 @@
         if (window.state)
           window.state.currentRoute = { path, type: routeType, value };
       } catch (e) {}
+
+      if (routeType === "dashboard") {
+        try {
+          if (typeof window.openDashboardView === "function") {
+            window.openDashboardView(value);
+          }
+        } catch (e) {}
+        return;
+      }
 
       if (routeType === "home" || routeType === "category") {
         this._openHomePage();
