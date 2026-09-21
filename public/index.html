@@ -117,15 +117,24 @@
         .main-header { height: 60px; }
         .hero-carousel-section { min-height: 200px; border-radius: 14px; margin: 10px 0; }
       }
+      /* ⚡ Instant Preloader Styling (Prevents Unstyled Giant Logo & FOUC) */
+      .preloader { position: fixed; inset: 0; background: #070c18; z-index: 999999; display: flex; align-items: center; justify-content: center; }
+      .preloader-content { text-align: center; color: #ffffff; }
+      .preloader-logo-container { background: #ffffff; border: 2px solid #1b6b68; border-radius: 18px; padding: 10px 20px; display: inline-block; margin-bottom: 14px; max-width: 180px; }
+      .preloader-logo-img { height: 60px; max-height: 60px; width: auto; object-fit: contain; }
+      .preloader-title { font-size: 24px; font-weight: 800; letter-spacing: 2px; }
+      .preloader-title span { color: #d4af37; }
+      .preloader-subtext { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+      .preloader-spinner { width: 30px; height: 30px; border: 3px solid rgba(255, 255, 255, 0.1); border-top-color: #d4af37; border-radius: 50%; margin: 20px auto 0; animation: spin 0.8s linear infinite; }
+      @keyframes spin { to { transform: rotate(360deg); } }
     </style>
     <!-- ⚡ #8 Google Fonts Subset & display=swap -->
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&subset=latin,cyrillic&display=swap"
       rel="stylesheet"
     />
-    <!-- ⚡ #1 Non-blocking Asynchronous CSS Preload (FCP < 0.8s) -->
-    <link rel="preload" href="/style.css?v=342.0.0" as="style" onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript><link rel="stylesheet" href="/style.css?v=342.0.0" /></noscript>
+    <!-- ⚡ Standard Render-Blocking CSS (Completely Prevents Flash of Unstyled Content) -->
+    <link rel="stylesheet" href="/style.css?v=343.0.0" />
     <!-- Schema.org JSON-LD Structured Data (Google Sitelinks & Store Entity) -->
     <script type="application/ld+json">
     {
@@ -200,6 +209,9 @@
             src="/images/eurotex-logo.png"
             alt="Eurotex Logo"
             class="preloader-logo-img"
+            width="160"
+            height="60"
+            style="height: 60px; max-height: 60px; width: auto; object-fit: contain;"
           />
         </div>
         <div class="preloader-title">EUROTEXKIDS<span>.UZ</span></div>
