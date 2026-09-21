@@ -3647,9 +3647,13 @@ function selectPdpGalleryImage(idx) {
   window.currentPdpIndex = idx;
   const mainImg = document.getElementById("pdpMainDisplayImg");
   const counterEl = document.getElementById("pdpImgCounter");
+  const lbImg = document.getElementById("pdpLightboxImg");
+  const lbCounter = document.getElementById("pdpLightboxCounter");
 
   if (mainImg) mainImg.src = window.currentPdpImages[idx];
   if (counterEl) counterEl.textContent = `${idx + 1}/${window.currentPdpImages.length}`;
+  if (lbImg) lbImg.src = window.currentPdpImages[idx];
+  if (lbCounter) lbCounter.textContent = `${idx + 1}/${window.currentPdpImages.length}`;
 
   document
     .querySelectorAll("#pdpThumbsStrip .pdp-thumb-item")
@@ -3930,8 +3934,71 @@ function renderPdpRelatedProducts(currentProduct) {
 }
 
 function openPdpImgZoom() {
-  if (!window.currentPdpImages || !window.currentPdpImages[window.currentPdpIndex]) return;
-  window.open(window.currentPdpImages[window.currentPdpIndex], "_blank");
+  if (!window.currentPdpImages || window.currentPdpImages.length === 0) return;
+  const currentIdx = typeof window.currentPdpIndex === "number" ? window.currentPdpIndex : 0;
+  const currentSrc = window.currentPdpImages[currentIdx] || window.currentPdpImages[0];
+  const modal = document.getElementById("pdpImageLightboxModal");
+  const lbImg = document.getElementById("pdpLightboxImg");
+  const lbCounter = document.getElementById("pdpLightboxCounter");
+  const prevBtn = document.getElementById("pdpLightboxPrevBtn");
+  const nextBtn = document.getElementById("pdpLightboxNextBtn");
+  if (!modal || !lbImg) return;
+
+  lbImg.src = currentSrc;
+  const total = window.currentPdpImages.length;
+  if (total <= 1) {
+    if (prevBtn) prevBtn.style.display = "none";
+    if (nextBtn) nextBtn.style.display = "none";
+    if (lbCounter) lbCounter.style.display = "none";
+  } else {
+    if (prevBtn) prevBtn.style.display = "flex";
+    if (nextBtn) nextBtn.style.display = "flex";
+    if (lbCounter) {
+      lbCounter.style.display = "block";
+      lbCounter.textContent = `${currentIdx + 1}/${total}`;
+    }
+  }
+
+  modal.classList.add("show");
+  document.body.style.overflow = "hidden";
+
+  if (!window._pdpLightboxListenersAttached) {
+    window._pdpLightboxListenersAttached = true;
+    window.addEventListener("keydown", (e) => {
+      const m = document.getElementById("pdpImageLightboxModal");
+      if (!m || !m.classList.contains("show")) return;
+      if (e.key === "Escape") {
+        closePdpImgLightbox();
+      } else if (e.key === "ArrowLeft") {
+        navigatePdpGallery(-1);
+      } else if (e.key === "ArrowRight") {
+        navigatePdpGallery(1);
+      }
+    });
+
+    let touchStartX = 0;
+    modal.addEventListener("touchstart", (e) => {
+      if (e.changedTouches && e.changedTouches[0]) {
+        touchStartX = e.changedTouches[0].screenX;
+      }
+    }, { passive: true });
+
+    modal.addEventListener("touchend", (e) => {
+      if (e.changedTouches && e.changedTouches[0]) {
+        const diff = e.changedTouches[0].screenX - touchStartX;
+        if (Math.abs(diff) > 45) {
+          if (diff > 0) navigatePdpGallery(-1);
+          else navigatePdpGallery(1);
+        }
+      }
+    }, { passive: true });
+  }
+}
+
+function closePdpImgLightbox() {
+  const modal = document.getElementById("pdpImageLightboxModal");
+  if (modal) modal.classList.remove("show");
+  document.body.style.overflow = "auto";
 }
 
 function openAddReviewPrompt() {

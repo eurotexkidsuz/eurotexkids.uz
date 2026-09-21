@@ -11109,75 +11109,216 @@ body.dark-mode #sizeGuideModal .size-note,
   position: absolute;
   top: 14px;
   right: 14px;
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(8px);
+  background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: #1e293b;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s;
-  z-index: 3;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s;
+  z-index: 4;
 }
 
 .pdp-stage-expand-btn:hover {
-  transform: scale(1.1);
+  transform: scale(1.12);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
 .pdp-stage-arrow {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(8px);
+  background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
-  font-weight: 700;
   color: #1e293b;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s;
-  z-index: 3;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 4;
 }
 
 .pdp-stage-arrow:hover {
   background: #ffffff;
-  transform: translateY(-50%) scale(1.1);
+  transform: translateY(-50%) scale(1.12);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
 .pdp-stage-arrow.prev {
-  left: 8px;
+  left: 10px;
 }
 
 .pdp-stage-arrow.next {
-  right: 8px;
+  right: 10px;
 }
 
 .pdp-img-counter {
   position: absolute;
-  bottom: 12px;
+  bottom: 14px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(6px);
+  background: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(8px);
   color: #ffffff;
-  padding: 3px 12px;
+  padding: 4px 14px;
   border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  z-index: 3;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 4;
+}
+
+/* 🔍 Fullscreen Product Image Lightbox Modal */
+.pdp-lightbox-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background: rgba(10, 15, 29, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s;
+}
+
+.pdp-lightbox-modal.show {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.pdp-lightbox-wrapper {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.pdp-lightbox-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.pdp-lightbox-close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.pdp-lightbox-stage {
+  position: relative;
+  max-width: 90vw;
+  max-height: 88vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pdp-lightbox-stage img {
+  max-width: 88vw;
+  max-height: 84vh;
+  object-fit: contain;
+  border-radius: 14px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  user-select: none;
+  -webkit-user-drag: none;
+  animation: pdpLightboxImgIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes pdpLightboxImgIn {
+  from {
+    opacity: 0.5;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.pdp-lightbox-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pdp-lightbox-arrow:hover {
+  background: #ffffff;
+  transform: translateY(-50%) scale(1.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.pdp-lightbox-arrow.prev {
+  left: -24px;
+}
+
+.pdp-lightbox-arrow.next {
+  right: -24px;
+}
+
+@media (max-width: 768px) {
+  .pdp-lightbox-arrow.prev { left: 8px; width: 40px; height: 40px; }
+  .pdp-lightbox-arrow.next { right: 8px; width: 40px; height: 40px; }
+  .pdp-lightbox-close-btn { top: 12px; right: 12px; width: 38px; height: 38px; }
+}
+
+.pdp-lightbox-counter {
+  position: absolute;
+  bottom: -36px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 4px 16px;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
 .pdp-thumbs-strip {

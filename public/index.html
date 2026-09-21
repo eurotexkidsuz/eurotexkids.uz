@@ -1217,10 +1217,27 @@
                   <img src="/images/eurotex-logo.png" alt="Eurotex Kids" />
                 </div>
                 <button type="button" class="pdp-stage-expand-btn" title="Kattalashtirish" onclick="openPdpImgZoom()">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="21" y1="3" x2="14" y2="10"></line>
+                    <polyline points="9 21 3 21 3 15"></polyline>
+                    <line x1="3" y1="21" x2="10" y2="14"></line>
+                    <polyline points="21 15 21 21 15 21"></polyline>
+                    <line x1="21" y1="21" x2="14" y2="14"></line>
+                    <polyline points="3 9 3 3 9 3"></polyline>
+                    <line x1="3" y1="3" x2="10" y2="10"></line>
+                  </svg>
                 </button>
-                <button type="button" class="pdp-stage-arrow prev" onclick="navigatePdpGallery(-1)" title="Oldingi" style="display: none;">‹</button>
-                <button type="button" class="pdp-stage-arrow next" onclick="navigatePdpGallery(1)" title="Keyingi" style="display: none;">›</button>
+                <button type="button" class="pdp-stage-arrow prev" onclick="navigatePdpGallery(-1)" title="Oldingi" style="display: none;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </button>
+                <button type="button" class="pdp-stage-arrow next" onclick="navigatePdpGallery(1)" title="Keyingi" style="display: none;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
                 <div class="pdp-img-counter" id="pdpImgCounter" style="display: none;">1/1</div>
               </div>
               <div class="pdp-thumbs-strip" id="pdpThumbsStrip">
@@ -2911,7 +2928,6 @@
       </a>
     </div>
 
-    <!-- MODAL 1: Quick View Product Modal -->
     <div class="modal-overlay" id="quickViewModal">
       <div class="modal-dialog modal-lg">
         <button class="modal-close" onclick="closeModal('quickViewModal')" title="Yopish">
@@ -2919,6 +2935,37 @@
         </button>
         <div class="quick-view-grid" id="quickViewContent">
           <!-- Rendered by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 🔍 FULLSCREEN PRODUCT IMAGE LIGHTBOX MODAL (Image Zoom & Multi-Image Gallery Carousel) -->
+    <div class="pdp-lightbox-modal" id="pdpImageLightboxModal" onclick="if(event.target === this) closePdpImgLightbox()">
+      <div class="pdp-lightbox-wrapper">
+        <button type="button" class="pdp-lightbox-close-btn" onclick="closePdpImgLightbox()" title="Yopish (Esc)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+
+        <div class="pdp-lightbox-stage">
+          <img id="pdpLightboxImg" src="/images/navy_suit.jpg" alt="Kattalashtirilgan rasm" />
+          
+          <!-- Prev / Next Navigation Arrows -->
+          <button type="button" class="pdp-lightbox-arrow prev" id="pdpLightboxPrevBtn" onclick="navigatePdpGallery(-1)" title="Oldingi (←)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <button type="button" class="pdp-lightbox-arrow next" id="pdpLightboxNextBtn" onclick="navigatePdpGallery(1)" title="Keyingi (→)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+
+          <!-- Counter Pill -->
+          <div class="pdp-lightbox-counter" id="pdpLightboxCounter">1/1</div>
         </div>
       </div>
     </div>
