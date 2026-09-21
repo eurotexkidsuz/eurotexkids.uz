@@ -89,6 +89,9 @@
       .container { max-width: 1280px; margin: 0 auto; padding: 0 16px; }
       .site-luxury-watermark { position: fixed; inset: 0; pointer-events: none; z-index: 0; background-image: url('/images/eurotex-logo-transparent.png'); background-repeat: repeat; background-size: 80px 80px; background-position: center; opacity: 0.055; filter: grayscale(100%); transform: translateZ(0); will-change: transform; }
       body.dark-mode .site-luxury-watermark { opacity: 0.075; filter: grayscale(100%) invert(1); }
+      .top-utility-bar { position: relative; z-index: 1001; }
+      .lang-selector { position: relative; z-index: 1002; }
+      .lang-dropdown { z-index: 1003; }
       .main-header { position: sticky; top: 0; z-index: 100; background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color); height: 70px; display: flex; align-items: center; }
       .header-flex { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; }
       .brand-logo-container { background: #ffffff; border: 1px solid rgba(15, 23, 42, 0.10); border-radius: 10px; padding: 4px 12px; display: inline-flex; align-items: center; justify-content: center; height: 44px; max-width: 130px; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05); }
@@ -134,7 +137,7 @@
       rel="stylesheet"
     />
     <!-- ⚡ Standard Render-Blocking CSS (Completely Prevents Flash of Unstyled Content) -->
-    <link rel="stylesheet" href="/style.css?v=344.0.0" />
+    <link rel="stylesheet" href="/style.css?v=345.0.0" />
     <!-- Schema.org JSON-LD Structured Data (Google Sitelinks & Store Entity) -->
     <script type="application/ld+json">
     {

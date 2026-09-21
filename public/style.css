@@ -827,7 +827,11 @@ html[data-theme="dark"] .site-luxury-watermark {
   filter: grayscale(100%) invert(1);
 }
 
-.top-utility-bar,
+.top-utility-bar {
+  position: relative;
+  z-index: 1001;
+}
+
 .main-header,
 .category-nav-bar,
 .main-content,
@@ -935,6 +939,8 @@ button {
 
 /* Top Utility Bar */
 .top-utility-bar {
+  position: relative;
+  z-index: 1001;
   background: var(--color-navy);
   color: #e2e8f0;
   font-size: 14px;
@@ -995,6 +1001,7 @@ button {
 
 .lang-selector {
   position: relative;
+  z-index: 1002;
 }
 
 .lang-btn {
@@ -1004,16 +1011,17 @@ button {
 
 .lang-dropdown {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 6px);
   right: 0;
   background: #ffffff;
   color: var(--text-primary);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-lg);
+  border-radius: 10px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(15, 23, 42, 0.1);
   padding: 6px 0;
   display: none;
-  z-index: 1000;
-  min-width: 120px;
+  z-index: 1003;
+  min-width: 130px;
 }
 
 .lang-dropdown.show {
@@ -1021,7 +1029,7 @@ button {
 }
 
 .lang-option {
-  padding: 8px 12px;
+  padding: 8px 14px;
   font-weight: 500;
   cursor: pointer;
   transition: var(--transition);
@@ -1031,6 +1039,22 @@ button {
 .lang-option.active {
   background: var(--bg-surface-secondary);
   color: var(--color-uzum-purple);
+}
+
+html[data-theme="dark"] .lang-dropdown,
+body.dark-mode .lang-dropdown {
+  background: #111a2e !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7) !important;
+}
+
+html[data-theme="dark"] .lang-option:hover,
+html[data-theme="dark"] .lang-option.active,
+body.dark-mode .lang-option:hover,
+body.dark-mode .lang-option.active {
+  background: rgba(112, 0, 255, 0.2) !important;
+  color: #a855f7 !important;
 }
 
 /* Main Header — Glassmorphism Luxury Nav */
