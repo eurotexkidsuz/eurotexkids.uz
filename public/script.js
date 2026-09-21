@@ -3249,67 +3249,77 @@ function updateCartUI() {
       `;
     } else {
       cartItemsList.innerHTML = `
-        <div class="cart-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px;">
-          ${state.cart
-            .map((item, idx) => {
-              const usdRate = state.usdRate || 12650;
-              const priceUsd =
-                item.pachkaPriceUsd ||
-                item.priceUsd ||
-                (item.price > 5000
-                  ? Math.round(item.price / usdRate)
-                  : item.price) ||
-                50;
-              const priceSom = priceUsd * usdRate;
-              const oldPriceUsd = Math.round(priceUsd * 1.25);
-              const oldPriceSom = oldPriceUsd * usdRate;
-              const formattedPrice = `$${priceUsd} (${formatMoneySom(priceSom)} so'm)`;
-              const formattedOldPrice = `$${oldPriceUsd} (${formatMoneySom(oldPriceSom)} so'm)`;
-              const badgeType = item.badgeType || "gold";
-              const badgeText = item.badge_uz || "LUXURY PACHKA";
+        <div class="cart-cards-grid">
+          ${state.cart.map((item, idx) => {
+            const usdRate = state.usdRate || 12650;
+            const priceUsd =
+              item.pachkaPriceUsd ||
+              item.priceUsd ||
+              (item.price > 5000 ? Math.round(item.price / usdRate) : item.price) ||
+              45;
+            const totalSom = priceUsd * usdRate * (item.quantity || 1);
+            const category = item.category_uz || item.category || "Kostyum-Shimlar";
+            const pakQty = (item.pachkaItems || item.itemsPerPachka || 6) * (item.quantity || 1);
 
-              return `
-                <div class="product-card cart-product-card cart-item-row" data-cart-idx="${idx}" data-id="${item.id}">
-                  <div class="card-image-wrap">
-                    <img src="${item.image}" alt="${item.title}" loading="lazy" decoding="async" onerror="this.src='/images/navy_suit.jpg'">
-                    <span class="card-badge-tag ${badgeType}">${badgeText}</span>
-                    <button type="button" onclick="removeCartItemByIndex(${idx}, event)" title="Savatdan o'chirish" class="cart-delete-btn">🗑️</button>
+            return `
+              <div class="ci-card cart-item-row" data-cart-idx="${idx}" data-id="${item.id}">
+                <!-- Image + badge -->
+                <div class="ci-img-wrap">
+                  <img src="${item.image}" alt="${escapeHtml(item.title)}" loading="lazy" decoding="async" onerror="this.src='/images/navy_suit.jpg'">
+                  <span class="ci-pachka-badge">📦 PACHKA: ${pakQty} DONA</span>
+                </div>
+                <!-- Body -->
+                <div class="ci-body">
+                  <div class="ci-name-row">
+                    <span class="ci-name">${escapeHtml(item.title)}</span>
+                    <div class="ci-icon-row">
+                      <button type="button" class="ci-icon-btn ci-icon-edit" onclick="openProductDetail('${item.id}')" title="Ko'rish">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                      </button>
+                      <button type="button" class="ci-icon-btn ci-icon-delete" onclick="removeCartItemByIndex(${idx}, event)" title="O'chirish">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                      </button>
+                    </div>
                   </div>
-                  <div class="card-body">
-                    <div class="pachka-series-badge">
-                      📦 1 Pachka (${item.pachkaItems || 6} ta seriya)
+                  <div class="ci-cat-row">
+                    <span class="ci-cat-label">Turkumi:</span>
+                    <span class="ci-cat-chip">${escapeHtml(category)}</span>
+                  </div>
+                  <div class="ci-size-row">
+                    <span class="ci-cat-label">O'lcham:</span>
+                    <span class="ci-size-val">${escapeHtml(item.size || '46-48-50')}</span>
+                    <span class="ci-cat-label" style="margin-left:10px;">Rang:</span>
+                    <span class="ci-color-dot" style="background:${getEurotexColorCode(item.color)};"></span>
+                    <span class="ci-size-val">${escapeHtml(item.color || 'Klassik')}</span>
+                  </div>
+                  <div class="ci-price-row">
+                    <span class="ci-price-label">Pachka ($ USD):</span>
+                    <div class="ci-price-input-wrap">
+                      <input type="number" class="ci-price-input" value="${priceUsd}" min="1" readonly>
+                      <span class="ci-currency">$</span>
                     </div>
-                    <div class="card-price-row">
-                      <div class="price-group">
-                        <span class="current-price">${formattedPrice} <small class="price-unit-tag">/pachka</small></span>
-                        <span class="old-price">${formattedOldPrice}</span>
-                      </div>
+                  </div>
+                  <div class="ci-qty-row">
+                    <span class="ci-price-label">Pachka soni:</span>
+                    <div class="ci-qty-pill">
+                      <button type="button" onclick="updateCartQtyByIndex(${idx}, -1, event)" class="ci-qty-btn">–</button>
+                      <span id="cartItemQtyVal_${idx}" class="ci-qty-val">${item.quantity || 1}</span>
+                      <button type="button" onclick="updateCartQtyByIndex(${idx}, 1, event)" class="ci-qty-btn">+</button>
                     </div>
-                    <h3 class="card-title">${item.title}</h3>
-                    <div class="card-meta-text">
-                      Seriya: <b>${item.size}</b> | Rangi: <b>${item.color || "Klassik"}</b>
-                    </div>
-                    <div class="cart-qty-row">
-                      <span>Pachka soni:</span>
-                      <div class="cart-qty-pill">
-                        <button type="button" onclick="updateCartQtyByIndex(${idx}, -1, event)" class="cart-qty-btn">–</button>
-                        <span id="cartItemQtyVal_${idx}" class="cart-qty-val">${item.quantity}</span>
-                        <button type="button" onclick="updateCartQtyByIndex(${idx}, 1, event)" class="cart-qty-btn">+</button>
-                      </div>
-                    </div>
-                    <button type="button" onclick="openCheckoutModal()" class="btn cart-checkout-btn">
-                      Buyurtma berish ⚡
-                    </button>
+                  </div>
+                  <div class="ci-total-row">
+                    <span class="ci-total-label">Jami so'mda:</span>
+                    <span class="ci-total-val">${Math.round(totalSom).toLocaleString('uz-UZ')} so'm</span>
                   </div>
                 </div>
-              `;
-            })
-            .join("")}
+              </div>`;
+          }).join('')}
         </div>
       `;
     }
   }
 }
+
 
 // Promo Code Logic is handled below by async applyPromoCode()
 

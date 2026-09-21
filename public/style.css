@@ -13954,3 +13954,328 @@ body.dark-mode .oh-empty-title {
     font-size: 17px;
   }
 }
+
+
+/* =============================================================================
+   🛒 CART ITEM CARDS — Dark Professional Design System (.ci-*)
+   ============================================================================= */
+
+.cart-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+/* ── Card ── */
+.ci-card {
+  background: #1a2236;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ci-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.45);
+}
+
+/* ── Image area ── */
+.ci-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+}
+
+.ci-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.ci-card:hover .ci-img-wrap img {
+  transform: scale(1.04);
+}
+
+.ci-pachka-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  color: #ffffff;
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  letter-spacing: 0.4px;
+}
+
+/* ── Body ── */
+.ci-body {
+  padding: 14px 16px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+/* ── Name row ── */
+.ci-name-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.ci-name {
+  font-size: 15px;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1.25;
+  flex: 1;
+  min-width: 0;
+}
+
+.ci-icon-row {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.ci-icon-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s ease;
+}
+
+.ci-icon-edit {
+  background: rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+}
+
+.ci-icon-edit:hover {
+  background: rgba(59, 130, 246, 0.25);
+  color: #60a5fa;
+}
+
+.ci-icon-delete {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.ci-icon-delete:hover {
+  background: rgba(239, 68, 68, 0.35);
+  color: #ef4444;
+}
+
+/* ── Category row ── */
+.ci-cat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ci-cat-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.ci-cat-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+/* ── Size/color row ── */
+.ci-size-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.ci-size-val {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #cbd5e1;
+}
+
+.ci-color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+}
+
+/* ── Price row ── */
+.ci-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ci-price-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.ci-price-input-wrap {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ci-price-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #f8fafc;
+  font-size: 15px;
+  font-weight: 900;
+  padding: 6px 10px;
+  width: 60px;
+  text-align: right;
+  -moz-appearance: textfield;
+}
+
+.ci-price-input::-webkit-outer-spin-button,
+.ci-price-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+.ci-currency {
+  padding: 0 10px 0 4px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #10b981;
+}
+
+/* ── Quantity row ── */
+.ci-qty-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ci-qty-pill {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.ci-qty-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 17px;
+  font-weight: 900;
+  width: 34px;
+  height: 34px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background 0.15s;
+}
+
+.ci-qty-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.ci-qty-val {
+  min-width: 30px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 900;
+  color: #ffffff;
+  padding: 0 4px;
+}
+
+/* ── Total row ── */
+.ci-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  margin-top: 2px;
+}
+
+.ci-total-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.ci-total-val {
+  font-size: 15px;
+  font-weight: 900;
+  color: #10b981;
+  letter-spacing: -0.3px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .cart-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cart-cards-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .ci-body {
+    padding: 11px 12px 13px 12px;
+    gap: 7px;
+  }
+
+  .ci-name {
+    font-size: 13px;
+  }
+
+  .ci-total-val {
+    font-size: 13.5px;
+  }
+}
+
+@media (max-width: 360px) {
+  .cart-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
