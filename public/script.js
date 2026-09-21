@@ -1834,23 +1834,11 @@ function resetSearchAndFilters() {
   showToast("Barcha filtrlar tozalandi! 🔄");
 }
 
-// ⚡ #4 AVIF-First Picture Generator with Zero-Layout-Shift (CLS < 0.05)
+// ⚡ #4 High-Res Image Generator with Zero-Layout-Shift & Error Fallback
 function renderOptimizedPicture(imgSrc, altText) {
   if (!imgSrc) imgSrc = "/images/navy_suit.jpg";
-  let avifSrc = imgSrc;
-  let webpSrc = imgSrc;
-  if (/\.(jpe?g|png)$/i.test(imgSrc)) {
-    avifSrc = imgSrc.replace(/\.(jpe?g|png)$/i, ".avif");
-    webpSrc = imgSrc.replace(/\.(jpe?g|png)$/i, ".webp");
-  }
   const safeAlt = altText ? String(altText).replace(/"/g, "&quot;") : "Eurotex";
-  return `
-    <picture>
-      <source srcset="${avifSrc}" type="image/avif">
-      <source srcset="${webpSrc}" type="image/webp">
-      <img src="${imgSrc}" alt="${safeAlt}" width="300" height="300" loading="lazy" decoding="async" onerror="this.src='/images/navy_suit.jpg'">
-    </picture>
-  `;
+  return `<img src="${imgSrc}" alt="${safeAlt}" width="300" height="300" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/navy_suit.jpg';">`;
 }
 
 // ⚡ #5 Resource Hints: Speculative Prefetch on Hover / Touch
@@ -2125,8 +2113,8 @@ function renderProducts() {
                     <button type="button" disabled class="btn product-out-stock-btn">
                         Sotuvda qolmagan ❌
                     </button>` : `
-                    <button type="button" onclick="event.stopPropagation(); addToCart('${product.id || "prod-1"}', '48', 'Klassik', event);" class="btn product-add-cart-btn">
-                        Savatga qo'shish 🛒
+                    <button type="button" onclick="event.stopPropagation(); addToCart('${product.id || "prod-1"}', '${product.sizes && Array.isArray(product.sizes) ? product.sizes.join("-") : "Seriya"}', 'Klassik', event);" class="btn product-add-cart-btn">
+                        1 Pachka Savatga 🛒
                     </button>`}
                 </div>
             </div>
@@ -3225,7 +3213,7 @@ function updateCartUI() {
                 <img src="${item.image}" style="width: 60px; height: 75px; object-fit: cover; border-radius: 10px;" alt="${item.title}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/navy_suit.jpg'">
                 <div>
                   <div style="font-weight: 700; font-size: 14px; color: #ffffff; margin-bottom: 4px;">${item.title}</div>
-                  <div style="font-size: 12px; color: #94a3b8;">O'lcham: <b style="color: #00f2fe;">${item.size}</b> | Rangi: <b style="color: #00f2fe;">${item.color || "Klassik"}</b></div>
+                  <div style="font-size: 12px; color: #94a3b8;">Seriya: <b style="color: #00f2fe;">${item.size}</b> | Rangi: <b style="color: #00f2fe;">${item.color || "Klassik"}</b></div>
                   <div style="font-size: 14px; font-weight: 800; color: #00f2fe; margin-top: 4px;">${safeFormatMoney(item.price * item.quantity)}</div>
                 </div>
               </div>
@@ -3292,10 +3280,10 @@ function updateCartUI() {
                     </div>
                     <h3 class="card-title">${item.title}</h3>
                     <div class="card-meta-text">
-                      O'lcham: <b>${item.size}</b> | Rangi: <b>${item.color || "Klassik"}</b>
+                      Seriya: <b>${item.size}</b> | Rangi: <b>${item.color || "Klassik"}</b>
                     </div>
                     <div class="cart-qty-row">
-                      <span>Soni:</span>
+                      <span>Pachka soni:</span>
                       <div class="cart-qty-pill">
                         <button type="button" onclick="updateCartQtyByIndex(${idx}, -1, event)" class="cart-qty-btn">–</button>
                         <span id="cartItemQtyVal_${idx}" class="cart-qty-val">${item.quantity}</span>
@@ -3517,7 +3505,7 @@ function openProductPage(productId) {
   const priceCurrentEl = document.getElementById("pdpPriceCurrent");
   const priceOldEl = document.getElementById("pdpPriceOld");
   if (priceCurrentEl) {
-    priceCurrentEl.textContent = `${formatMoneySom(priceSomRaw)} so'm (${priceUsdVal}$)`;
+    priceCurrentEl.innerHTML = `${formatMoneySom(priceSomRaw)} so'm (${priceUsdVal}$) <small style="font-size: 14px; font-weight: 600; color: #94a3b8; margin-left: 4px;">/ 1 pachka</small>`;
   }
   if (priceOldEl) {
     priceOldEl.textContent = `${formatMoneySom(oldPriceSomRaw)} so'm`;
@@ -3584,23 +3572,30 @@ function openProductPage(productId) {
       .join("");
   }
 
-  // 6. Populate Sizes
+  // 6. Populate Sizes (Pachka Seriya tarkibi)
   const sizesList = product.sizes && product.sizes.length > 0
     ? product.sizes
     : [30, 32, 34, 36, 38, 40, 42, 44];
-  window.currentPdpSize = String(sizesList[0]);
+  window.currentPdpSize = sizesList.join("-");
 
   const sizeBoxesEl = document.getElementById("pdpSizeBoxes");
   if (sizeBoxesEl) {
-    sizeBoxesEl.innerHTML = sizesList
-      .map(
-        (s, idx) => `
-        <button type="button" class="pdp-size-box ${idx === 0 ? "active" : ""}" onclick="selectPdpSize('${s}', this)">
-          ${s}
-        </button>
-      `,
-      )
-      .join("");
+    sizeBoxesEl.innerHTML = `
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; width: 100%;">
+        ${sizesList
+          .map(
+            (s) => `
+            <div class="pdp-size-box active" style="cursor: default;" title="Pachka ichidagi seriya o'lchami">
+              ${s}
+            </div>
+          `,
+          )
+          .join("")}
+      </div>
+      <div style="font-size: 12px; color: #10b981; font-weight: 600; margin-top: 8px; width: 100%;">
+        ✓ Barcha ko'rsatilgan o'lchamlar 1 pachka (seriya) ichida to'liq jamlangan (${product.pachkaItems || sizesList.length} dona)
+      </div>
+    `;
   }
 
   // 7. Update Favorite Button state
