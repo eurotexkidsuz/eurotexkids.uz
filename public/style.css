@@ -787,20 +787,20 @@ body {
   padding-bottom: 70px; /* Space for mobile nav */
 }
 
-/* 🌟 GLOBAL LUXURY EUROTEX WATERMARK BACKGROUND SYSTEM */
+/* 🌟 GLOBAL LUXURY EUROTEX WATERMARK BACKGROUND SYSTEM (70% XIRA / 30% KO'RINISH) */
 .site-luxury-watermark {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
   background-image: 
-    radial-gradient(circle at 12% 18%, rgba(212, 175, 55, 0.04) 0%, transparent 45%),
-    radial-gradient(circle at 88% 82%, rgba(212, 175, 55, 0.04) 0%, transparent 45%),
+    radial-gradient(circle at 12% 18%, rgba(212, 175, 55, 0.06) 0%, transparent 45%),
+    radial-gradient(circle at 88% 82%, rgba(212, 175, 55, 0.06) 0%, transparent 45%),
     url('/images/eurotex-logo.png');
   background-repeat: no-repeat, no-repeat, repeat;
   background-size: auto, auto, 240px 240px;
   background-position: center, center, center;
-  opacity: 0.024;
+  opacity: 0.28;
   filter: grayscale(100%);
   transform: translateZ(0);
   will-change: transform;
@@ -808,7 +808,7 @@ body {
 
 body.dark-mode .site-luxury-watermark,
 html[data-theme="dark"] .site-luxury-watermark {
-  opacity: 0.038;
+  opacity: 0.32;
   filter: grayscale(100%) invert(1);
 }
 
@@ -1848,7 +1848,7 @@ html[data-theme="dark"] .main-header.scrolled {
   width: 130px;
   height: 130px;
   margin-bottom: 12px;
-  opacity: 0.11;
+  opacity: 0.45;
   filter: grayscale(100%) brightness(2.2);
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -1861,9 +1861,9 @@ html[data-theme="dark"] .main-header.scrolled {
 }
 
 .hero-carousel-section:hover .hero-watermark-emblem {
-  opacity: 0.18;
+  opacity: 0.70;
   transform: scale(1.06);
-  filter: grayscale(0%) drop-shadow(0 0 16px rgba(212, 175, 55, 0.35));
+  filter: grayscale(0%) drop-shadow(0 0 20px rgba(212, 175, 55, 0.5));
 }
 
 .hero-wing-meta {
@@ -1877,7 +1877,7 @@ html[data-theme="dark"] .main-header.scrolled {
   font-weight: 700;
   letter-spacing: 3.5px;
   color: #d4af37;
-  opacity: 0.65;
+  opacity: 0.90;
   text-transform: uppercase;
 }
 
@@ -1887,7 +1887,7 @@ html[data-theme="dark"] .main-header.scrolled {
   font-weight: 800;
   letter-spacing: 4px;
   color: #ffffff;
-  opacity: 0.32;
+  opacity: 0.70;
   line-height: 1.1;
   text-transform: uppercase;
 }
@@ -1896,8 +1896,8 @@ html[data-theme="dark"] .main-header.scrolled {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 2px;
-  color: #94a3b8;
-  opacity: 0.5;
+  color: #cbd5e1;
+  opacity: 0.80;
   text-transform: uppercase;
 }
 
@@ -1908,7 +1908,7 @@ html[data-theme="dark"] .main-header.scrolled {
   transform: translate(-50%, -50%);
   width: 360px;
   height: 360px;
-  opacity: 0.055;
+  opacity: 0.28;
   filter: grayscale(100%) brightness(2.2);
   pointer-events: none;
   z-index: 1;
