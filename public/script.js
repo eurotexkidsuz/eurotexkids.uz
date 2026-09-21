@@ -4489,9 +4489,9 @@ function switchDashboardTab(tabName) {
     dashView.scrollTop = 0;
   }
 
-  // ✨ Har doim tab almashtirilganda yoki buyurtma rasmiylashtirish bosilganda sahifa tepasiga ravon ko'tarilish
+  // ✨ Har doim tab almashtirilganda yoki buyurtma rasmiylashtirish bosilganda sahifa eng tepasiga ko'tarilish
   try {
-    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     if (document.documentElement) document.documentElement.scrollTop = 0;
     if (document.body) document.body.scrollTop = 0;
   } catch (e) {
@@ -4500,11 +4500,9 @@ function switchDashboardTab(tabName) {
 
   setTimeout(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-    const dashBar = document.querySelector(".dashboard-top-bar") || dashView;
-    if (dashBar && typeof dashBar.scrollIntoView === "function") {
-      dashBar.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, 40);
+    if (document.documentElement) document.documentElement.scrollTop = 0;
+    if (document.body) document.body.scrollTop = 0;
+  }, 50);
 
   const panes = {
     cart: document.getElementById("dPaneCart"),
@@ -6867,35 +6865,54 @@ function renderOrdersHistory() {
         </div>`;
     }
 
-    // ── Product rows ─────────────────────────────────────────────────────────
+    // ── Product rows as Real Cards (matching Image 2) ──────────────────────
     const items = order.items || [];
     const itemsHtml = items.map((item) => {
-      const qty         = Number(item.quantity) || 1;
-      const priceUsd    = Number(item.priceUsd || item.price || 45);
+      const qty          = Number(item.quantity) || 1;
+      const priceUsd     = Number(item.pachkaPriceUsd || item.priceUsd || item.price || 45);
       const itemTotalUsd = priceUsd * qty;
       const itemTotalSom = Math.round(itemTotalUsd * usdRate);
 
-      const sizeRange   = item.size  || "46-48-50";
-      const colorName   = item.color || "To'q ko'k (Navy)";
-      const style       = item.style || item.model || "Klassik";
+      const sizeRange    = item.size  || "46-48-50";
+      const colorName    = item.color || "To'q ko'k (Navy)";
+      const category     = item.category_uz || item.category || "Kostyum-Shimlar";
+      const pachkaQty    = (item.pachkaItems || item.itemsPerPachka || 6) * qty;
 
       return `
-        <div class="oh-product-row">
-          <div class="oh-product-left">
-            <div class="oh-product-dot">•</div>
-            <div class="oh-product-info">
-              <div class="oh-product-name">${escapeHtml(item.title || "Eurotex Mahsulot")}</div>
-              <div class="oh-product-meta">
-                <span class="oh-meta-chip oh-chip-qty">${qty}x Pachka</span>
-                <span class="oh-meta-chip oh-chip-size">📏 ${escapeHtml(sizeRange)}</span>
-                <span class="oh-meta-chip oh-chip-color">🎨 ${escapeHtml(colorName)}</span>
-                <span class="oh-meta-chip oh-chip-style">✂️ ${escapeHtml(style)}</span>
+        <div class="oh-item-card" onclick="openProductDetail('${item.id || ''}')" title="Mahsulotni to'liq ko'rish uchun bosing 🛍️">
+          <!-- Media Box with Pachka Badge -->
+          <div class="oh-item-media">
+            <img src="${item.image || '/images/navy_suit.jpg'}" alt="${escapeHtml(item.title || 'Eurotex Mahsulot')}" loading="lazy" decoding="async" onerror="this.src='/images/navy_suit.jpg'">
+            <span class="oh-item-badge">📦 PACHKA: ${pachkaQty} DONA</span>
+          </div>
+
+          <!-- Body -->
+          <div class="oh-item-body">
+            <div class="oh-item-header-row">
+              <span class="oh-item-title">${escapeHtml(item.title || "Eurotex Mahsulot")}</span>
+              <span class="oh-item-qty-tag">${qty} pachka</span>
+            </div>
+
+            <div class="oh-item-cat-row">
+              <span class="oh-item-cat-label">Turkumi:</span>
+              <span class="oh-item-cat-chip">${escapeHtml(category)}</span>
+            </div>
+
+            <div class="oh-item-specs-row">
+              <span class="oh-spec-chip">📏 ${escapeHtml(sizeRange)}</span>
+              <span class="oh-spec-chip"><span class="oh-color-dot" style="background:${getEurotexColorCode(colorName)};"></span> ${escapeHtml(colorName)}</span>
+            </div>
+
+            <div class="oh-item-price-box">
+              <div class="oh-price-line">
+                <span class="oh-price-lbl">Pachka ($ USD):</span>
+                <span class="oh-price-num">$${priceUsd}</span>
+              </div>
+              <div class="oh-total-line">
+                <span class="oh-total-lbl">Jami so'mda:</span>
+                <span class="oh-total-num">${itemTotalSom.toLocaleString("uz-UZ")} so'm</span>
               </div>
             </div>
-          </div>
-          <div class="oh-product-price">
-            <div class="oh-price-usd">$${priceUsd} × ${qty}</div>
-            <div class="oh-price-som">${Math.round(itemTotalSom).toLocaleString("uz-UZ")} so'm</div>
           </div>
         </div>`;
     }).join("");
@@ -6938,9 +6955,11 @@ function renderOrdersHistory() {
         <!-- Live Tracker -->
         ${trackerHtml}
 
-        <!-- Products List -->
+        <!-- Products List Cards Grid -->
         <div class="oh-products-section">
-          ${itemsHtml || '<div class="oh-no-items">Mahsulotlar ro\'yxati mavjud emas</div>'}
+          <div class="oh-products-cards-grid">
+            ${itemsHtml || '<div class="oh-no-items">Mahsulotlar ro\'yxati mavjud emas</div>'}
+          </div>
         </div>
 
         <!-- Divider -->
@@ -6975,15 +6994,19 @@ function renderOrdersHistory() {
           </div>
         </div>
 
-        <!-- Action Buttons -->
+        <!-- Action Buttons Row -->
         <div class="oh-actions">
           <button type="button" class="oh-btn-pdf" onclick="downloadReceiptPdf('${escapeHtml(order.id || "")}')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            PDF Kvitansiya
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            📄 PDF Kvitansiya
+          </button>
+          <button type="button" class="oh-btn-check" onclick="downloadCheckPdf('${escapeHtml(order.id || "")}')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            📋 PDF Chek
           </button>
           <button type="button" class="oh-btn-return" onclick="switchDashboardTab('returns'); prefillReturnOrder('${escapeHtml(order.id || "")}'); window.scrollTo({top:0,behavior:'smooth'});">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.36"/></svg>
-            Almashtirish / Qaytarish
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.36"/></svg>
+            🔄 Almashtirish / Qaytarish
           </button>
         </div>
       </div>`;
@@ -7087,6 +7110,98 @@ function downloadReceiptPdf(orderId) {
   `);
   printWindow.document.close();
 }
+
+// 📋 Termal / Kassa uslubidagi PDF Chek shakllantirish
+function downloadCheckPdf(orderId) {
+  const pool = state.orders || [];
+  const order = pool.find((o) => String(o.id || o.orderId) === String(orderId));
+  if (!order) {
+    showToast("⚠️ Buyurtma ma'lumotlari topilmadi!", "error");
+    return;
+  }
+
+  const printWindow = window.open("", "_blank", "width=420,height=700");
+  if (!printWindow) {
+    showToast("⚠️ Brauzer yangi oyna ochishni blokladi. Ruxsat bering.", "error");
+    return;
+  }
+
+  const usdRate = state.usdRate || 12650;
+  const items = order.items || [];
+  const itemsHtml = items.map((item, idx) => {
+    const qty = Number(item.quantity) || 1;
+    const priceUsd = Number(item.pachkaPriceUsd || item.priceUsd || item.price || 45);
+    const som = priceUsd * usdRate * qty;
+    return `
+      <div style="border-bottom: 1px dashed #94a3b8; padding: 6px 0; font-size: 12px;">
+        <div style="font-weight: 700; display:flex; justify-content:space-between;">
+          <span>${idx + 1}. ${escapeHtml(item.title || "Mahsulot")}</span>
+          <span>${som.toLocaleString("uz-UZ")} so'm</span>
+        </div>
+        <div style="color: #64748b; font-size: 11px; display:flex; justify-content:space-between; margin-top:2px;">
+          <span>${qty} pachka × $${priceUsd} (${(priceUsd * usdRate).toLocaleString("uz-UZ")})</span>
+          <span>O'lcham: ${escapeHtml(item.size || "-")}</span>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  const rawTotal = Number(order.total || 0);
+  const totalUsd = rawTotal > 5000 ? Math.round(rawTotal / usdRate) : rawTotal;
+  const totalSom = totalUsd * usdRate;
+
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html lang="uz">
+    <head>
+      <meta charset="utf-8">
+      <title>Eurotex Kassa Cheki #${escapeHtml(order.id || orderId)}</title>
+      <style>
+        body { font-family: "Courier New", Courier, monospace, monospace; padding: 18px; color: #000; max-width: 360px; margin: 0 auto; background: #fff; }
+        .center { text-align: center; }
+        .divider { border-top: 1px dashed #000; margin: 8px 0; }
+        .row { display: flex; justify-content: space-between; font-size: 12px; margin: 3px 0; }
+        .bold { font-weight: 900; }
+        @media print { .no-print { display: none !important; } body { padding: 0; } }
+      </style>
+    </head>
+    <body>
+      <div class="center">
+        <h2 style="margin:0; font-size:18px; letter-spacing:1px;">EUROTEX KIDS</h2>
+        <div style="font-size:11px; margin-top:3px;">FABRIKA SAVDO BELGISI</div>
+        <div style="font-size:11px;">Toshkent sh., Abu Saxiy A48 / GM 297</div>
+        <div style="font-size:11px;">Tel: +998 90 555 77 75</div>
+      </div>
+      <div class="divider"></div>
+      <div class="row"><span>CHEK №:</span><span class="bold">#${escapeHtml(order.id || orderId)}</span></div>
+      <div class="row"><span>SANA:</span><span>${escapeHtml(order.date || new Date().toLocaleDateString())}</span></div>
+      <div class="row"><span>MIJOZ:</span><span class="bold">${escapeHtml(order.customerName || (state.user && state.user.name) || "Ulgurji Mijoz")}</span></div>
+      <div class="row"><span>TELEFON:</span><span>${escapeHtml(order.phone || "-")}</span></div>
+      <div class="row"><span>TO'LOV:</span><span class="bold">${escapeHtml(order.paymentMethod === "payme" ? "Payme" : order.paymentMethod === "click" ? "Click" : "Naqd")}</span></div>
+      <div class="divider"></div>
+      <div style="font-size:11px; font-weight:700; margin-bottom:4px;">MAHSULOTLAR:</div>
+      ${itemsHtml}
+      <div class="divider"></div>
+      <div class="row" style="font-size:14px;"><span class="bold">JAMI ($ USD):</span><span class="bold">$${totalUsd}</span></div>
+      <div class="row" style="font-size:15px;"><span class="bold">JAMI SO'M:</span><span class="bold">${totalSom.toLocaleString("uz-UZ")} so'm</span></div>
+      <div class="divider"></div>
+      <div class="center" style="font-size:11px; margin-top:10px;">
+        <div>Xaridingiz uchun tashakkur!</div>
+        <div style="margin-top:2px;">10 kunlik bepul almashtirish kafolati</div>
+        <div style="margin-top:6px; font-weight:700;">eurotexkids.uz</div>
+      </div>
+      <div class="center no-print" style="margin-top:16px;">
+        <button onclick="window.print()" style="background:#000; color:#fff; border:none; padding:8px 18px; font-size:12px; font-weight:700; border-radius:6px; cursor:pointer;">🖨️ Chekni chop etish</button>
+      </div>
+      <script>
+        window.onload = function() { setTimeout(function() { window.print(); }, 400); };
+      <\/script>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+}
+
 
 // Almashtirish / qaytarish formasini avtomatik buyurtma ID si bilan to'ldirish
 function prefillReturnOrder(orderId) {

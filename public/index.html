@@ -137,7 +137,7 @@
       rel="stylesheet"
     />
     <!-- ⚡ Standard Render-Blocking CSS (Completely Prevents Flash of Unstyled Content) -->
-    <link rel="stylesheet" href="/style.css?v=351.0.0" />
+    <link rel="stylesheet" href="/style.css?v=352.0.0" />
     <!-- Schema.org JSON-LD Structured Data (Google Sitelinks & Store Entity) -->
     <script type="application/ld+json">
     {
@@ -1741,14 +1741,24 @@
                     <div class="checkout-card-box">
                       <h3>1. Olish usuli</h3>
                       <div class="delivery-tabs-row">
-                        <label class="del-tab-btn active">
+                        <label class="del-tab-btn active del-tab-premium">
                           <input
                             type="radio"
                             name="delType"
                             value="courier"
                             checked
                           />
-                          <span>Standard kuryerlik yetkazish (Bepul)</span>
+                          <div class="del-tab-content">
+                            <div class="del-tab-icon">🚚</div>
+                            <div class="del-tab-info">
+                              <div class="del-tab-title">Standard kuryerlik yetkazish</div>
+                              <div class="del-tab-sub">O'zbekiston bo'ylab 24 soat ichida eshigingizgacha bepul yetkaziladi</div>
+                            </div>
+                            <div class="del-tab-badge-wrap">
+                              <span class="del-badge-free">BEPUL</span>
+                              <span class="del-badge-speed">⚡ 24 soat</span>
+                            </div>
+                          </div>
                         </label>
                       </div>
 
@@ -4863,7 +4873,7 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=351.0.0" defer></script>
+    <script src="/script.js?v=352.0.0" defer></script>
     <script src="/eurotex-engine.js?v=18.0.0" defer></script>
   </body>
 </html>
