@@ -95,7 +95,11 @@
       .category-nav-bar { background: #ffffff; border-bottom: 1px solid var(--border-color); overflow-x: auto; white-space: nowrap; padding: 8px 0; -webkit-overflow-scrolling: touch; }
       .category-nav-flex { display: flex; gap: 8px; align-items: center; }
       .nav-pill { padding: 8px 16px; border-radius: 9999px; font-size: 13.5px; font-weight: 600; text-decoration: none; color: var(--text-secondary); background: #f1f5f9; display: inline-flex; align-items: center; }
-      .nav-pill.active { background: #0f172a; color: #ffffff; }
+      .nav-pill.active { background: #0f172a; color: #ffffff !important; }
+      .nav-pill.highlight { background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%) !important; color: #be123c !important; border: 1.5px solid #f43f5e !important; font-weight: 800; box-shadow: 0 2px 8px rgba(225, 29, 72, 0.12); }
+      .nav-pill.highlight:hover, .nav-pill.highlight.active { background: linear-gradient(135deg, #e11d48 0%, #be123c 100%) !important; color: #ffffff !important; border-color: #9f1239 !important; }
+      .nav-pill.custom-gold { background: linear-gradient(135deg, #fefce8 0%, #fef08a 100%) !important; color: #854d0e !important; border: 1.5px solid #eab308 !important; font-weight: 800; }
+      .nav-pill.custom-gold:hover, .nav-pill.custom-gold.active { background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%) !important; color: #ffffff !important; border-color: #a16207 !important; }
       .hero-carousel-section { position: relative; margin: 16px 0 24px 0; border-radius: 20px; overflow: hidden; background: #0b1322; min-height: 280px; }
       .carousel-slide { display: none; align-items: center; padding: 24px; min-height: 280px; color: #ffffff; z-index: 2; }
       .carousel-slide.active { display: flex; }
@@ -131,8 +135,8 @@
       rel="stylesheet"
     />
     <!-- ⚡ #1 Non-blocking Asynchronous CSS Preload (FCP < 0.8s) -->
-    <link rel="preload" href="/style.css?v=336.0.0" as="style" onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript><link rel="stylesheet" href="/style.css?v=336.0.0" /></noscript>
+    <link rel="preload" href="/style.css?v=337.0.0" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="/style.css?v=337.0.0" /></noscript>
     <!-- Schema.org JSON-LD Structured Data (Google Sitelinks & Store Entity) -->
     <script type="application/ld+json">
     {

@@ -301,16 +301,34 @@ body.dark-mode .nav-pill:hover {
 
 html[data-theme="dark"] .nav-pill.highlight,
 body.dark-mode .nav-pill.highlight {
-  background: rgba(225, 29, 72, 0.2) !important;
-  color: #fb7185 !important;
-  border: 1px solid rgba(225, 29, 72, 0.4) !important;
+  background: rgba(225, 29, 72, 0.22) !important;
+  color: #fda4af !important;
+  border: 1.5px solid rgba(244, 63, 94, 0.6) !important;
+}
+
+html[data-theme="dark"] .nav-pill.highlight.active,
+html[data-theme="dark"] .nav-pill.highlight:hover,
+body.dark-mode .nav-pill.highlight.active,
+body.dark-mode .nav-pill.highlight:hover {
+  background: linear-gradient(135deg, #e11d48 0%, #9f1239 100%) !important;
+  color: #ffffff !important;
+  border-color: #f43f5e !important;
 }
 
 html[data-theme="dark"] .nav-pill.custom-gold,
 body.dark-mode .nav-pill.custom-gold {
-  background: rgba(212, 175, 55, 0.2) !important;
-  color: #facc15 !important;
-  border: 1px solid rgba(212, 175, 55, 0.4) !important;
+  background: rgba(212, 175, 55, 0.22) !important;
+  color: #fde047 !important;
+  border: 1.5px solid rgba(234, 179, 8, 0.6) !important;
+}
+
+html[data-theme="dark"] .nav-pill.custom-gold.active,
+html[data-theme="dark"] .nav-pill.custom-gold:hover,
+body.dark-mode .nav-pill.custom-gold.active,
+body.dark-mode .nav-pill.custom-gold:hover {
+  background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%) !important;
+  color: #ffffff !important;
+  border-color: #fef08a !important;
 }
 
 html[data-theme="dark"] .sub-pill,
@@ -1692,34 +1710,43 @@ html[data-theme="dark"] .main-header.scrolled {
 }
 
 .nav-pill.highlight {
-  background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
-  color: #e11d48;
-  border: 1px solid rgba(225, 29, 72, 0.3);
+  background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%) !important;
+  color: #be123c !important;
+  border: 1.5px solid #f43f5e !important;
   font-weight: 800;
+  box-shadow: 0 2px 8px rgba(225, 29, 72, 0.12);
 }
 
 .nav-pill.highlight:hover {
-  background: #e11d48;
-  color: #ffffff;
-  box-shadow: 0 6px 18px rgba(225, 29, 72, 0.3);
+  background: linear-gradient(135deg, #f43f5e 0%, #e11d48 50%, #be123c 100%) !important;
+  color: #ffffff !important;
+  border-color: #be123c !important;
+  box-shadow: 0 6px 20px rgba(225, 29, 72, 0.4) !important;
+  transform: translateY(-2px);
+}
+
+.nav-pill.highlight.active {
+  background: linear-gradient(135deg, #e11d48 0%, #be123c 100%) !important;
+  color: #ffffff !important;
+  border-color: #9f1239 !important;
+  box-shadow: 0 4px 16px rgba(225, 29, 72, 0.5) !important;
 }
 
 .nav-pill.custom-gold {
-  background: linear-gradient(
-    135deg,
-    rgba(212, 175, 55, 0.18) 0%,
-    rgba(212, 175, 55, 0.08) 100%
-  );
-  color: #b89628;
-  border: 1px solid rgba(212, 175, 55, 0.4);
+  background: linear-gradient(135deg, #fefce8 0%, #fef08a 100%) !important;
+  color: #854d0e !important;
+  border: 1.5px solid #eab308 !important;
   font-weight: 800;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.12);
 }
 
-.nav-pill.custom-gold:hover {
-  background: linear-gradient(135deg, #d4af37 0%, #b89628 100%);
-  color: #ffffff;
-  border-color: transparent;
-  box-shadow: 0 6px 18px rgba(212, 175, 55, 0.35);
+.nav-pill.custom-gold:hover,
+.nav-pill.custom-gold.active {
+  background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%) !important;
+  color: #ffffff !important;
+  border-color: #a16207 !important;
+  box-shadow: 0 6px 20px rgba(234, 179, 8, 0.4) !important;
+  transform: translateY(-2px);
 }
 
 /* Hero Carousel */
