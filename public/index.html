@@ -87,8 +87,8 @@
       *, *::before, *::after { box-sizing: border-box; }
       body { margin: 0; padding: 0; font-family: var(--font-primary); background-color: var(--bg-body); color: var(--text-primary); -webkit-font-smoothing: antialiased; }
       .container { max-width: 1280px; margin: 0 auto; padding: 0 16px; }
-      .site-luxury-watermark { position: fixed; inset: 0; pointer-events: none; z-index: 0; background-image: radial-gradient(circle at 12% 18%, rgba(212, 175, 55, 0.08) 0%, transparent 45%), radial-gradient(circle at 88% 82%, rgba(212, 175, 55, 0.08) 0%, transparent 45%), url('/images/eurotex-logo-transparent.png'); background-repeat: no-repeat, no-repeat, repeat; background-size: auto, auto, 240px 240px; background-position: center; opacity: 0.30; filter: grayscale(100%); transform: translateZ(0); will-change: transform; }
-      body.dark-mode .site-luxury-watermark { opacity: 0.35; filter: grayscale(100%) invert(1); }
+      .site-luxury-watermark { position: fixed; inset: 0; pointer-events: none; z-index: 0; background-image: url('/images/eurotex-logo-transparent.png'); background-repeat: repeat; background-size: 80px 80px; background-position: center; opacity: 0.035; filter: grayscale(100%); transform: translateZ(0); will-change: transform; }
+      body.dark-mode .site-luxury-watermark { opacity: 0.055; filter: grayscale(100%) invert(1); }
       .main-header { position: sticky; top: 0; z-index: 100; background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color); height: 70px; display: flex; align-items: center; }
       .header-flex { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; }
       .brand-logo-img { height: 42px; width: auto; aspect-ratio: 180 / 42; }
@@ -105,20 +105,20 @@
       .carousel-slide.active { display: flex; }
       .slide-media { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: transparent !important; z-index: 2; }
       .hero-brand-bg-layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; user-select: none; z-index: 1; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; overflow: hidden; box-sizing: border-box; }
-      .hero-bg-ambient-glow { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 50%, rgba(212, 175, 55, 0.18) 0%, rgba(30, 41, 59, 0.6) 45%, rgba(7, 11, 20, 0.98) 100%); pointer-events: none; }
-      .hero-watermark-wing { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 280px; }
+      .hero-bg-ambient-glow { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 50%, rgba(212, 175, 55, 0.12) 0%, rgba(30, 41, 59, 0.5) 45%, rgba(7, 11, 20, 0.98) 100%); pointer-events: none; }
+      .hero-watermark-wing { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 240px; }
       .hero-wing-left { align-items: flex-start; text-align: left; padding-left: 44px; }
       .hero-wing-right { align-items: flex-end; text-align: right; padding-right: 44px; }
-      .hero-watermark-emblem { width: 130px; height: 130px; margin-bottom: 10px; opacity: 0.45; filter: grayscale(100%) brightness(2.2); }
+      .hero-watermark-emblem { width: 75px; height: 75px; margin-bottom: 8px; opacity: 0.20; }
       .hero-watermark-emblem img { width: 100%; height: 100%; object-fit: contain; display: block; }
-      .hero-wing-meta { display: flex; flex-direction: column; gap: 4px; }
-      .hero-wing-sub { font-size: 11.5px; font-weight: 800; letter-spacing: 3.5px; color: #d4af37; opacity: 0.85; text-transform: uppercase; }
-      .hero-wing-title { font-family: 'Outfit', 'Playfair Display', Georgia, serif; font-size: 26px; font-weight: 800; letter-spacing: 4px; color: #ffffff; opacity: 0.65; line-height: 1.1; text-transform: uppercase; }
-      .hero-wing-desc { font-size: 11px; font-weight: 700; letter-spacing: 2.5px; color: #cbd5e1; opacity: 0.75; text-transform: uppercase; }
-      .hero-watermark-center-crest { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 380px; height: 380px; opacity: 0.28; filter: grayscale(100%) brightness(2.2); pointer-events: none; z-index: 1; }
+      .hero-wing-meta { display: flex; flex-direction: column; gap: 3px; }
+      .hero-wing-sub { font-size: 10px; font-weight: 800; letter-spacing: 2.5px; color: #d4af37; opacity: 0.60; text-transform: uppercase; }
+      .hero-wing-title { font-family: 'Outfit', 'Playfair Display', Georgia, serif; font-size: 18px; font-weight: 800; letter-spacing: 3px; color: #ffffff; opacity: 0.35; line-height: 1.1; text-transform: uppercase; }
+      .hero-wing-desc { font-size: 9.5px; font-weight: 700; letter-spacing: 1.5px; color: #cbd5e1; opacity: 0.40; text-transform: uppercase; }
+      .hero-watermark-center-crest { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 180px; height: 180px; opacity: 0.08; pointer-events: none; z-index: 1; }
       .hero-watermark-center-crest img { width: 100%; height: 100%; object-fit: contain; }
-      @media (max-width: 1024px) { .hero-wing-left { padding-left: 20px; } .hero-wing-right { padding-right: 20px; } .hero-watermark-emblem { width: 96px; height: 96px; } .hero-wing-title { font-size: 20px; } }
-      @media (max-width: 768px) { .hero-watermark-wing { display: none; } .hero-watermark-center-crest { width: 220px; height: 220px; opacity: 0.25; } }
+      @media (max-width: 1024px) { .hero-wing-left { padding-left: 20px; } .hero-wing-right { padding-right: 20px; } .hero-watermark-emblem { width: 60px; height: 60px; } .hero-wing-title { font-size: 15px; } }
+      @media (max-width: 768px) { .hero-watermark-wing { display: none; } .hero-watermark-center-crest { width: 140px; height: 140px; opacity: 0.06; } }
       /* 📐 #9 Zero-Layout-Shift (CLS < 0.05) */
       .card-image-wrap { position: relative; width: 100%; aspect-ratio: 1 / 1; overflow: hidden; background: #f1f5f9; border-radius: 12px; contain: layout paint aspect-ratio; }
       .card-image-wrap img, .card-image-wrap picture { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -135,8 +135,8 @@
       rel="stylesheet"
     />
     <!-- ⚡ #1 Non-blocking Asynchronous CSS Preload (FCP < 0.8s) -->
-    <link rel="preload" href="/style.css?v=337.0.0" as="style" onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript><link rel="stylesheet" href="/style.css?v=337.0.0" /></noscript>
+    <link rel="preload" href="/style.css?v=338.0.0" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="/style.css?v=338.0.0" /></noscript>
     <!-- Schema.org JSON-LD Structured Data (Google Sitelinks & Store Entity) -->
     <script type="application/ld+json">
     {
