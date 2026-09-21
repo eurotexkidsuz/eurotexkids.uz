@@ -1237,7 +1237,7 @@ const DEFAULT_EUROTEX_PRODUCTS = (typeof window !== 'undefined' && Array.isArray
     "title_uz": "ABDULAZIZ",
     "title_ru": "ABDULAZIZ",
     "category": "suits_slim",
-    "priceUsd": 8,
+    "priceUsd": 45,
     "pachkaPriceUsd": 45,
     "pachkaQty": 6,
     "price": 540315,
@@ -1264,7 +1264,7 @@ const DEFAULT_EUROTEX_PRODUCTS = (typeof window !== 'undefined' && Array.isArray
     "title_uz": ".",
     "title_ru": ".",
     "category": "suits_slim",
-    "priceUsd": 8,
+    "priceUsd": 45,
     "pachkaPriceUsd": 45,
     "pachkaQty": 6,
     "price": 569250,
@@ -1284,7 +1284,7 @@ const DEFAULT_EUROTEX_PRODUCTS = (typeof window !== 'undefined' && Array.isArray
     "title_uz": ".",
     "title_ru": ".",
     "category": "suits_slim",
-    "priceUsd": 8,
+    "priceUsd": 45,
     "pachkaPriceUsd": 45,
     "pachkaQty": 6,
     "price": 569250,
@@ -1526,9 +1526,14 @@ function syncCartPricesWithCatalog() {
         String(p.customId) === String(cartItem.id)
     );
     if (prod) {
-      const catalogPrice = Number(prod.priceUsd || prod.price || 0);
-      if (catalogPrice > 0 && cartItem.price !== catalogPrice) {
+      const catalogPrice = Number(
+        prod.pachkaPriceUsd ||
+        prod.priceUsd ||
+        (prod.price ? Math.round(prod.price / (state.usdRate || 12650)) : 50)
+      );
+      if (catalogPrice > 0 && (cartItem.price !== catalogPrice || cartItem.priceUsd !== catalogPrice)) {
         cartItem.price = catalogPrice;
+        cartItem.priceUsd = catalogPrice;
         if (prod.oldPrice) cartItem.oldPrice = prod.oldPrice;
         changed = true;
       }
@@ -2977,8 +2982,9 @@ function addToCart(
     state.cart.push({
       id: product.id,
       title: title,
-      price: product.priceUsd || product.price || 120,
-      priceUsd: product.priceUsd || product.price || 120,
+      price: product.pachkaPriceUsd || product.priceUsd || (product.price > 5000 ? Math.round(product.price / (state.usdRate || 12650)) : product.price) || 50,
+      priceUsd: product.pachkaPriceUsd || product.priceUsd || (product.price > 5000 ? Math.round(product.price / (state.usdRate || 12650)) : product.price) || 50,
+      pachkaPriceUsd: product.pachkaPriceUsd || product.priceUsd || 50,
       image: product.image || product.img || "/images/navy_suit.jpg",
       size: selectedSize,
       color: selectedColor,
@@ -3248,11 +3254,12 @@ function updateCartUI() {
             .map((item, idx) => {
               const usdRate = state.usdRate || 12650;
               const priceUsd =
+                item.pachkaPriceUsd ||
                 item.priceUsd ||
                 (item.price > 5000
                   ? Math.round(item.price / usdRate)
                   : item.price) ||
-                120;
+                50;
               const priceSom = priceUsd * usdRate;
               const oldPriceUsd = Math.round(priceUsd * 1.25);
               const oldPriceSom = oldPriceUsd * usdRate;
@@ -4720,12 +4727,12 @@ function renderWishlist() {
       ).toString();
       const usdRate = state.usdRate || 12650;
       const priceUsd =
-        product.priceUsd ||
         product.pachkaPriceUsd ||
+        product.priceUsd ||
         (product.price > 5000
           ? Math.round(product.price / usdRate)
           : product.price) ||
-        120;
+        50;
       const priceSom = priceUsd * usdRate;
 
       const hasDiscount = (product.discountPercent && product.discountPercent > 0) ||
@@ -4768,7 +4775,7 @@ function renderWishlist() {
                 </div>
                 <div class="card-price-row">
                     <div class="price-group">
-                        <span class="current-price ${hasDiscount && discPct > 0 ? "has-discount-price" : ""}">${hasDiscount && discPct > 0 ? `-${formattedPrice}` : formattedPrice} <small class="price-unit-tag">/pachka</small></span>
+                        <span class="current-price">${formattedPrice} <small class="price-unit-tag">/pachka</small></span>
                         ${hasDiscount && discPct > 0 ? `
                           <span class="old-price">${formattedOldPrice}</span>
                         ` : ""}
@@ -4779,8 +4786,8 @@ function renderWishlist() {
                     <span>⭐ ${product.rating || 4.9}</span>
                     <span>(${product.reviewsCount || 186} sharhlar)</span>
                 </div>
-                <button type="button" onclick="event.stopPropagation(); addToCart('${product.id}', '48', 'Klassik', event);" class="btn product-add-cart-btn">
-                    Savatga qo'shish 🛒
+                <button type="button" onclick="event.stopPropagation(); addToCart('${product.id}', '${product.sizes && Array.isArray(product.sizes) ? product.sizes.join("-") : "Seriya"}', 'Klassik', event);" class="btn product-add-cart-btn">
+                    1 Pachka Savatga 🛒
                 </button>
             </div>
         </div>
@@ -4930,7 +4937,7 @@ function openAuthModal() {
   openModal("authModal");
   updateURLRoute("/login");
 
-  if (window.innerWidth > 768) {
+  if (window.innerWidth > 768 && typeof triggerGoogleGsiPrompt === "function") {
     triggerGoogleGsiPrompt();
   }
 }
@@ -5620,7 +5627,11 @@ function handleGoogleFormSubmit(e) {
 }
 
 function handleGoogleAuth() {
-  triggerGoogleGsiPrompt();
+  if (typeof triggerGoogleGsiPrompt === "function") {
+    triggerGoogleGsiPrompt();
+  } else {
+    window.location.href = "/users/auth/google";
+  }
 }
 
 function parseJwtPayload(token) {

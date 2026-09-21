@@ -594,12 +594,13 @@ const getProfile = async (req, res) => {
 // ─── REMOVE SESSION ───────────────────────────────────────────────────────────
 const removeSession = async (req, res) => {
   try {
-    let { email, sessionId, sessionToken } = req.body;
-    email = email.toLowerCase().trim();
-
-    if (!sessionToken) {
-      return res.status(401).json({ message: "Sessiya tokeni topilmadi!" });
+    let { email, sessionId, sessionToken } = req.body || {};
+    if (!email || !sessionToken) {
+      res.clearCookie("eurotex_session", { path: "/" });
+      res.clearCookie("token", { path: "/" });
+      return res.status(200).json({ success: true, message: "Sessiya tozalandi" });
     }
+    email = email.toLowerCase().trim();
     try {
       const decoded = jwt.verify(sessionToken, JWT_SECRET);
       if (decoded.email !== email) {
