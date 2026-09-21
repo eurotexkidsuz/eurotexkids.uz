@@ -137,7 +137,7 @@
       rel="stylesheet"
     />
     <!-- ⚡ Standard Render-Blocking CSS (Completely Prevents Flash of Unstyled Content) -->
-    <link rel="stylesheet" href="/style.css?v=347.0.0" />
+    <link rel="stylesheet" href="/style.css?v=348.0.0" />
     <!-- Schema.org JSON-LD Structured Data (Google Sitelinks & Store Entity) -->
     <script type="application/ld+json">
     {
@@ -1533,23 +1533,13 @@
         style="display: none"
       >
         <div class="container">
-          <div class="dashboard-top-bar" style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
+          <div class="dashboard-top-bar" style="display: flex; justify-content: flex-start; align-items: center; gap: 12px; margin-bottom: 16px;">
             <button
               type="button"
               class="dashboard-back-btn"
               onclick="closeDashboardView()"
             >
               ← Bosh sahifaga qaytish
-            </button>
-            <button
-              type="button"
-              class="theme-toggle-btn dashboard-theme-btn"
-              onclick="toggleTheme()"
-              title="Mavzuni almashtirish"
-              style="background: rgba(112,0,255,0.12); border: 1px solid rgba(112,0,255,0.3); color: inherit; padding: 7px 16px; border-radius: 20px; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;"
-            >
-              <span class="themeToggleIcon">🌙</span>
-              <span class="themeToggleLabel">Tungi rejim</span>
             </button>
           </div>
 
@@ -1705,8 +1695,8 @@
                     </div>
 
                     <button
-                      class="btn btn-primary btn-block btn-large"
-                      onclick="switchDashboardTab('checkout')"
+                      class="btn btn-primary btn-block btn-large cart-checkout-trigger"
+                      onclick="switchDashboardTab('checkout'); window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });"
                     >
                       Rasmiylashtirishga o'tish
                     </button>
@@ -4893,7 +4883,7 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=347.0.0" defer></script>
+    <script src="/script.js?v=348.0.0" defer></script>
     <script src="/eurotex-engine.js?v=18.0.0" defer></script>
   </body>
 </html>

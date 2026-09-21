@@ -4042,10 +4042,12 @@ function switchMobileNavTab(tab) {
     const wishBtn = document.getElementById("mobileWishlistBtn");
     if (wishBtn) wishBtn.classList.add("active");
     openWishlistModal();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   } else if (tab === "cart") {
     const cartBtn = document.getElementById("mobileCartBtn");
     if (cartBtn) cartBtn.classList.add("active");
     openCartDrawer();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   } else if (tab === "profile") {
     const authBtn = document.getElementById("mobileAuthBtn");
     if (authBtn) authBtn.classList.add("active");
@@ -4470,12 +4472,29 @@ function switchDashboardTab(tabName) {
   const homeWrapper = document.getElementById("homePageWrapper");
   const pdpView = document.getElementById("productDetailPageView");
 
-  if (dashView && (dashView.style.display === "none" || !dashView.style.display)) {
-    if (homeWrapper) homeWrapper.style.display = "none";
-    if (pdpView) pdpView.style.display = "none";
+  if (homeWrapper) homeWrapper.style.display = "none";
+  if (pdpView) pdpView.style.display = "none";
+  if (dashView) {
     dashView.style.display = "block";
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    dashView.scrollTop = 0;
   }
+
+  // ✨ Har doim tab almashtirilganda yoki buyurtma rasmiylashtirish bosilganda sahifa tepasiga ravon ko'tarilish
+  try {
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    if (document.documentElement) document.documentElement.scrollTop = 0;
+    if (document.body) document.body.scrollTop = 0;
+  } catch (e) {
+    window.scrollTo(0, 0);
+  }
+
+  setTimeout(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    const dashBar = document.querySelector(".dashboard-top-bar") || dashView;
+    if (dashBar && typeof dashBar.scrollIntoView === "function") {
+      dashBar.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, 40);
 
   const panes = {
     cart: document.getElementById("dPaneCart"),
@@ -4613,6 +4632,10 @@ function openCheckoutModal() {
   closeAllModals();
   updateCheckoutData();
   openDashboardView("checkout");
+  window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+  setTimeout(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+  }, 50);
 }
 
 function openModal(modalId) {
