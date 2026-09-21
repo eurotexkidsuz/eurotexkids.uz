@@ -796,11 +796,11 @@ body {
   background-image: 
     radial-gradient(circle at 12% 18%, rgba(212, 175, 55, 0.06) 0%, transparent 45%),
     radial-gradient(circle at 88% 82%, rgba(212, 175, 55, 0.06) 0%, transparent 45%),
-    url('/images/eurotex-logo.png');
+    url('/images/eurotex-logo-transparent.png');
   background-repeat: no-repeat, no-repeat, repeat;
   background-size: auto, auto, 240px 240px;
   background-position: center, center, center;
-  opacity: 0.28;
+  opacity: 0.30;
   filter: grayscale(100%);
   transform: translateZ(0);
   will-change: transform;
