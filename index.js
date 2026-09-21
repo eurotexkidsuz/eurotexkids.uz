@@ -280,9 +280,13 @@ app.use((req, res, next) => {
       req.headers["sec-fetch-dest"] === "document" ||
       req.headers["sec-fetch-mode"] === "navigate";
     const hasStaticExtension = req.path.includes(".") && !req.path.endsWith(".html");
-    const isApiEndpoint = req.path.startsWith("/api");
+    const isBackendRoute =
+      req.path.startsWith("/api") ||
+      req.path.startsWith("/users") ||
+      req.path.startsWith("/products") ||
+      req.path.startsWith("/orders");
 
-    if (isHtmlRequest && !hasStaticExtension && !isApiEndpoint) {
+    if (isHtmlRequest && !hasStaticExtension && !isBackendRoute) {
       res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
       res.setHeader("Pragma", "no-cache");
       res.setHeader("Expires", "0");
@@ -355,8 +359,12 @@ app.use("/api", apiRouter);
 // ── 🌐 GLOBAL SPA CATCH-ALL FOR GET ROUTES ────────────────────────────────────
 app.use((req, res, next) => {
   if (req.method === "GET") {
-    const hasExtension = req.path.includes(".") && !req.path.endsWith(".html");
-    if (!hasExtension && !req.path.startsWith("/api") && !req.path.startsWith("/users/auth")) {
+    const isBackendRoute =
+      req.path.startsWith("/api") ||
+      req.path.startsWith("/users") ||
+      req.path.startsWith("/products") ||
+      req.path.startsWith("/orders");
+    if (!hasExtension && !isBackendRoute) {
       res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
       res.setHeader("Pragma", "no-cache");
       res.setHeader("Expires", "0");

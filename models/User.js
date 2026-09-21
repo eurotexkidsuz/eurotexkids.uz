@@ -59,7 +59,7 @@ userSchema.pre("save", function (next) {
   if (Array.isArray(this.loginLogs) && this.loginLogs.length > 50) {
     this.loginLogs = this.loginLogs.slice(-50);
   }
-  next();
+  if (typeof next === "function") next();
 });
 
 module.exports = mongoose.model("User", userSchema);

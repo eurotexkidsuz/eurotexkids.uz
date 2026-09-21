@@ -72,7 +72,7 @@ productSchema.pre("save", function (next) {
   if (this.price === 0 && this.priceUsd > 0) {
     this.price = this.priceUsd;
   }
-  next();
+  if (typeof next === "function") next();
 });
 
 productSchema.index({ category: 1, inStock: 1 });
