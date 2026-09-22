@@ -3813,10 +3813,10 @@ function handlePdpShare() {
         showToast("Mahsulot havolasi nusxalandi! 📋", "success");
       })
       .catch(() => {
-        prompt("Mahsulot havolasi:", shareUrl);
+        window.eurotexPrompt("Mahsulot havolasidan nusxa oling:", shareUrl, "Havoladan nusxa olish", { icon: "📋" });
       });
   } else {
-    prompt("Mahsulot havolasi:", shareUrl);
+    window.eurotexPrompt("Mahsulot havolasidan nusxa oling:", shareUrl, "Havoladan nusxa olish", { icon: "📋" });
   }
 }
 
@@ -4041,10 +4041,10 @@ function closePdpImgLightbox() {
   document.body.style.overflow = "auto";
 }
 
-function openAddReviewPrompt() {
-  const name = prompt("Ismingizni kiriting:");
+async function openAddReviewPrompt() {
+  const name = await window.eurotexPrompt("Ismingizni kiriting:", "", "Sharh qoldirish", { icon: "✍️", placeholder: "Ismingiz..." });
   if (!name) return;
-  const text = prompt("Mahsulot haqida fikringizni yozing:");
+  const text = await window.eurotexPrompt("Mahsulot haqida fikringizni yozing:", "", "Sharh matni", { icon: "💬", placeholder: "Fikringiz..." });
   if (!text) return;
   showToast("Rahmat! Sharhingiz tekshiruvdan so'ng e'lon qilinadi ⭐");
 }
@@ -7711,6 +7711,7 @@ function renderAdminSizeGuide() {
 }
 
 let customConfirmResolve = null;
+let customConfirmMode = "confirm";
 
 function ensureCustomConfirmModalDOM() {
   let modal = document.getElementById("eurotexCustomConfirmModal");
@@ -7719,7 +7720,10 @@ function ensureCustomConfirmModalDOM() {
     modal.className = "modal-overlay custom-confirm-overlay";
     modal.id = "eurotexCustomConfirmModal";
     modal.style.display = "none";
-    modal.style.zIndex = "999999";
+    modal.style.zIndex = "9999999";
+    modal.onclick = function (e) {
+      if (e.target === modal) closeCustomConfirmModal(false);
+    };
     modal.innerHTML = `
       <div class="modal-dialog custom-confirm-dialog" role="dialog" aria-modal="true">
         <div class="custom-confirm-card">
@@ -7730,7 +7734,10 @@ function ensureCustomConfirmModalDOM() {
           <p class="custom-confirm-message" id="customConfirmMessage">
             Haqiqatan ham ushbu amalni bajarmoqchimisiz?
           </p>
-          <div class="custom-confirm-actions">
+          <div class="custom-confirm-input-wrap" id="customConfirmInputWrap" style="display:none;">
+            <input type="text" id="customConfirmInput" class="custom-confirm-input" placeholder="" autocomplete="off" />
+          </div>
+          <div class="custom-confirm-actions" id="customConfirmActions">
             <button type="button" class="btn-confirm-cancel" id="customConfirmCancelBtn" onclick="closeCustomConfirmModal(false)">
               Bekor qilish
             </button>
@@ -7755,9 +7762,13 @@ function showConfirmDialog({
   iconHtml = null,
   iconBg = null,
   confirmColor = "danger",
-}) {
+  mode = "confirm",
+  defaultValue = "",
+  placeholder = "",
+} = {}) {
   return new Promise((resolve) => {
     customConfirmResolve = resolve;
+    customConfirmMode = mode;
 
     const modal = ensureCustomConfirmModalDOM();
     const titleEl = document.getElementById("customConfirmTitle");
@@ -7766,13 +7777,18 @@ function showConfirmDialog({
     const iconWrap = document.getElementById("customConfirmIconWrap");
     const cancelBtn = document.getElementById("customConfirmCancelBtn");
     const acceptBtn = document.getElementById("customConfirmAcceptBtn");
+    const inputWrap = document.getElementById("customConfirmInputWrap");
+    const inputEl = document.getElementById("customConfirmInput");
 
     const isLogout = Boolean(title && (title.includes("Chiqish") || title.toLowerCase().includes("chiqish")));
     const finalIconHtml = iconHtml || (isLogout ? '<img src="/images/eurotex-logo.png" alt="Eurotex Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%; display: block;" />' : null);
-    const finalIconBg = iconBg || (isLogout ? "#ffffff" : "rgba(245, 158, 11, 0.15)");
+    const finalIconBg = iconBg || (isLogout ? "#ffffff" : (confirmColor === "danger" ? "rgba(239, 68, 68, 0.15)" : "rgba(245, 158, 11, 0.15)"));
 
     if (titleEl) titleEl.textContent = title;
-    if (msgEl) msgEl.textContent = message;
+    if (msgEl) {
+      msgEl.textContent = message;
+      msgEl.style.display = message ? "block" : "none";
+    }
 
     if (iconWrap) {
       iconWrap.style.background = finalIconBg;
@@ -7782,8 +7798,8 @@ function showConfirmDialog({
         iconWrap.style.boxShadow = "0 0 25px rgba(245, 158, 11, 0.4)";
       } else {
         iconWrap.style.padding = "";
-        iconWrap.style.border = "1px solid rgba(245, 158, 11, 0.35)";
-        iconWrap.style.boxShadow = "0 0 24px rgba(245, 158, 11, 0.35)";
+        iconWrap.style.border = confirmColor === "danger" ? "1px solid rgba(239, 68, 68, 0.35)" : "1px solid rgba(245, 158, 11, 0.35)";
+        iconWrap.style.boxShadow = confirmColor === "danger" ? "0 0 24px rgba(239, 68, 68, 0.35)" : "0 0 24px rgba(245, 158, 11, 0.35)";
       }
     }
 
@@ -7803,19 +7819,54 @@ function showConfirmDialog({
       }
     }
 
-    if (cancelBtn) cancelBtn.textContent = cancelText;
-
-    if (acceptBtn) {
-      acceptBtn.textContent = confirmText;
-      if (confirmColor === "danger") {
-        acceptBtn.style.background = "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)";
-        acceptBtn.style.boxShadow = "0 4px 18px rgba(239, 68, 68, 0.45)";
-      } else if (confirmColor === "primary") {
+    if (mode === "alert") {
+      if (cancelBtn) cancelBtn.style.display = "none";
+      if (inputWrap) inputWrap.style.display = "none";
+      if (acceptBtn) {
+        acceptBtn.textContent = confirmText || "Tushundim";
+        acceptBtn.style.flex = "1";
         acceptBtn.style.background = "linear-gradient(135deg, #7000ff 0%, #00f2fe 100%)";
         acceptBtn.style.boxShadow = "0 4px 18px rgba(112, 0, 255, 0.45)";
-      } else {
+      }
+    } else if (mode === "prompt") {
+      if (cancelBtn) {
+        cancelBtn.style.display = "block";
+        cancelBtn.textContent = cancelText || "Bekor qilish";
+      }
+      if (acceptBtn) {
+        acceptBtn.textContent = confirmText || "Saqlash";
+        acceptBtn.style.flex = "1.2";
         acceptBtn.style.background = "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)";
         acceptBtn.style.boxShadow = "0 4px 18px rgba(245, 158, 11, 0.45)";
+      }
+      if (inputWrap && inputEl) {
+        inputWrap.style.display = "block";
+        inputEl.value = defaultValue || "";
+        inputEl.placeholder = placeholder || "";
+        setTimeout(() => {
+          inputEl.focus();
+          inputEl.select();
+        }, 80);
+      }
+    } else {
+      if (inputWrap) inputWrap.style.display = "none";
+      if (cancelBtn) {
+        cancelBtn.style.display = "block";
+        cancelBtn.textContent = cancelText || "Bekor qilish";
+      }
+      if (acceptBtn) {
+        acceptBtn.textContent = confirmText || "Ha, davom etish";
+        acceptBtn.style.flex = "1.2";
+        if (confirmColor === "danger") {
+          acceptBtn.style.background = "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)";
+          acceptBtn.style.boxShadow = "0 4px 18px rgba(239, 68, 68, 0.45)";
+        } else if (confirmColor === "primary") {
+          acceptBtn.style.background = "linear-gradient(135deg, #7000ff 0%, #00f2fe 100%)";
+          acceptBtn.style.boxShadow = "0 4px 18px rgba(112, 0, 255, 0.45)";
+        } else {
+          acceptBtn.style.background = "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)";
+          acceptBtn.style.boxShadow = "0 4px 18px rgba(245, 158, 11, 0.45)";
+        }
       }
     }
 
@@ -7832,11 +7883,88 @@ function closeCustomConfirmModal(result) {
       modal.style.display = "none";
     }, 200);
   }
+
   if (typeof customConfirmResolve === "function") {
-    customConfirmResolve(result);
+    let finalVal = result;
+    if (customConfirmMode === "prompt") {
+      if (result === true) {
+        const inputEl = document.getElementById("customConfirmInput");
+        finalVal = inputEl ? inputEl.value : "";
+      } else {
+        finalVal = null;
+      }
+    } else if (customConfirmMode === "alert") {
+      finalVal = true;
+    }
+    const fn = customConfirmResolve;
     customConfirmResolve = null;
+    fn(finalVal);
   }
 }
+
+// Global Eurotex Dialog Functions
+window.eurotexConfirm = function (message, title = "Tasdiqlash", options = {}) {
+  const isDanger =
+    options.confirmColor === "danger" ||
+    (typeof message === "string" &&
+      (message.toLowerCase().includes("o'chirish") ||
+        message.toLowerCase().includes("tugat") ||
+        message.toLowerCase().includes("delete")));
+  return showConfirmDialog({
+    mode: "confirm",
+    title: title || "Tasdiqlash",
+    message: message || "",
+    confirmText: options.confirmText || (isDanger ? "Ha, o'chirish" : "Ha, tasdiqlayman"),
+    cancelText: options.cancelText || "Bekor qilish",
+    confirmColor: options.confirmColor || (isDanger ? "danger" : "primary"),
+    icon: options.icon || (isDanger ? "🗑️" : "⚠️"),
+    iconHtml: options.iconHtml,
+    iconBg: options.iconBg,
+  });
+};
+
+window.eurotexAlert = function (message, title = "Eurotex Kids", options = {}) {
+  return showConfirmDialog({
+    mode: "alert",
+    title: title || "Eurotex Kids",
+    message: message || "",
+    confirmText: options.confirmText || "Tushundim",
+    icon: options.icon || "ℹ️",
+    confirmColor: "primary",
+  });
+};
+
+window.eurotexPrompt = function (message, defaultValue = "", title = "Kiritish", options = {}) {
+  return showConfirmDialog({
+    mode: "prompt",
+    title: title || "Kiritish",
+    message: message || "",
+    defaultValue: defaultValue || "",
+    placeholder: options.placeholder || "",
+    confirmText: options.confirmText || "Saqlash",
+    cancelText: options.cancelText || "Bekor qilish",
+    icon: options.icon || "✍️",
+  });
+};
+
+// Keyboard listener for dialog (Enter to accept, Escape to cancel)
+document.addEventListener("keydown", (e) => {
+  const modal = document.getElementById("eurotexCustomConfirmModal");
+  if (modal && modal.classList.contains("active")) {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      closeCustomConfirmModal(false);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      closeCustomConfirmModal(true);
+    }
+  }
+});
+
+// Override window.alert to guarantee native browser popup "eurotexkids.uz says" never appears
+window.alert = function (msg) {
+  window.eurotexAlert(String(msg || ""));
+};
 
 function addAdminSizeRow() {
   const data = collectAdminSizeGuideFromInputs();
@@ -9492,35 +9620,81 @@ function renderAdminReviews() {
   `;
 }
 
-function adminAddNewReviewPrompt() {
-  const author = prompt("Mijoz ismini kiriting (masalan: Otabek Jo'rayev):");
-  if (!author) return;
-  const product = prompt("Qaysi mahsulotga sharh? (masalan: Slim Fit Kostyum):", "Eurotex Kids Kostyumi");
-  const text = prompt("Mijozning fikri / sharh matni:");
-  if (!text) return;
+function openAdminAddReviewModal() {
+  const modal = document.getElementById("adminAddReviewModal");
+  if (modal) {
+    modal.style.display = "flex";
+    setTimeout(() => modal.classList.add("active"), 10);
+    const authorInput = document.getElementById("adminNewReviewAuthor");
+    if (authorInput) {
+      authorInput.value = "";
+      setTimeout(() => authorInput.focus(), 60);
+    }
+    const textInput = document.getElementById("adminNewReviewText");
+    if (textInput) textInput.value = "";
+  }
+}
+
+function closeAdminAddReviewModal() {
+  const modal = document.getElementById("adminAddReviewModal");
+  if (modal) {
+    modal.classList.remove("active");
+    setTimeout(() => {
+      modal.style.display = "none";
+    }, 200);
+  }
+}
+
+function handleAdminAddReviewSubmit(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  const author = (document.getElementById("adminNewReviewAuthor")?.value || "").trim();
+  const product = (document.getElementById("adminNewReviewProduct")?.value || "").trim() || "Eurotex Kids";
+  const text = (document.getElementById("adminNewReviewText")?.value || "").trim();
+  const rating = parseInt(document.getElementById("adminNewReviewRating")?.value || "5", 10);
+
+  if (!author || !text) {
+    showToast("Iltimos, barcha maydonlarni to'ldiring!", "warning");
+    return;
+  }
 
   let reviews = [];
   try {
     const raw = localStorage.getItem("eurotex_admin_reviews");
     if (raw) reviews = JSON.parse(raw);
-  } catch (e) {}
+  } catch (err) {}
 
   reviews.unshift({
     id: Date.now(),
     author,
-    product: product || "Eurotex Kids",
+    product,
     text,
-    rating: 5,
+    rating: rating || 5,
     date: "Hozirgina",
   });
 
   localStorage.setItem("eurotex_admin_reviews", JSON.stringify(reviews));
   renderAdminReviews();
-  showToast("✓ Yangi mijoz sharhi muvaffaqiyatli qo'shildi!");
+  closeAdminAddReviewModal();
+  showToast("✓ Yangi mijoz sharhi muvaffaqiyatli qo'shildi!", "success");
 }
 
-function deleteAdminReview(id) {
-  if (!confirm("Ushbu sharhni o'chirishni tasdiqlaysizmi?")) return;
+function adminAddNewReviewPrompt() {
+  openAdminAddReviewModal();
+}
+
+async function deleteAdminReview(id) {
+  const ok = await window.eurotexConfirm(
+    "Ushbu sharhni o'chirishni tasdiqlaysizmi?",
+    "Sharhni o'chirish",
+    {
+      icon: "🗑️",
+      confirmColor: "danger",
+      confirmText: "Ha, o'chirish",
+      cancelText: "Bekor qilish",
+    }
+  );
+  if (!ok) return;
+
   let reviews = [];
   try {
     const raw = localStorage.getItem("eurotex_admin_reviews");
@@ -9530,7 +9704,7 @@ function deleteAdminReview(id) {
   reviews = reviews.filter((r, idx) => (r.id ? r.id !== id : idx !== id));
   localStorage.setItem("eurotex_admin_reviews", JSON.stringify(reviews));
   renderAdminReviews();
-  showToast("Sharh o'chirildi");
+  showToast("✓ Sharh o'chirildi", "info");
 }
 
 function renderAdminReturns() {
@@ -10209,10 +10383,20 @@ async function handleCreatePromo(e) {
 }
 
 async function deleteAdminPromo(id) {
-  if (!confirm("Ushbu promokodni o'chirishni tasdiqlaysizmi?")) return;
+  const ok = await window.eurotexConfirm(
+    "Ushbu promokodni o'chirishni tasdiqlaysizmi?",
+    "Promokodni o'chirish",
+    {
+      icon: "🗑️",
+      confirmColor: "danger",
+      confirmText: "Ha, o'chirish",
+      cancelText: "Bekor qilish",
+    }
+  );
+  if (!ok) return;
   try {
     await fetch(`/api/promocodes/${id}`, { method: "DELETE", headers: getAdminAuthHeaders() });
-    showToast("Promokod o'chirildi");
+    showToast("✓ Promokod muvaffaqiyatli o'chirildi", "info");
     loadAdminPromos();
   } catch (e) {}
 }
@@ -11167,7 +11351,7 @@ function exportOrdersToCSV() {
     if (typeof showToast === "function") {
       showToast("⚠️ Eksport qilish uchun hech qanday buyurtma topilmadi!", "warning");
     } else {
-      alert("Hech qanday buyurtma topilmadi!");
+      window.eurotexAlert("Eksport qilish uchun hech qanday buyurtma topilmadi!", "Eksport");
     }
     return;
   }
@@ -11234,7 +11418,7 @@ function exportUsersToCSV() {
     if (typeof showToast === "function") {
       showToast("⚠️ Eksport qilish uchun hech qanday mijoz topilmadi!", "warning");
     } else {
-      alert("Hech qanday mijoz topilmadi!");
+      window.eurotexAlert("Eksport qilish uchun hech qanday mijoz topilmadi!", "Eksport");
     }
     return;
   }

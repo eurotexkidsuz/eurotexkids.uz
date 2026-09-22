@@ -141,7 +141,7 @@
       rel="stylesheet"
     />
     <!-- ⚡ Standard Render-Blocking CSS (Completely Prevents Flash of Unstyled Content) -->
-    <link rel="stylesheet" href="/style.css?v=354.0.0" />
+    <link rel="stylesheet" href="/style.css?v=355.0.0" />
     <!-- Schema.org JSON-LD Structured Data (Google Sitelinks & Store Entity) -->
     <script type="application/ld+json">
     {
@@ -3227,9 +3227,9 @@
     </div>
 
     <!-- =========================================================================
-         🌟 EUROTEX ULTRA-LUXURY CONFIRMATION / ALERT MODAL DIALOG
+         🌟 EUROTEX ULTRA-LUXURY CONFIRMATION / ALERT / PROMPT MODAL DIALOG
          ========================================================================= -->
-    <div class="modal-overlay custom-confirm-overlay" id="eurotexCustomConfirmModal" style="display: none; z-index: 999999;">
+    <div class="modal-overlay custom-confirm-overlay" id="eurotexCustomConfirmModal" style="display: none; z-index: 9999999;" onclick="if(event.target === this) closeCustomConfirmModal(false)">
       <div class="modal-dialog custom-confirm-dialog" role="dialog" aria-modal="true">
         <div class="custom-confirm-card">
           <div class="custom-confirm-icon-wrap" id="customConfirmIconWrap">
@@ -3239,7 +3239,10 @@
           <p class="custom-confirm-message" id="customConfirmMessage">
             Haqiqatan ham ushbu amalni bajarmoqchimisiz?
           </p>
-          <div class="custom-confirm-actions">
+          <div class="custom-confirm-input-wrap" id="customConfirmInputWrap" style="display: none;">
+            <input type="text" id="customConfirmInput" class="custom-confirm-input" placeholder="" autocomplete="off" />
+          </div>
+          <div class="custom-confirm-actions" id="customConfirmActions">
             <button type="button" class="btn-confirm-cancel" id="customConfirmCancelBtn" onclick="closeCustomConfirmModal(false)">
               Bekor qilish
             </button>
@@ -3247,6 +3250,52 @@
               Ha, tasdiqlayman
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================================
+         ✍️ EUROTEX ADMIN YANGI SHARH QO'SHISH MODALI
+         ========================================================================= -->
+    <div class="modal-overlay custom-confirm-overlay" id="adminAddReviewModal" style="display: none; z-index: 9999998;" onclick="if(event.target === this) closeAdminAddReviewModal()">
+      <div class="modal-dialog custom-confirm-dialog" style="max-width: 480px;" role="dialog" aria-modal="true">
+        <div class="custom-confirm-card" style="text-align: left; padding: 28px 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0; display: flex; align-items: center; gap: 8px;">
+              <span>✍️</span> Yangi Sharh Qo'shish
+            </h3>
+            <button type="button" onclick="closeAdminAddReviewModal()" style="background: none; border: none; color: #94a3b8; font-size: 24px; cursor: pointer; line-height: 1; padding: 0 4px;">&times;</button>
+          </div>
+          <form id="adminAddReviewForm" onsubmit="handleAdminAddReviewSubmit(event)">
+            <div style="margin-bottom: 14px;">
+              <label style="display: block; font-size: 13px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px;">Mijoz Ismi va Familiyasi</label>
+              <input type="text" id="adminNewReviewAuthor" class="custom-confirm-input" placeholder="Masalan: Otabek Jo'rayev" required autocomplete="off" />
+            </div>
+            <div style="margin-bottom: 14px;">
+              <label style="display: block; font-size: 13px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px;">Qaysi mahsulotga sharh?</label>
+              <input type="text" id="adminNewReviewProduct" class="custom-confirm-input" placeholder="Masalan: Slim Fit Kostyum" value="Eurotex Kids Kostyumi" required autocomplete="off" />
+            </div>
+            <div style="margin-bottom: 14px;">
+              <label style="display: block; font-size: 13px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px;">Sharh matni</label>
+              <textarea id="adminNewReviewText" class="custom-confirm-input" rows="3" placeholder="Mijozning mahsulot haqidagi fikri..." style="resize: vertical; font-family: inherit;" required></textarea>
+            </div>
+            <div style="margin-bottom: 22px;">
+              <label style="display: block; font-size: 13px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px;">Baholash (Reyting)</label>
+              <select id="adminNewReviewRating" class="custom-confirm-input" style="cursor: pointer; background: #0f172a; color: #fbbf24; font-weight: 700;">
+                <option value="5" selected>⭐⭐⭐⭐⭐ 5 / 5 (A'lo darajada)</option>
+                <option value="4">⭐⭐⭐⭐ 4 / 5 (Yaxshi)</option>
+                <option value="3">⭐⭐⭐ 3 / 5 (O'rtacha)</option>
+              </select>
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <button type="button" class="btn-confirm-cancel" onclick="closeAdminAddReviewModal()" style="height: 46px;">
+                Bekor qilish
+              </button>
+              <button type="submit" class="btn btn-gold" style="flex: 1.2; height: 46px; border-radius: 14px; font-weight: 800; font-size: 14px;">
+                ✓ Sharhni Saqlash
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -4888,7 +4937,7 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=354.0.0" defer></script>
-    <script src="/eurotex-engine.js?v=20.0.0" defer></script>
+    <script src="/script.js?v=355.0.0" defer></script>
+    <script src="/eurotex-engine.js?v=21.0.0" defer></script>
   </body>
 </html>

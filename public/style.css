@@ -18,6 +18,8 @@
   --color-gold: #d4af37;
   --color-gold-light: #facc15;
   --color-gold-deep: #b89628;
+  --color-gold-hover: #eab308;
+  --color-gold-text: #0b1322;
   --color-rose: #e11d48;
   --color-neon-cyan: #00f2fe;
   --color-neon-cyan-deep: #06b6d4;
@@ -2880,13 +2882,25 @@ body.dark-mode .cart-delete-btn {
 }
 
 .btn-gold {
-  background: linear-gradient(135deg, var(--color-gold), #b89628);
-  color: var(--color-navy);
+  background: linear-gradient(135deg, #d4af37 0%, #b89628 100%) !important;
+  color: #0b1322 !important;
+  font-weight: 800 !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35) !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  cursor: pointer !important;
 }
 
 .btn-gold:hover {
-  background: var(--color-gold-hover);
-  box-shadow: 0 4px 16px rgba(212, 175, 55, 0.4);
+  background: linear-gradient(135deg, #fde047 0%, #eab308 100%) !important;
+  color: #000000 !important;
+  box-shadow: 0 6px 22px rgba(234, 179, 8, 0.6), 0 0 16px rgba(253, 224, 71, 0.4) !important;
+  transform: translateY(-2px) scale(1.02) !important;
+}
+
+.btn-gold:active {
+  transform: translateY(0) scale(0.98) !important;
+  box-shadow: 0 2px 8px rgba(234, 179, 8, 0.4) !important;
 }
 
 .btn-outline-light {
@@ -2895,8 +2909,10 @@ body.dark-mode .cart-delete-btn {
 }
 
 .btn-outline-light:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   border-color: #fff;
+  color: #ffffff;
+  transform: translateY(-1px);
 }
 
 .btn-outline {
@@ -2905,7 +2921,17 @@ body.dark-mode .cart-delete-btn {
 }
 
 .btn-outline:hover {
-  background: var(--bg-surface-secondary);
+  background: rgba(112, 0, 255, 0.08);
+  border-color: var(--color-uzum-purple);
+  color: var(--color-uzum-purple);
+  transform: translateY(-1px);
+}
+
+html[data-theme="dark"] .btn-outline:hover,
+body.dark-mode .btn-outline:hover {
+  background: rgba(112, 0, 255, 0.22) !important;
+  border-color: #a855f7 !important;
+  color: #ffffff !important;
 }
 
 .btn-google {
@@ -11099,7 +11125,32 @@ body.dark-mode #sizeGuideModal .size-note,
   font-size: 14.5px !important;
   line-height: 1.65 !important;
   color: #cbd5e1 !important;
-  margin-bottom: 28px !important;
+  margin-bottom: 24px !important;
+}
+
+.custom-confirm-input-wrap {
+  margin-bottom: 22px !important;
+  width: 100% !important;
+}
+
+.custom-confirm-input {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 13px 16px !important;
+  background: rgba(15, 23, 42, 0.85) !important;
+  border: 1.5px solid rgba(112, 0, 255, 0.4) !important;
+  border-radius: 14px !important;
+  color: #ffffff !important;
+  font-size: 15px !important;
+  font-family: inherit !important;
+  outline: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.custom-confirm-input:focus {
+  border-color: #00f2fe !important;
+  box-shadow: 0 0 16px rgba(0, 242, 254, 0.35) !important;
+  background: rgba(15, 23, 42, 0.95) !important;
 }
 
 .custom-confirm-actions {

@@ -1375,6 +1375,8 @@
         window.triggerAuthToast(
           "Buyurtmani rasmiylashtirish uchun tizimga kiring!",
         );
+      } else if (typeof window.eurotexAlert === "function") {
+        window.eurotexAlert("Buyurtmani rasmiylashtirish uchun tizimga kiring!", "Tizimga kiring", { icon: "🔒" });
       } else {
         alert("Buyurtmani rasmiylashtirish uchun tizimga kiring!");
       }
@@ -1383,7 +1385,11 @@
       }
       return false;
     } catch (e) {
-      alert("Buyurtmani rasmiylashtirish uchun tizimga kiring!");
+      if (typeof window.eurotexAlert === "function") {
+        window.eurotexAlert("Buyurtmani rasmiylashtirish uchun tizimga kiring!", "Tizimga kiring", { icon: "🔒" });
+      } else {
+        alert("Buyurtmani rasmiylashtirish uchun tizimga kiring!");
+      }
       return false;
     }
   }

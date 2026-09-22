@@ -1,15 +1,145 @@
+/* ── Eurotex Custom Dialogs (Never show browser says) ───── */
+let profileDialogResolve = null;
+
+function ensureProfileDialogDOM() {
+  let modal = document.getElementById("eurotexCustomConfirmModal");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.className = "modal-overlay custom-confirm-overlay";
+    modal.id = "eurotexCustomConfirmModal";
+    modal.style.display = "none";
+    modal.style.zIndex = "9999999";
+    modal.onclick = function (e) {
+      if (e.target === modal) closeProfileDialog(false);
+    };
+    modal.innerHTML = `
+      <div class="modal-dialog custom-confirm-dialog" role="dialog" aria-modal="true">
+        <div class="custom-confirm-card">
+          <div class="custom-confirm-icon-wrap" id="customConfirmIconWrap">
+            <span class="custom-confirm-icon" id="customConfirmIcon">⚠️</span>
+          </div>
+          <h3 class="custom-confirm-title" id="customConfirmTitle">Tasdiqlash</h3>
+          <p class="custom-confirm-message" id="customConfirmMessage">
+            Haqiqatan ham ushbu amalni bajarmoqchimisiz?
+          </p>
+          <div class="custom-confirm-actions" id="customConfirmActions">
+            <button type="button" class="btn-confirm-cancel" id="customConfirmCancelBtn" onclick="closeProfileDialog(false)">
+              Bekor qilish
+            </button>
+            <button type="button" class="btn-confirm-accept" id="customConfirmAcceptBtn" onclick="closeProfileDialog(true)">
+              Ha, tasdiqlayman
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+  return modal;
+}
+
+function closeProfileDialog(result) {
+  const modal = document.getElementById("eurotexCustomConfirmModal");
+  if (modal) {
+    modal.classList.remove("active");
+    setTimeout(() => {
+      modal.style.display = "none";
+    }, 200);
+  }
+  if (typeof profileDialogResolve === "function") {
+    const fn = profileDialogResolve;
+    profileDialogResolve = null;
+    fn(result);
+  }
+}
+
+window.closeProfileDialog = closeProfileDialog;
+
+function eurotexConfirm(message, title = "Tasdiqlash", options = {}) {
+  return new Promise((resolve) => {
+    profileDialogResolve = resolve;
+    const modal = ensureProfileDialogDOM();
+    const titleEl = document.getElementById("customConfirmTitle");
+    const msgEl = document.getElementById("customConfirmMessage");
+    const iconEl = document.getElementById("customConfirmIcon");
+    const iconWrap = document.getElementById("customConfirmIconWrap");
+    const cancelBtn = document.getElementById("customConfirmCancelBtn");
+    const acceptBtn = document.getElementById("customConfirmAcceptBtn");
+
+    const isDanger =
+      options.confirmColor === "danger" ||
+      (typeof message === "string" &&
+        (message.toLowerCase().includes("o'chirish") ||
+          message.toLowerCase().includes("tugat") ||
+          message.toLowerCase().includes("delete")));
+
+    if (titleEl) titleEl.textContent = title;
+    if (msgEl) msgEl.textContent = message;
+    if (iconEl) iconEl.textContent = options.icon || (isDanger ? "🗑️" : "⚠️");
+    if (cancelBtn) {
+      cancelBtn.style.display = "block";
+      cancelBtn.textContent = options.cancelText || "Bekor qilish";
+    }
+    if (acceptBtn) {
+      acceptBtn.textContent = options.confirmText || (isDanger ? "Ha, o'chirish" : "Ha, tasdiqlayman");
+      acceptBtn.style.background = isDanger
+        ? "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)"
+        : "linear-gradient(135deg, #7000ff 0%, #00f2fe 100%)";
+    }
+    if (iconWrap) {
+      iconWrap.style.background = isDanger ? "rgba(239, 68, 68, 0.15)" : "rgba(245, 158, 11, 0.15)";
+    }
+
+    modal.style.display = "flex";
+    setTimeout(() => modal.classList.add("active"), 10);
+  });
+}
+
+function eurotexAlert(message, title = "Eurotex Kids") {
+  return new Promise((resolve) => {
+    profileDialogResolve = resolve;
+    const modal = ensureProfileDialogDOM();
+    const titleEl = document.getElementById("customConfirmTitle");
+    const msgEl = document.getElementById("customConfirmMessage");
+    const iconEl = document.getElementById("customConfirmIcon");
+    const iconWrap = document.getElementById("customConfirmIconWrap");
+    const cancelBtn = document.getElementById("customConfirmCancelBtn");
+    const acceptBtn = document.getElementById("customConfirmAcceptBtn");
+
+    if (titleEl) titleEl.textContent = title;
+    if (msgEl) msgEl.textContent = message;
+    if (iconEl) iconEl.textContent = "ℹ️";
+    if (cancelBtn) cancelBtn.style.display = "none";
+    if (acceptBtn) {
+      acceptBtn.textContent = "Tushundim";
+      acceptBtn.style.background = "linear-gradient(135deg, #7000ff 0%, #00f2fe 100%)";
+    }
+    if (iconWrap) iconWrap.style.background = "rgba(112, 0, 255, 0.15)";
+
+    modal.style.display = "flex";
+    setTimeout(() => modal.classList.add("active"), 10);
+  });
+}
+
+// Guarantee native browser alert never shows "eurotexkids.uz says"
+window.alert = function (msg) {
+  eurotexAlert(String(msg || ""));
+};
+
 /* ── Theme ──────────────────────────────────────────────── */
 const html = document.documentElement;
 const themeBtn = document.getElementById("themeToggle");
 const saved = localStorage.getItem("theme") || "light";
 html.setAttribute("data-theme", saved);
-themeBtn.textContent = saved === "dark" ? "☀️" : "🌙";
-themeBtn.addEventListener("click", () => {
-  const next = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
-  html.setAttribute("data-theme", next);
-  localStorage.setItem("theme", next);
-  themeBtn.textContent = next === "dark" ? "☀️" : "🌙";
-});
+if (themeBtn) {
+  themeBtn.textContent = saved === "dark" ? "☀️" : "🌙";
+  themeBtn.addEventListener("click", () => {
+    const next = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    html.setAttribute("data-theme", next);
+    localStorage.setItem("theme", next);
+    themeBtn.textContent = next === "dark" ? "☀️" : "🌙";
+  });
+}
 
 /* ── Get email from URL ──────────────────────────────────── */
 const params = new URLSearchParams(window.location.search);
@@ -207,7 +337,12 @@ function renderProfile(data) {
 
 /* ── Remove Session ──────────────────────────────────────── */
 async function removeSession(sessionId) {
-  if (!confirm("Bu qurilmani o'chirishni xohlaysizmi?")) return;
+  const ok = await eurotexConfirm("Bu qurilmani o'chirishni xohlaysizmi?", "Qurilmani o'chirish", {
+    confirmText: "Ha, o'chirish",
+    confirmColor: "danger",
+    icon: "📱",
+  });
+  if (!ok) return;
   try {
     const sessionToken =
       localStorage.getItem("rememberToken") ||
@@ -249,7 +384,12 @@ document.getElementById("btnLogout").addEventListener("click", () => {
 
 /* ── Logout All Sessions ─────────────────────────────────── */
 document.getElementById("btnLogoutAll").addEventListener("click", async () => {
-  if (!confirm("Barcha sessiyalarni tugatmoqchimisiz?")) return;
+  const ok = await eurotexConfirm("Barcha boshqa sessiyalarni tugatmoqchimisiz?", "Sessiyalarni tugatish", {
+    confirmText: "Ha, tugatish",
+    confirmColor: "danger",
+    icon: "🔒",
+  });
+  if (!ok) return;
   if (!profileData) return;
   // Remove each session
   const sessionToken =
@@ -282,7 +422,12 @@ document
 
       if (profileData && profileData.telegramLinked) {
         // Disconnect Telegram (Uzish)
-        if (!confirm("Telegram ulanishini uzishni xohlaysizmi?")) return;
+        const ok = await eurotexConfirm("Telegram ulanishini uzishni xohlaysizmi?", "Telegram ulanishini uzish", {
+          confirmText: "Ha, uzish",
+          confirmColor: "warning",
+          icon: "✈️",
+        });
+        if (!ok) return;
         const r = await fetch("/users/telegram-unlink", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
