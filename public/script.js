@@ -5806,23 +5806,15 @@ let _gsiInitialized = false;
 
 // Called when user clicks "Google orqali kirish"
 function handleGoogleSignIn() {
-  const isMobile =
-    window.innerWidth <= 768 ||
-    /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-  if (isMobile) {
-    window.location.href = "/users/auth/google";
-    return;
-  }
-
   try {
     if (window.google && window.google.accounts && window.google.accounts.id) {
       if (!_gsiInitialized) {
         window.google.accounts.id.initialize({
           client_id: GOOGLE_CLIENT_ID,
           callback: handleGsiCredentialResponse,
+          auto_select: false,
           cancel_on_tap_outside: false,
-          use_fedcm_for_prompt: false,
+          itp_support: true,
         });
         _gsiInitialized = true;
       }
@@ -5835,16 +5827,17 @@ function handleGoogleSignIn() {
   }
 }
 
-// Trigger native GSI One Tap on desktop
+// Trigger native GSI One Tap
 function _triggerGsiOneTap() {
-  if (state.user) return;
+  if (state.user || localStorage.getItem("eurotex_user")) return;
   if (window.google && window.google.accounts && window.google.accounts.id) {
     if (!_gsiInitialized) {
       window.google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: handleGsiCredentialResponse,
+        auto_select: false,
         cancel_on_tap_outside: false,
-        use_fedcm_for_prompt: false,
+        itp_support: true,
       });
       _gsiInitialized = true;
     }
@@ -5852,15 +5845,16 @@ function _triggerGsiOneTap() {
   }
 }
 
-// Called by Google after user picks an account (native One Tap callback)
+// Called by Google after user picks an account (official Google One Tap callback)
 function handleGsiCredentialResponse(response) {
+  if (!response || !response.credential) return;
   try {
     const parts = response.credential.split(".");
     const payload = JSON.parse(
       atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")),
     );
 
-    const realEmail = payload.email || "";
+    const realEmail = (payload.email || "").toLowerCase().trim();
     const realName =
       payload.name || payload.given_name || realEmail.split("@")[0];
     const realPicture = payload.picture || "";
@@ -5892,6 +5886,31 @@ function handleGsiCredentialResponse(response) {
       }
     } catch (e) {}
 
+    // Send to server to establish authenticated session & update MongoDB
+    try {
+      fetch("/users/auth/google-one-tap", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential: response.credential }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && data.user) {
+            state.user = {
+              ...state.user,
+              ...data.user,
+              role: data.user.role || (isAdmin ? "admin" : "user"),
+            };
+            localStorage.setItem("eurotex_user", JSON.stringify(state.user));
+            updateUserAuthUI();
+            if (typeof syncUserCartAndWishlist === "function") {
+              syncUserCartAndWishlist();
+            }
+          }
+        })
+        .catch((err) => console.warn("Google One Tap server sync:", err));
+    } catch (e) {}
+
     if (isAdmin) {
       showToast(
         `👑 ${state.user.name} sifatida kirdingiz! Admin Panel faollashtirildi. ✅`,
@@ -5904,6 +5923,7 @@ function handleGsiCredentialResponse(response) {
       checkAndPromptProfileCompletion();
     }
   } catch (e) {
+    console.error("handleGsiCredentialResponse error:", e);
     window.location.href = "/users/auth/google";
   }
 }
@@ -5912,7 +5932,8 @@ window.handleGsiCredentialResponseImpl = handleGsiCredentialResponse;
 
 function initAutoGooglePrompt() {
   // If user is already logged in, cancel Google One Tap so it NEVER shows!
-  if (state.user) {
+  const savedUser = state.user || JSON.parse(localStorage.getItem("eurotex_user") || "null");
+  if (savedUser && savedUser.email) {
     try {
       if (
         window.google &&
@@ -5926,28 +5947,50 @@ function initAutoGooglePrompt() {
     return;
   }
 
-  const isMobile =
-    window.innerWidth <= 768 ||
-    /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-  if (isMobile) return;
-
-  const tryInit = () => {
-    if (state.user) return;
-    if (window.google && window.google.accounts && window.google.accounts.id) {
-      if (!_gsiInitialized) {
-        window.google.accounts.id.initialize({
-          client_id: GOOGLE_CLIENT_ID,
-          callback: handleGsiCredentialResponse,
-          cancel_on_tap_outside: false,
-          use_fedcm_for_prompt: false,
-        });
-        _gsiInitialized = true;
-      }
-      window.google.accounts.id.prompt();
+  // Poll until official Google Identity Services library is loaded
+  let attempts = 0;
+  const pollGsi = setInterval(() => {
+    attempts++;
+    if (state.user || localStorage.getItem("eurotex_user")) {
+      clearInterval(pollGsi);
+      try {
+        if (window.google?.accounts?.id) {
+          window.google.accounts.id.cancel();
+          window.google.accounts.id.disableAutoSelect();
+        }
+      } catch (e) {}
+      return;
     }
-  };
 
-  setTimeout(tryInit, 800);
+    if (window.google && window.google.accounts && window.google.accounts.id) {
+      clearInterval(pollGsi);
+      try {
+        if (!_gsiInitialized) {
+          window.google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleGsiCredentialResponse,
+            auto_select: false,
+            cancel_on_tap_outside: false,
+            itp_support: true,
+          });
+          _gsiInitialized = true;
+        }
+        window.google.accounts.id.prompt((notification) => {
+          if (notification.isNotDisplayed()) {
+            console.warn("ℹ️ [Google One Tap] Ko'rsatilmadi:", notification.getNotDisplayedReason());
+          } else if (notification.isSkippedMoment()) {
+            console.warn("ℹ️ [Google One Tap] O'tkazib yuborildi:", notification.getSkippedReason());
+          } else if (notification.isDismissedMoment()) {
+            console.warn("ℹ️ [Google One Tap] Foydalanuvchi tomonidan yopildi (X):", notification.getDismissedReason());
+          }
+        });
+      } catch (err) {
+        console.warn("[Google One Tap] prompt init xatosi:", err);
+      }
+    } else if (attempts >= 40) {
+      clearInterval(pollGsi);
+    }
+  }, 150);
 }
 
 function quickAdminLogin(email) {

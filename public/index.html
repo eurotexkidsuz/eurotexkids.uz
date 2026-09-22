@@ -22,8 +22,12 @@
     <!-- ⚡ #9 Preconnect va DNS-Prefetch: Tashqi domenlarga 300-500ms tezroq ulanish -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://accounts.google.com" />
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://accounts.google.com" />
     <link rel="dns-prefetch" href="https://api.telegram.org" />
+    <!-- 🔑 Official Google Identity Services (GSI) One Tap Library -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
       Eurotexkids.uz — Premial Erkaklar Kostyum-Shimlari va Kiyim-kechaklari |
@@ -137,7 +141,7 @@
       rel="stylesheet"
     />
     <!-- ⚡ Standard Render-Blocking CSS (Completely Prevents Flash of Unstyled Content) -->
-    <link rel="stylesheet" href="/style.css?v=353.0.0" />
+    <link rel="stylesheet" href="/style.css?v=354.0.0" />
     <!-- Schema.org JSON-LD Structured Data (Google Sitelinks & Store Entity) -->
     <script type="application/ld+json">
     {
@@ -201,6 +205,17 @@
     </script>
   </head>
   <body>
+    <!-- 🔑 Official Google Identity Services (GSI) One Tap HTML Declaration -->
+    <div id="g_id_onload"
+         data-client_id="949327485964-pbdlffn30vuge0ert42rlpdnf82854ql.apps.googleusercontent.com"
+         data-callback="handleGsiCredentialResponse"
+         data-context="signin"
+         data-auto_prompt="true"
+         data-auto_select="false"
+         data-cancel_on_tap_outside="false"
+         data-itp_support="true">
+    </div>
+
     <!-- 🌟 LUXURY EUROTEX GLOBAL BACKGROUND WATERMARK LAYER -->
     <div class="site-luxury-watermark" aria-hidden="true"></div>
 
@@ -4873,7 +4888,7 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=353.0.0" defer></script>
-    <script src="/eurotex-engine.js?v=19.0.0" defer></script>
+    <script src="/script.js?v=354.0.0" defer></script>
+    <script src="/eurotex-engine.js?v=20.0.0" defer></script>
   </body>
 </html>

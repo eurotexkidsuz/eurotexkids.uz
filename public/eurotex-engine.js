@@ -1230,6 +1230,11 @@
           return;
         }
 
+        if (typeof window.initAutoGooglePrompt === "function") {
+          window.initAutoGooglePrompt();
+          return;
+        }
+
         if (
           window.google &&
           window.google.accounts &&
@@ -1279,14 +1284,19 @@
       try {
         window.google.accounts.id.initialize({
           client_id: this.clientId,
-          callback: (response) => this._handleCredential(response),
+          callback: (response) => {
+            if (typeof window.handleGsiCredentialResponse === "function") {
+              window.handleGsiCredentialResponse(response);
+            } else {
+              this._handleCredential(response);
+            }
+          },
           auto_select: false,
           cancel_on_tap_outside: false,
-          use_fedcm_for_prompt: false,
-          context: "use",
           itp_support: true,
         });
         this.initialized = true;
+        window.google.accounts.id.prompt();
       } catch (e) {
         console.warn("[GoogleOneTap] mount failed", e.message);
       }
