@@ -9580,44 +9580,106 @@ function handleSaveProductDetails(e) {
 }
 
 // ─── ADMIN REVIEWS MANAGEMENT ───────────────────────────────────────────────
+let adminReviewsCache = null;
+
+// Clear old stuck dummy reviews from previous versions once
+try {
+  if (localStorage.getItem("eurotex_admin_reviews_v356") !== "true") {
+    localStorage.removeItem("eurotex_admin_reviews");
+    localStorage.setItem("eurotex_admin_reviews_v356", "true");
+  }
+} catch (e) {}
+
+async function fetchAdminReviews() {
+  try {
+    const res = await fetch("/api/reviews", { headers: getAdminAuthHeaders() });
+    const data = await res.json();
+    if (data && Array.isArray(data.reviews)) {
+      adminReviewsCache = data.reviews;
+      try {
+        localStorage.setItem("eurotex_admin_reviews", JSON.stringify(adminReviewsCache));
+      } catch (e) {}
+      return adminReviewsCache;
+    }
+  } catch (e) {}
+
+  try {
+    const raw = localStorage.getItem("eurotex_admin_reviews");
+    if (raw !== null) {
+      adminReviewsCache = JSON.parse(raw);
+      return adminReviewsCache;
+    }
+  } catch (e) {}
+
+  return adminReviewsCache || [];
+}
+
 function renderAdminReviews() {
   const container = document.getElementById("adminReviewsContainer");
   if (!container) return;
 
+  // 1. Initial display from cache for instant feedback
   let reviews = [];
   try {
     const raw = localStorage.getItem("eurotex_admin_reviews");
-    if (raw) reviews = JSON.parse(raw);
+    if (raw !== null) reviews = JSON.parse(raw);
   } catch (e) {}
-
-  if (!reviews || reviews.length === 0) {
-    reviews = [
-      { id: 1, author: "Sardorbek Rahimov", rating: 5, date: "Bugun", text: "Mato sifati a'lo darajada! Bolalar uchun juda qulay bichim, to'yda o'g'lim juda yarashib turdi. Rahmat Eurotex!", product: "Slim Fit Bolalar Kostyumi" },
-      { id: 2, author: "Dilshod Alimov", rating: 5, date: "Kecha", text: "Turkiya matosi yumshoq, g'ijimlanmaydi. 1 kunda yetkazib berishdi. Tavsiya qilaman!", product: "Klassik Maktab Formasi" },
-      { id: 3, author: "Zafar Qodirov", rating: 5, date: "2 kun oldin", text: "Fabrikaning o'zidan to'g'ridan-to'g'ri ulgurji narxda oldik. Narxiga 100% arziydi!", product: "To'q ko'k Royal Navy Kostyum" }
-    ];
-    localStorage.setItem("eurotex_admin_reviews", JSON.stringify(reviews));
+  if (Array.isArray(adminReviewsCache)) {
+    reviews = adminReviewsCache;
   }
 
-  container.innerHTML = `
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
-      ${reviews.map((r, i) => `
-        <div style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 10px;">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <b style="color: #f8fafc; font-size: 15px;">${r.author}</b>
-            <span style="color: #f59e0b; font-size: 13px;">${"⭐".repeat(r.rating || 5)}</span>
-          </div>
-          <small style="color: #94a3b8; font-size: 12px;">Mahsulot: <b style="color: #38bdf8;">${r.product || "Eurotex Kostyum"}</b> • ${r.date}</small>
-          <p style="color: #cbd5e1; font-size: 13.5px; line-height: 1.5; margin: 4px 0;">"${r.text}"</p>
-          <div style="margin-top: auto; display: flex; justify-content: flex-end;">
-            <button type="button" class="btn btn-outline" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4); padding: 5px 12px; font-size: 12px; border-radius: 8px;" onclick="deleteAdminReview(${r.id || i})">
-              🗑️ O'chirish
-            </button>
-          </div>
+  function displayReviews(list) {
+    if (!container) return;
+    if (!list || list.length === 0) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 48px 20px; background: rgba(30, 41, 59, 0.4); border: 1px dashed rgba(255,255,255,0.15); border-radius: 18px; color: #94a3b8; grid-column: 1 / -1;">
+          <div style="font-size: 40px; margin-bottom: 12px;">📭</div>
+          <div style="font-size: 16px; font-weight: 700; color: #f8fafc; margin-bottom: 6px;">Hozircha sharhlar mavjud emas</div>
+          <div style="font-size: 13.5px; color: #94a3b8; margin-bottom: 20px;">Barcha sharhlar o'chirildi yoki hali yangi sharh qo'shilmadi.</div>
+          <button type="button" class="btn btn-gold" onclick="openAdminAddReviewModal()" style="border-radius: 12px; padding: 10px 22px; font-weight: 700; font-size: 13.5px;">
+            ✍️ Yangi Sharh Qo'shish
+          </button>
         </div>
-      `).join("")}
-    </div>
-  `;
+      `;
+      return;
+    }
+
+    container.innerHTML = `
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
+        ${list.map((r, i) => {
+          const revId = String(r.id !== undefined && r.id !== null ? r.id : `rev_local_${i}`);
+          const author = r.author || r.name || "Mijoz";
+          const rating = Number(r.rating) || 5;
+          const product = r.product || r.productTitle || "Eurotex Kids";
+          const dateStr = r.date || "Yaqinda";
+          const text = r.text || r.comment || "";
+          return `
+            <div style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <b style="color: #f8fafc; font-size: 15px;">${author}</b>
+                <span style="color: #f59e0b; font-size: 13px;">${"⭐".repeat(Math.min(5, Math.max(1, rating)))}</span>
+              </div>
+              <small style="color: #94a3b8; font-size: 12px;">Mahsulot: <b style="color: #38bdf8;">${product}</b> • ${dateStr}</small>
+              <p style="color: #cbd5e1; font-size: 13.5px; line-height: 1.5; margin: 4px 0;">"${text}"</p>
+              <div style="margin-top: auto; display: flex; justify-content: flex-end;">
+                <button type="button" class="btn btn-outline" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4); padding: 5px 12px; font-size: 12px; border-radius: 8px;" onclick="deleteAdminReview('${revId}')">
+                  🗑️ O'chirish
+                </button>
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    `;
+  }
+
+  // Display initial cached view immediately
+  displayReviews(reviews);
+
+  // Sync latest from backend API
+  fetchAdminReviews().then((serverReviews) => {
+    displayReviews(serverReviews);
+  });
 }
 
 function openAdminAddReviewModal() {
@@ -9645,7 +9707,7 @@ function closeAdminAddReviewModal() {
   }
 }
 
-function handleAdminAddReviewSubmit(e) {
+async function handleAdminAddReviewSubmit(e) {
   if (e && e.preventDefault) e.preventDefault();
   const author = (document.getElementById("adminNewReviewAuthor")?.value || "").trim();
   const product = (document.getElementById("adminNewReviewProduct")?.value || "").trim() || "Eurotex Kids";
@@ -9657,25 +9719,46 @@ function handleAdminAddReviewSubmit(e) {
     return;
   }
 
+  const newReview = {
+    id: "rev_" + Date.now(),
+    author,
+    product,
+    productTitle: product,
+    text,
+    rating: rating || 5,
+    date: "Bugun",
+    createdAt: new Date().toISOString(),
+  };
+
   let reviews = [];
   try {
     const raw = localStorage.getItem("eurotex_admin_reviews");
-    if (raw) reviews = JSON.parse(raw);
+    if (raw !== null) reviews = JSON.parse(raw);
   } catch (err) {}
+  if (Array.isArray(adminReviewsCache)) {
+    reviews = adminReviewsCache;
+  }
 
-  reviews.unshift({
-    id: Date.now(),
-    author,
-    product,
-    text,
-    rating: rating || 5,
-    date: "Hozirgina",
-  });
+  reviews.unshift(newReview);
+  adminReviewsCache = reviews;
+  try {
+    localStorage.setItem("eurotex_admin_reviews", JSON.stringify(reviews));
+  } catch (e) {}
 
-  localStorage.setItem("eurotex_admin_reviews", JSON.stringify(reviews));
-  renderAdminReviews();
   closeAdminAddReviewModal();
+  renderAdminReviews();
   showToast("✓ Yangi mijoz sharhi muvaffaqiyatli qo'shildi!", "success");
+
+  // Sync to backend server
+  try {
+    await fetch("/api/reviews", {
+      method: "POST",
+      headers: getAdminAuthHeaders(),
+      body: JSON.stringify(newReview),
+    });
+  } catch (err) {
+    console.warn("Serverga sharh saqlashda xatolik:", err);
+  }
 }
 
 function adminAddNewReviewPrompt() {
@@ -9684,7 +9767,7 @@ function adminAddNewReviewPrompt() {
 
 async function deleteAdminReview(id) {
   const ok = await window.eurotexConfirm(
-    "Ushbu sharhni o'chirishni tasdiqlaysizmi?",
+    "Ushbu sharhni butunlay o'chirishni tasdiqlaysizmi?",
     "Sharhni o'chirish",
     {
       icon: "🗑️",
@@ -9695,16 +9778,42 @@ async function deleteAdminReview(id) {
   );
   if (!ok) return;
 
+  const targetId = String(id || "").trim();
+
+  // 1. Immediately update cache and memory
   let reviews = [];
   try {
     const raw = localStorage.getItem("eurotex_admin_reviews");
-    if (raw) reviews = JSON.parse(raw);
+    if (raw !== null) reviews = JSON.parse(raw);
+  } catch (e) {}
+  if (Array.isArray(adminReviewsCache)) {
+    reviews = adminReviewsCache;
+  }
+
+  // Filter out the review matching targetId
+  reviews = reviews.filter((r, idx) => {
+    const rId = String(r.id !== undefined && r.id !== null ? r.id : `rev_local_${idx}`);
+    return rId !== targetId && String(r.id) !== targetId && String(idx) !== targetId;
+  });
+
+  adminReviewsCache = reviews;
+  try {
+    localStorage.setItem("eurotex_admin_reviews", JSON.stringify(reviews));
   } catch (e) {}
 
-  reviews = reviews.filter((r, idx) => (r.id ? r.id !== id : idx !== id));
-  localStorage.setItem("eurotex_admin_reviews", JSON.stringify(reviews));
+  // Re-render UI immediately
   renderAdminReviews();
-  showToast("✓ Sharh o'chirildi", "info");
+  showToast("✓ Sharh muvaffaqiyatli o'chirildi", "info");
+
+  // 2. Call backend DELETE endpoint
+  try {
+    await fetch(`/api/reviews/${encodeURIComponent(targetId)}`, {
+      method: "DELETE",
+      headers: getAdminAuthHeaders(),
+    });
+  } catch (err) {
+    console.warn("Serverdan sharhni o'chirishda xatolik:", err);
+  }
 }
 
 function renderAdminReturns() {
