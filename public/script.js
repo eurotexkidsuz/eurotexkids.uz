@@ -2662,10 +2662,8 @@ function initCheckoutInteractiveControls() {
 
       const val = radio ? radio.value : "";
       const addrSelect = document.getElementById("custAddress");
-      if (addrSelect) {
-        if (val === "pickup") addrSelect.value = "punkt-chilonzor";
-        else if (val === "courier") addrSelect.value = "home-toshkent";
-        else if (val === "vip-try") addrSelect.value = "try-before-buy";
+      if (addrSelect && (addrSelect.value === "home-toshkent" || addrSelect.value === "punkt-chilonzor" || addrSelect.value === "try-before-buy")) {
+        addrSelect.value = "";
       }
     });
   });
@@ -3620,28 +3618,32 @@ function openProductPage(productId) {
       .join("");
   }
 
-  // 6. Populate Sizes (Pachka Seriya tarkibi)
+  // 6. Populate Sizes (Pachka Seriya tarkibi va individual o'lcham tanlash)
   const sizesList = product.sizes && product.sizes.length > 0
     ? product.sizes
     : [30, 32, 34, 36, 38, 40, 42, 44];
-  window.currentPdpSize = sizesList.join("-");
+  const allSeriesVal = sizesList.join("-");
+  window.currentPdpSize = allSeriesVal;
 
   const sizeBoxesEl = document.getElementById("pdpSizeBoxes");
   if (sizeBoxesEl) {
     sizeBoxesEl.innerHTML = `
       <div style="display: flex; flex-wrap: wrap; gap: 8px; width: 100%;">
+        <button type="button" class="pdp-size-box active pdp-size-all" onclick="selectPdpSize('${allSeriesVal}', this)" title="To'liq seriya (barcha o'lchamlar)">
+          📦 To'liq pachka (${sizesList.length} dona)
+        </button>
         ${sizesList
           .map(
             (s) => `
-            <div class="pdp-size-box active" style="cursor: default;" title="Pachka ichidagi seriya o'lchami">
+            <button type="button" class="pdp-size-box" onclick="selectPdpSize('${s}', this)" title="O'lcham: ${s}">
               ${s}
-            </div>
+            </button>
           `,
           )
           .join("")}
       </div>
-      <div style="font-size: 12px; color: #10b981; font-weight: 600; margin-top: 8px; width: 100%;">
-        ✓ Barcha ko'rsatilgan o'lchamlar 1 pachka (seriya) ichida to'liq jamlangan (${product.pachkaItems || sizesList.length} dona)
+      <div id="pdpSizeSelectionNote" class="pdp-size-selection-note" style="font-size: 12.5px; color: #10b981; font-weight: 600; margin-top: 8px; width: 100%;">
+        ✓ <b>To'liq pachka</b> tanlangan: seriyadagi barcha ${sizesList.length} ta o'lcham (${sizesList.join(", ")}) birgalikda yetkaziladi.
       </div>
     `;
   }
@@ -3757,6 +3759,36 @@ function selectPdpSize(sizeVal, el) {
     b.classList.remove("active");
   });
   if (el) el.classList.add("active");
+
+  const noteEl = document.getElementById("pdpSizeSelectionNote");
+  const cartBtn = document.getElementById("pdpAddToCartBtn");
+  const cartBtnSpan = cartBtn ? cartBtn.querySelector("span") : null;
+  const oneClickBtn = document.querySelector(".pdp-btn-one-click");
+
+  const isAll = String(sizeVal).includes("-") || String(sizeVal).toLowerCase() === "all";
+  if (isAll) {
+    if (noteEl) {
+      noteEl.innerHTML = `✓ <b>To'liq pachka</b> tanlangan: seriyadagi barcha o'lchamlar to'plami birgalikda yetkaziladi.`;
+      noteEl.style.color = "#10b981";
+    }
+    if (cartBtnSpan) {
+      cartBtnSpan.textContent = `1 Pachka Savatga Qo'shish 🛒`;
+    }
+    if (oneClickBtn) {
+      oneClickBtn.textContent = `⚡ 1 Pachka Tezkor Xarid`;
+    }
+  } else {
+    if (noteEl) {
+      noteEl.innerHTML = `✓ Tanlangan o'lcham: <b style="color: #38bdf8; font-size: 13.5px;">${sizeVal}</b> (Yagona o'lcham buyurtmasi)`;
+      noteEl.style.color = "#38bdf8";
+    }
+    if (cartBtnSpan) {
+      cartBtnSpan.textContent = `O'lcham ${sizeVal} — Savatga Qo'shish 🛒`;
+    }
+    if (oneClickBtn) {
+      oneClickBtn.textContent = `⚡ O'lcham ${sizeVal} — Tezkor Xarid`;
+    }
+  }
 }
 
 function switchPdpTab(tabName) {
