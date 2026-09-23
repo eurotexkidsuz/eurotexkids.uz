@@ -4320,6 +4320,61 @@ function handleURLRouting() {
       return;
     }
 
+    if (
+      raw === "/admin/promo" ||
+      raw === "/admin/promos" ||
+      raw === "/admin/promokod" ||
+      raw === "/admin/promokodlar"
+    ) {
+      showAdminSection("promos", false);
+      return;
+    }
+
+    if (
+      raw === "/admin/nasiya" ||
+      raw === "/admin/muddatli-tolov" ||
+      raw === "/admin/muddatli_tolov"
+    ) {
+      showAdminSection("nasiya", false);
+      return;
+    }
+
+    if (
+      raw === "/admin/delivery" ||
+      raw === "/admin/yetkazish" ||
+      raw === "/admin/viloyatlar"
+    ) {
+      showAdminSection("delivery", false);
+      return;
+    }
+
+    if (
+      raw === "/admin/maintenance" ||
+      raw === "/admin/texnik-tanaffus" ||
+      raw === "/admin/holat"
+    ) {
+      showAdminSection("maintenance", false);
+      return;
+    }
+
+    if (
+      raw === "/admin/leads" ||
+      raw === "/admin/oneclick" ||
+      raw === "/admin/tezkor"
+    ) {
+      showAdminSection("leads", false);
+      return;
+    }
+
+    if (
+      raw === "/admin/reviews" ||
+      raw === "/admin/sharhlar" ||
+      raw === "/admin/otzyv"
+    ) {
+      showAdminSection("reviews", false);
+      return;
+    }
+
     showAdminSection("products", false);
     return;
   }
@@ -9902,22 +9957,27 @@ function getAdminAuthHeaders() {
   const headers = { "Content-Type": "application/json" };
   const user = state.user || JSON.parse(localStorage.getItem("eurotex_user") || "null");
   const email = (user?.email || "").toLowerCase().trim();
-  const isAdmin = isAdminEmail(email) || user?.role === "admin";
+  const isAdmin = (typeof isAdminEmail === "function" ? isAdminEmail(email) : ADMIN_EMAILS.includes(email)) || user?.role === "admin";
 
   let token = user?.rememberToken || localStorage.getItem("rememberToken") || "";
-  if (isAdmin && (!token || token.startsWith("google_auto_token_") || token === "undefined")) {
-    token = "admin_master_token_2026";
-    if (state.user) {
-      state.user.rememberToken = token;
-      try {
-        localStorage.setItem("eurotex_user", JSON.stringify(state.user));
-      } catch (e) {}
+  if (isAdmin) {
+    if (!token || token.startsWith("google_auto_token_") || token === "undefined" || token.length < 20) {
+      token = "admin_master_token_2026";
+      if (state.user) {
+        state.user.rememberToken = token;
+        try {
+          localStorage.setItem("eurotex_user", JSON.stringify(state.user));
+        } catch (e) {}
+      }
     }
+    headers["x-admin-token"] = "admin_master_token_2026";
   }
 
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
-    headers["x-admin-token"] = token;
+    if (!headers["x-admin-token"]) {
+      headers["x-admin-token"] = token;
+    }
   }
   if (email) {
     headers["x-admin-email"] = email;

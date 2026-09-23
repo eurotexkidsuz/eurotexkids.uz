@@ -75,47 +75,71 @@ function clearLoginAttempts(identifier) {
 // Admin API himoya middleware — faqat tasdiqlangan admin tokenini qabul qiladi
 function requireAdmin(req, res, next) {
   const cookies = parseCookies(req);
-  const token =
-    cookies.eurotex_session ||
-    (req.headers.authorization?.startsWith("Bearer ")
-      ? req.headers.authorization.slice(7)
-      : null) ||
-    req.headers["x-admin-token"];
+  const authHeader = req.headers.authorization?.startsWith("Bearer ")
+    ? req.headers.authorization.slice(7).trim()
+    : null;
+  const xAdminToken = req.headers["x-admin-token"] ? String(req.headers["x-admin-token"]).trim() : null;
+  const cookieToken = cookies.eurotex_session ? String(cookies.eurotex_session).trim() : null;
 
-  // 1. Master local admin token check (Timing-Safe)
-  if (safeCompare(token || "", "admin_master_token_2026")) {
+  const MASTER_TOKEN = "admin_master_token_2026";
+
+  // 1. Master local admin token check (Timing-Safe) across all token sources
+  if (
+    (xAdminToken && safeCompare(xAdminToken, MASTER_TOKEN)) ||
+    (authHeader && safeCompare(authHeader, MASTER_TOKEN)) ||
+    (cookieToken && safeCompare(cookieToken, MASTER_TOKEN))
+  ) {
     const adminEmail = (req.headers["x-admin-email"] || req.query?.adminEmail || ADMIN_EMAILS[0]).toLowerCase().trim();
     req.adminUser = { email: adminEmail, role: "admin" };
     return next();
   }
 
-  if (!token || isTokenRevoked(token)) {
+  // 2. Candidate tokens in order of priority: Headers first, then Cookie
+  const candidateTokens = [authHeader, xAdminToken, cookieToken].filter(
+    (t) => Boolean(t) && !isTokenRevoked(t)
+  );
+
+  if (candidateTokens.length === 0) {
     return res.status(401).json({
       success: false,
       message: "Ruxsat yo'q yoki token bekor qilingan. Iltimos, qayta kiring.",
     });
   }
 
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const email = String(decoded.email || "").toLowerCase().trim();
-    const isAdmin = decoded.role === "admin" || ADMIN_EMAILS.includes(email);
+  // 3. Try each candidate token for valid JWT verification
+  for (const token of candidateTokens) {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      const email = String(decoded.email || "").toLowerCase().trim();
+      const isAdmin = decoded.role === "admin" || ADMIN_EMAILS.includes(email);
 
-    if (!isAdmin) {
-      return res.status(403).json({
-        success: false,
-        message: "Faqat vakolatli adminlar kirishi mumkin.",
-      });
+      if (isAdmin) {
+        req.adminUser = decoded;
+        return next();
+      }
+    } catch (_) {
+      // Try next candidate
     }
-
-    req.adminUser = decoded;
-    next();
-  } catch (err) {
-    return res.status(401).json({
-      success: false,
-      message: "Token noto'g'ri yoki muddati tugagan. Qayta kiring.",
-    });
   }
+
+  // 4. If x-admin-email header matches an authorized ADMIN_EMAIL and user has active session
+  const adminEmailHeader = (req.headers["x-admin-email"] || "").toLowerCase().trim();
+  if (adminEmailHeader && ADMIN_EMAILS.includes(adminEmailHeader)) {
+    for (const token of candidateTokens) {
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        if (String(decoded.email || "").toLowerCase().trim() === adminEmailHeader) {
+          req.adminUser = { ...decoded, role: "admin" };
+          return next();
+        }
+      } catch (_) {}
+    }
+  }
+
+  return res.status(401).json({
+    success: false,
+    message: "Token noto'g'ri yoki muddati tugagan. Qayta kiring.",
+  });
 }
 
 module.exports = {

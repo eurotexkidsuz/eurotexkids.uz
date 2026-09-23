@@ -1426,6 +1426,14 @@
       "/admin/addcart": { type: "admin", value: "addcart" },
       "/admin/products": { type: "admin", value: "products" },
       "/admin/settings": { type: "admin", value: "settings" },
+      "/admin/promos": { type: "admin", value: "promos" },
+      "/admin/nasiya": { type: "admin", value: "nasiya" },
+      "/admin/delivery": { type: "admin", value: "delivery" },
+      "/admin/maintenance": { type: "admin", value: "maintenance" },
+      "/admin/leads": { type: "admin", value: "leads" },
+      "/admin/reviews": { type: "admin", value: "reviews" },
+      "/admin/sizes": { type: "admin", value: "sizes" },
+      "/admin/returns": { type: "admin", value: "returns" },
     },
 
     _listenerInstalled: false,
@@ -1584,31 +1592,13 @@
           }
           setTimeout(() => {
             try {
-              if (
-                subView === "orders" &&
-                typeof window.showAdminSection === "function"
-              )
-                window.showAdminSection("orders");
-              if (
-                subView === "users" &&
-                typeof window.showAdminSection === "function"
-              )
-                window.showAdminSection("users");
-              if (
-                subView === "products" &&
-                typeof window.showAdminSection === "function"
-              )
-                window.showAdminSection("products");
-              if (
-                subView === "settings" &&
-                typeof window.showAdminSection === "function"
-              )
-                window.showAdminSection("settings");
               if (subView === "addcart") {
                 if (typeof window.showAdminSection === "function")
                   window.showAdminSection("products");
                 if (typeof window.openAddProductModal === "function")
                   setTimeout(() => window.openAddProductModal(), 150);
+              } else if (subView && typeof window.showAdminSection === "function") {
+                window.showAdminSection(subView);
               }
             } catch (e) {}
           }, 180);
