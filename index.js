@@ -333,6 +333,12 @@ app.use(
     setHeaders: (res, filePath) => {
       if (filePath.endsWith(".html")) {
         res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+      } else if (filePath.endsWith("sitemap.xml")) {
+        res.setHeader("Content-Type", "application/xml; charset=utf-8");
+        res.setHeader("Cache-Control", "public, max-age=86400, stale-while-revalidate=3600");
+      } else if (filePath.endsWith("robots.txt")) {
+        res.setHeader("Content-Type", "text/plain; charset=utf-8");
+        res.setHeader("Cache-Control", "public, max-age=86400, stale-while-revalidate=3600");
       } else if (/\.(jpg|jpeg|png|webp|avif|svg|ico|woff2|woff|ttf)$/i.test(filePath)) {
         res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
         if (filePath.endsWith(".avif")) res.setHeader("Content-Type", "image/avif");

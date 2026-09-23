@@ -1,57 +1,99 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <!-- Bosh sahifa (Home) -->
   <url>
     <loc>https://eurotexkids.uz/</loc>
-    <lastmod>2026-09-18</lastmod>
+    <lastmod>2026-09-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://eurotexkids.uz/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://eurotexkids.uz/?lang=ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://eurotexkids.uz/" />
+    <image:image>
+      <image:loc>https://eurotexkids.uz/images/navy_suit.jpg</image:loc>
+      <image:title>Eurotex Kids Premial Erkaklar va Bolalar Kostyum-Shimlari</image:title>
+    </image:image>
   </url>
+
+  <!-- Klassik Kostyum-Shimlar -->
   <url>
     <loc>https://eurotexkids.uz/suits</loc>
-    <lastmod>2026-09-18</lastmod>
+    <lastmod>2026-09-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://eurotexkids.uz/suits" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://eurotexkids.uz/suits?lang=ru" />
   </url>
+
+  <!-- Smokinglar va Tantanali Kiyimlar -->
   <url>
     <loc>https://eurotexkids.uz/tuxedos</loc>
-    <lastmod>2026-09-18</lastmod>
+    <lastmod>2026-09-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://eurotexkids.uz/tuxedos" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://eurotexkids.uz/tuxedos?lang=ru" />
   </url>
+
+  <!-- Super Narx / Aksiya -->
   <url>
     <loc>https://eurotexkids.uz/super_price</loc>
-    <lastmod>2026-09-18</lastmod>
+    <lastmod>2026-09-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://eurotexkids.uz/super_price" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://eurotexkids.uz/super_price?lang=ru" />
   </url>
+
+  <!-- Klassik Shimlar -->
   <url>
     <loc>https://eurotexkids.uz/trousers</loc>
-    <lastmod>2026-09-18</lastmod>
+    <lastmod>2026-09-23</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://eurotexkids.uz/trousers" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://eurotexkids.uz/trousers?lang=ru" />
   </url>
+
+  <!-- Pijaklar va Blazerlar -->
   <url>
     <loc>https://eurotexkids.uz/blazers</loc>
-    <lastmod>2026-09-18</lastmod>
+    <lastmod>2026-09-23</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://eurotexkids.uz/blazers" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://eurotexkids.uz/blazers?lang=ru" />
   </url>
+
+  <!-- Ko'ylaklar -->
   <url>
     <loc>https://eurotexkids.uz/shirts</loc>
-    <lastmod>2026-09-18</lastmod>
+    <lastmod>2026-09-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://eurotexkids.uz/shirts" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://eurotexkids.uz/shirts?lang=ru" />
   </url>
+
+  <!-- Aksessuarlar (Galstuk, Kapalak, Kamar) -->
   <url>
     <loc>https://eurotexkids.uz/accessories</loc>
-    <lastmod>2026-09-18</lastmod>
+    <lastmod>2026-09-23</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://eurotexkids.uz/accessories" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://eurotexkids.uz/accessories?lang=ru" />
   </url>
+
+  <!-- Ulgurji / Pachkalab Sotuv -->
   <url>
     <loc>https://eurotexkids.uz/pachkalab-sotuv</loc>
-    <lastmod>2026-09-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <lastmod>2026-09-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+    <xhtml:link rel="alternate" hreflang="uz" href="https://eurotexkids.uz/pachkalab-sotuv" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://eurotexkids.uz/pachkalab-sotuv?lang=ru" />
   </url>
 </urlset>
