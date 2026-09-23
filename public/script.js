@@ -1347,6 +1347,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   closeAllModals();
   checkGoogleAuthRedirect();
   updateUserAuthUI();
+  renderCheckoutDeliveryDates();
+  updateCheckoutPromoCard();
   checkMaintenanceStatus();
   await syncProductsWithBackendAndStorage(false);
   syncSearchWorkerProducts();
@@ -1648,6 +1650,7 @@ function setLanguage(langCode) {
   renderProducts();
   updateCartUI();
   renderWishlist();
+  renderCheckoutDeliveryDates();
   updateCheckoutData();
   updateWishlistUI();
   updateUserAuthUI();
@@ -4621,7 +4624,9 @@ function switchDashboardTab(tabName) {
     renderWishlist();
     updateURLRoute("/wishlist");
   } else if (tabName === "checkout") {
+    renderCheckoutDeliveryDates();
     updateCheckoutData();
+    updateCheckoutPromoCard();
     updateURLRoute("/checkout");
   } else if (tabName === "orders") {
     renderOrdersHistory();
@@ -4688,6 +4693,8 @@ function updateCheckoutData() {
   } else if (checkoutDiscountRow) {
     checkoutDiscountRow.style.display = "none";
   }
+
+  updateCheckoutPromoCard();
 }
 
 function openCartDrawer() {
@@ -4721,7 +4728,9 @@ function openCheckoutModal() {
     return;
   }
   closeAllModals();
+  renderCheckoutDeliveryDates();
   updateCheckoutData();
+  updateCheckoutPromoCard();
   openDashboardView("checkout");
   window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
   setTimeout(() => {
@@ -5086,13 +5095,108 @@ function triggerUserLogoutProcess() {
 }
 
 
-async function applyPromoCode() {
-  const input = document.getElementById("promoCodeInput");
-  if (!input) return;
-  const code = input.value.trim().toUpperCase();
+// =============================================================================
+// 📅 DYNAMIC AUTO-UPDATING DELIVERY DATES (Ertaga, Indinga, 3-kun)
+// =============================================================================
+function getDeliveryDateLabels() {
+  const lang = (window.state && window.state.currentLang) || "uz";
+  const now = new Date();
+  const d1 = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  const d2 = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2);
+  const d3 = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 3);
+
+  const months = {
+    uz: ["yanvar", "fevral", "mart", "aprel", "may", "iyun", "iyul", "avgust", "sentabr", "oktabr", "noyabr", "dekabr"],
+    ru: ["янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"],
+    en: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+  };
+  const days = {
+    uz: ["yak", "dush", "sesh", "chor", "pay", "juma", "shan"],
+    ru: ["вс", "пн", "вт", "ср", "чт", "пт", "сб"],
+    en: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+  };
+  const tomorrowWord = {
+    uz: "Ertaga",
+    ru: "Завтра",
+    en: "Tomorrow"
+  };
+
+  const mList = months[lang] || months.uz;
+  const dList = days[lang] || days.uz;
+  const tWord = tomorrowWord[lang] || tomorrowWord.uz;
+
+  return [
+    {
+      label: `${tWord} (${d1.getDate()}-${mList[d1.getMonth()]})`,
+      val: `Ertaga (${d1.getDate()}-${mList[d1.getMonth()]})`
+    },
+    {
+      label: `${d2.getDate()}-${mList[d2.getMonth()]} (${dList[d2.getDay()]})`,
+      val: `${d2.getDate()}-${mList[d2.getMonth()]} (${dList[d2.getDay()]})`
+    },
+    {
+      label: `${d3.getDate()}-${mList[d3.getMonth()]} (${dList[d3.getDay()]})`,
+      val: `${d3.getDate()}-${mList[d3.getMonth()]} (${dList[d3.getDay()]})`
+    }
+  ];
+}
+
+function renderCheckoutDeliveryDates() {
+  const container = document.getElementById("checkoutDatePickerRow");
+  const dates = getDeliveryDateLabels();
+
+  if (container) {
+    const activeVal = window.state?.selectedDeliveryDate || dates[0].val;
+    container.innerHTML = dates
+      .map((d, idx) => {
+        const isChecked = idx === 0 || d.val === activeVal;
+        return `
+          <label class="date-pill ${isChecked ? "active" : ""}" onclick="selectCheckoutDate(this)">
+            <input type="radio" name="delDate" value="${escapeHtml(d.val)}" ${isChecked ? "checked" : ""} />
+            <span>${escapeHtml(d.label)}</span>
+          </label>
+        `;
+      })
+      .join("");
+  }
+
+  // Also update cart badge text dynamically
+  const cartBadgeText = document.getElementById("cartDeliveryDateBadgeText");
+  if (cartBadgeText && dates[0]) {
+    cartBadgeText.textContent = `${dates[0].label} yetkazib beramiz`;
+  }
+}
+
+function selectCheckoutDate(el) {
+  if (!el) return;
+  const container = document.getElementById("checkoutDatePickerRow");
+  if (container) {
+    container.querySelectorAll(".date-pill").forEach((p) => p.classList.remove("active"));
+  }
+  el.classList.add("active");
+  const radio = el.querySelector('input[type="radio"]');
+  if (radio) {
+    radio.checked = true;
+    if (window.state) {
+      window.state.selectedDeliveryDate = radio.value;
+    }
+  }
+}
+
+// =============================================================================
+// 🏷️ PROMO CODE MANAGEMENT (Cart & Checkout)
+// =============================================================================
+async function applyPromoCode(customCode = null) {
+  const code = (
+    customCode ||
+    document.getElementById("checkoutPromoCodeInput")?.value ||
+    document.getElementById("promoCodeInput")?.value ||
+    ""
+  ).trim().toUpperCase();
+
   if (!code) {
     showToast("❌ Iltimos, promo-kodni kiriting!");
-    return;
+    return false;
   }
 
   const rawSubtotalUsd = state.cart.reduce(
@@ -5129,13 +5233,83 @@ async function applyPromoCode() {
 
       updateCartTotalsOnly();
       updateCheckoutData();
+      updateCheckoutPromoCard();
+
+      const cInput = document.getElementById("checkoutPromoCodeInput");
+      if (cInput) cInput.value = "";
+      const pBox = document.getElementById("checkoutPromoInputBox");
+      if (pBox) pBox.style.display = "none";
 
       showToast(`🎉 ${data.message}`);
+      return true;
     } else {
       showToast(`❌ ${data.message}`);
+      return false;
     }
   } catch (err) {
     showToast("Promokodni tekshirishda xatolik yuz berdi");
+    return false;
+  }
+}
+
+function cancelAppliedPromoCode() {
+  state.appliedPromoCode = null;
+  state.appliedDiscountAmount = 0;
+  state.appliedDiscountUsd = 0;
+  state.discountRate = 0;
+  updateCartTotalsOnly();
+  updateCheckoutData();
+  updateCheckoutPromoCard();
+  showToast("ℹ️ Promokod bekor qilindi", "info");
+}
+
+function toggleCheckoutPromoInput() {
+  if (state.appliedPromoCode) {
+    cancelAppliedPromoCode();
+    return;
+  }
+  const box = document.getElementById("checkoutPromoInputBox");
+  if (!box) return;
+  const isHidden = box.style.display === "none" || !box.style.display;
+  box.style.display = isHidden ? "block" : "none";
+  if (isHidden) {
+    const input = document.getElementById("checkoutPromoCodeInput");
+    if (input) setTimeout(() => input.focus(), 100);
+  }
+}
+
+async function applyCheckoutPromoCode() {
+  const input = document.getElementById("checkoutPromoCodeInput");
+  if (!input) return;
+  const code = input.value.trim().toUpperCase();
+  if (!code) {
+    showToast("❌ Promokod kiriting!");
+    input.focus();
+    return;
+  }
+  await applyPromoCode(code);
+}
+
+function updateCheckoutPromoCard() {
+  const cardText = document.getElementById("checkoutPromoCardText");
+  const arrow = document.getElementById("checkoutPromoArrow");
+  if (!cardText) return;
+
+  if (state.appliedPromoCode) {
+    const discountStr = state.appliedDiscountAmount
+      ? `${state.appliedDiscountAmount.toLocaleString()} so'm`
+      : `${Math.round((state.discountRate || 0) * 100)}%`;
+    cardText.innerHTML = `
+      <span style="color: #10b981; font-weight: 800;">✓ Promokod: <b>${state.appliedPromoCode}</b> (-${discountStr})</span>
+    `;
+    if (arrow) {
+      arrow.innerHTML = `<span style="color: #ef4444; font-size: 13px; font-weight: 800; cursor: pointer;" title="Bekor qilish">✕ Bekor</span>`;
+    }
+  } else {
+    cardText.textContent = "Promokodni qo'llash / almashtirish";
+    if (arrow) {
+      arrow.textContent = "❯";
+    }
   }
 }
 
@@ -6364,6 +6538,9 @@ function handleOrderSubmit(e) {
   const payMethodInput = document.querySelector('input[name="payMethod"]:checked');
   const paymentMethod = payMethodInput ? payMethodInput.value : "cash";
 
+  const delDateInput = document.querySelector('input[name="delDate"]:checked');
+  const deliveryDate = delDateInput ? delDateInput.value : (state.selectedDeliveryDate || "Ertaga");
+
   // Double-submit prevention
   const submitBtn = e.target.querySelector ? e.target.querySelector('button[type="submit"]') : null;
   if (submitBtn) {
@@ -6387,7 +6564,9 @@ function handleOrderSubmit(e) {
     recipient: `${name} (${phone})`,
     phone,
     address: addrText,
+    deliveryDate,
     paymentMethod,
+    promoCode: state.appliedPromoCode || null,
   };
 
   if (!state.orders) state.orders = [];
@@ -6415,7 +6594,9 @@ function handleOrderSubmit(e) {
         recipient: `${name} (${phone})`,
         phone,
         address: addrText,
+        deliveryDate,
         paymentMethod,
+        promoCode: state.appliedPromoCode || null,
         items: [...state.cart],
         total: finalTotal > 0 ? finalTotal : 120,
         totalPriceUsd,

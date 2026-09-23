@@ -141,7 +141,7 @@
       rel="stylesheet"
     />
     <!-- ⚡ Standard Render-Blocking CSS (Completely Prevents Flash of Unstyled Content) -->
-    <link rel="stylesheet" href="/style.css?v=357.0.0" />
+    <link rel="stylesheet" href="/style.css?v=358.0.0" />
     <!-- Schema.org JSON-LD Structured Data (Google Sitelinks & Store Entity) -->
     <script type="application/ld+json">
     {
@@ -1821,23 +1821,23 @@
 
                     <div class="checkout-card-box">
                       <h3>2. Yetkazib berish kuni va vaqti</h3>
-                      <div class="date-picker-row">
-                        <label class="date-pill active">
+                      <div class="date-picker-row" id="checkoutDatePickerRow">
+                        <label class="date-pill active" onclick="selectCheckoutDate(this)">
                           <input
                             type="radio"
                             name="delDate"
                             value="ertaga"
                             checked
                           />
-                          <span>Ertaga (28-iyul)</span>
+                          <span id="delDatePill1">Ertaga</span>
                         </label>
-                        <label class="date-pill">
+                        <label class="date-pill" onclick="selectCheckoutDate(this)">
                           <input type="radio" name="delDate" value="2-kun" />
-                          <span>29-iyul (ch)</span>
+                          <span id="delDatePill2">Indinga</span>
                         </label>
-                        <label class="date-pill">
+                        <label class="date-pill" onclick="selectCheckoutDate(this)">
                           <input type="radio" name="delDate" value="3-kun" />
-                          <span>30-iyul (pa)</span>
+                          <span id="delDatePill3">Indinning ertasi</span>
                         </label>
                       </div>
                       <div class="time-slot-info">
@@ -1924,11 +1924,31 @@
 
                     <div
                       class="uzum-promo-card"
-                      onclick="switchDashboardTab('cart')"
+                      id="checkoutPromoCard"
+                      onclick="toggleCheckoutPromoInput()"
                     >
                       <span class="promo-icon">🏷️</span>
-                      <span>Promokodni qo'llash / almashtirish</span>
-                      <span class="promo-arrow">❯</span>
+                      <span id="checkoutPromoCardText">Promokodni qo'llash / almashtirish</span>
+                      <span class="promo-arrow" id="checkoutPromoArrow">❯</span>
+                    </div>
+                    <div id="checkoutPromoInputBox" style="display: none; margin-top: 10px;">
+                      <div style="display: flex; gap: 8px;">
+                        <input
+                          type="text"
+                          id="checkoutPromoCodeInput"
+                          placeholder="Promokodni kiriting..."
+                          style="flex: 1; padding: 12px 16px; border-radius: 12px; border: 1.5px solid var(--border-color); background: var(--bg-surface); color: var(--text-primary); text-transform: uppercase; font-weight: 700; font-size: 14px;"
+                          onkeydown="if(event.key === 'Enter') { event.preventDefault(); applyCheckoutPromoCode(); }"
+                        />
+                        <button
+                          type="button"
+                          class="btn btn-primary"
+                          onclick="applyCheckoutPromoCode()"
+                          style="padding: 12px 20px; border-radius: 12px; font-weight: 800; font-size: 13.5px;"
+                        >
+                          Qo'llash
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -4938,7 +4958,7 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="/script.js?v=357.0.0" defer></script>
+    <script src="/script.js?v=358.0.0" defer></script>
     <script src="/eurotex-engine.js?v=22.0.0" defer></script>
   </body>
 </html>

@@ -109,7 +109,7 @@ body.dark-mode {
 
   --color-navy: #f8fafc;
   --text-navy: #f8fafc;
-  --color-uzum-purple-bg: rgba(136, 0, 27, 0.25);
+  --color-uzum-purple-bg: rgba(112, 0, 255, 0.16);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.7);
@@ -258,6 +258,114 @@ body.dark-mode .summary-line strong,
 html[data-theme="dark"] .checkout-card-box h3,
 body.dark-mode .checkout-card-box h3 {
   color: #f8fafc !important;
+}
+
+/* Dark Mode Overrides for Checkout Date Pills, Summary & Promo Cards */
+html[data-theme="dark"] .date-pill,
+body.dark-mode .date-pill {
+  background: #111a2e !important;
+  border-color: #1e293b !important;
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] .date-pill span,
+body.dark-mode .date-pill span {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] .date-pill:hover,
+body.dark-mode .date-pill:hover {
+  border-color: #7000ff !important;
+  background: #162038 !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .date-pill.active,
+body.dark-mode .date-pill.active {
+  background: #7000ff !important;
+  border-color: #7000ff !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(112, 0, 255, 0.4) !important;
+}
+
+html[data-theme="dark"] .date-pill.active span,
+body.dark-mode .date-pill.active span {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .time-slot-info,
+body.dark-mode .time-slot-info {
+  background: rgba(112, 0, 255, 0.16) !important;
+  border-color: rgba(192, 132, 252, 0.3) !important;
+  color: #c084fc !important;
+}
+
+html[data-theme="dark"] .uzum-promo-card,
+body.dark-mode .uzum-promo-card {
+  background: #111a2e !important;
+  border-color: #1e293b !important;
+  color: #f8fafc !important;
+}
+
+html[data-theme="dark"] .uzum-promo-card span,
+body.dark-mode .uzum-promo-card span {
+  color: #f8fafc !important;
+}
+
+html[data-theme="dark"] .uzum-promo-card:hover,
+body.dark-mode .uzum-promo-card:hover {
+  border-color: #7000ff !important;
+  background: #162038 !important;
+}
+
+html[data-theme="dark"] .cart-select-all-row,
+body.dark-mode .cart-select-all-row {
+  background: #111a2e !important;
+  border-color: #1e293b !important;
+}
+
+html[data-theme="dark"] .checkbox-label,
+html[data-theme="dark"] .checkbox-label span,
+body.dark-mode .checkbox-label,
+body.dark-mode .checkbox-label span {
+  color: #f8fafc !important;
+}
+
+/* Dark Mode Overrides for PDP View */
+html[data-theme="dark"] .product-detail-page-view,
+body.dark-mode .product-detail-page-view {
+  background: #070c18 !important;
+  color: #f8fafc !important;
+}
+
+html[data-theme="dark"] .pdp-title,
+body.dark-mode .pdp-title {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] #pdpRatingVal,
+body.dark-mode #pdpRatingVal {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .pdp-maker-badge,
+body.dark-mode .pdp-maker-badge {
+  background: #111a2e !important;
+  border-color: #1e293b !important;
+  color: #94a3b8 !important;
+}
+
+html[data-theme="dark"] .pdp-trust-pill,
+body.dark-mode .pdp-trust-pill {
+  background: #111a2e !important;
+  border-color: #1e293b !important;
+  color: #2dd4bf !important;
+}
+
+html[data-theme="dark"] .pdp-stage-watermark,
+body.dark-mode .pdp-stage-watermark {
+  background: rgba(11, 19, 41, 0.85) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
 /* Fix 11: Mobile Horizontal Overflow Protection */
@@ -877,7 +985,7 @@ button {
 .preloader {
   position: fixed;
   inset: 0;
-  background: var(--color-navy);
+  background: #070c18 !important;
   z-index: 99999;
   display: flex;
   align-items: center;
@@ -889,7 +997,7 @@ button {
 
 .preloader-content {
   text-align: center;
-  color: #ffffff;
+  color: #ffffff !important;
 }
 
 .brand-badge-icon {
@@ -911,15 +1019,16 @@ button {
   font-size: 28px;
   font-weight: 800;
   letter-spacing: 2px;
+  color: #ffffff !important;
 }
 
 .preloader-title span {
-  color: var(--color-gold);
+  color: #d4af37 !important;
 }
 
 .preloader-subtext {
   font-size: 14px;
-  color: #94a3b8;
+  color: #94a3b8 !important;
   margin-top: 4px;
 }
 
@@ -3553,11 +3662,12 @@ html[data-theme="dark"] .modal-close:hover {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #f8fafc;
-  padding: 12px 16px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  padding: 14px 18px;
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--border-color);
   margin-bottom: 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
 .checkbox-label {
@@ -3566,8 +3676,14 @@ html[data-theme="dark"] .modal-close:hover {
   gap: 10px;
   font-size: 14px;
   font-weight: 700;
-  color: var(--color-navy);
+  color: var(--text-primary) !important;
   cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label span {
+  color: var(--text-primary) !important;
+  font-weight: 700;
 }
 
 .checkbox-label input[type="checkbox"],
@@ -3580,29 +3696,33 @@ html[data-theme="dark"] .modal-close:hover {
 
 .clear-selected-btn {
   background: transparent;
-  color: #ef4444;
+  color: #ef4444 !important;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   border: none;
   cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
 }
 
 .clear-selected-btn:hover {
-  text-decoration: underline;
+  background: rgba(239, 68, 68, 0.08);
+  text-decoration: none;
 }
 
 .cart-delivery-badge-box {
-  background: #f0fdf4;
-  border: 1.5px solid #bbf7d0;
-  border-radius: var(--radius-md);
+  background: rgba(16, 185, 129, 0.08);
+  border: 1.5px solid rgba(16, 185, 129, 0.25);
+  border-radius: var(--radius-lg);
   padding: 14px 18px;
   margin-bottom: 20px;
 }
 
 .del-badge-title {
   font-size: 12px;
-  font-weight: 700;
-  color: #15803d;
+  font-weight: 800;
+  color: #10b981;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 4px;
@@ -3610,7 +3730,11 @@ html[data-theme="dark"] .modal-close:hover {
 
 .del-badge-time {
   font-size: 14px;
-  color: #166534;
+  color: var(--text-primary);
+}
+
+.del-badge-time b {
+  color: #10b981;
 }
 
 /* Cart Item Card (Matching Screenshot 1) */
@@ -3805,12 +3929,17 @@ html[data-theme="dark"] .modal-close:hover {
 }
 
 .uzum-sub-badge {
-  background: var(--color-uzum-purple-bg);
-  color: var(--color-uzum-purple);
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: var(--radius-sm);
+  background: rgba(112, 0, 255, 0.12);
+  color: #7000ff;
+  font-size: 12.5px;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(112, 0, 255, 0.25);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.2px;
 }
 
 .uzum-checkout-grid {
@@ -3922,49 +4051,61 @@ html[data-theme="dark"] .modal-close:hover {
 
 .date-pill {
   flex: 1;
-  height: 44px;
-  padding: 0 18px;
+  min-height: 48px;
+  padding: 8px 12px;
   border: 1.5px solid #cbd5e1;
   border-radius: var(--radius-lg);
   font-size: 13.5px;
   font-weight: 700;
   cursor: pointer;
-  transition: var(--transition);
-  background: #ffffff;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  background: #f8fafc;
+  color: #0f172a !important;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   text-align: center;
+  user-select: none;
 }
 
 .date-pill input {
   display: none;
 }
 
+.date-pill span {
+  color: inherit !important;
+  font-weight: 700;
+}
+
 .date-pill:hover {
-  border-color: var(--color-uzum-purple);
+  border-color: #7000ff;
+  background: #f1f5f9;
 }
 
 .date-pill.active {
-  border-color: var(--color-uzum-purple);
-  background: var(--color-uzum-purple);
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(112, 0, 255, 0.2);
+  border-color: #7000ff !important;
+  background: #7000ff !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(112, 0, 255, 0.35) !important;
+}
+
+.date-pill.active span {
+  color: #ffffff !important;
 }
 
 .time-slot-info {
-  font-size: 13.5px;
-  color: #5b21b6;
-  background: #f5f3ff;
-  border: 1.5px solid #ddd6fe;
-  padding: 14px 18px;
+  font-size: 13px;
+  color: #6d28d9;
+  background: rgba(112, 0, 255, 0.08);
+  border: 1.5px solid rgba(112, 0, 255, 0.2);
+  padding: 12px 18px;
   border-radius: var(--radius-lg);
-  font-weight: 600;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .discount-pill {
@@ -4005,22 +4146,38 @@ html[data-theme="dark"] .modal-close:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
   background: #ffffff;
   border: 1.5px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 14px 20px;
+  padding: 15px 20px;
   margin-top: 16px;
   font-size: 14px;
   font-weight: 700;
-  color: var(--color-navy);
+  color: #0f172a !important;
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.uzum-promo-card span {
+  color: inherit !important;
 }
 
 .uzum-promo-card:hover {
-  border-color: var(--color-uzum-purple);
-  background: var(--color-uzum-purple-bg);
+  border-color: #7000ff;
+  background: rgba(112, 0, 255, 0.06);
+  box-shadow: 0 4px 14px rgba(112, 0, 255, 0.15);
+}
+
+.uzum-promo-card .promo-arrow {
+  color: #7000ff !important;
+  font-weight: 800;
+  transition: transform 0.2s ease;
+}
+
+.uzum-promo-card:hover .promo-arrow {
+  transform: translateX(3px);
 }
 
 .color-btn.active {
