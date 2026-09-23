@@ -46,7 +46,7 @@ const TRANSLATIONS = {
     navAccessories: "🎗️ Aksessuarlar",
     navTailoring: "📦 Pachkalab Sotuv ($ USD)",
     slide1Tag: "YANGI TO'PLAM 2026",
-    slide1Title: "Eurotex Luxury Suits",
+    slide1Title: "Eurotex Kids & Eurotex Luxury Suits",
     slide1Desc:
       "Italiya jun matolaridan tikilgan eksklyuziv kostyum-shimlar to'plami. Mukammal bichim va rasmiy ko'rinish.",
     slide1Nasiya: "Oyiga $10 dan",
@@ -150,7 +150,7 @@ const TRANSLATIONS = {
     navAccessories: "🎗️ Аксессуары",
     navTailoring: "📦 Оптовые Продажи ($ USD)",
     slide1Tag: "НОВАЯ КОЛЛЕКЦИЯ 2026",
-    slide1Title: "Eurotex Luxury Suits",
+    slide1Title: "Eurotex Kids & Eurotex — Премиум Костюмы",
     slide1Desc:
       "Эксклюзивная коллекция костюмов из итальянской шерсти. Идеальный крой и солидный вид.",
     slide1Nasiya: "От $10 в месяц",
@@ -254,7 +254,7 @@ const TRANSLATIONS = {
     navAccessories: "🎗️ Accessories",
     navTailoring: "📦 Wholesale Packs ($ USD)",
     slide1Tag: "NEW COLLECTION 2026",
-    slide1Title: "Eurotex Luxury Suits",
+    slide1Title: "Eurotex Kids & Eurotex — Luxury Suits",
     slide1Desc:
       "Exclusive collection of suits tailored from Italian virgin wool. Perfect fit and solid presence.",
     slide1Nasiya: "From $10/mo",
