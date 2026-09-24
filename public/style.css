@@ -143,7 +143,6 @@ html[data-theme="dark"] .advantage-card,
 html[data-theme="dark"] .review-card,
 html[data-theme="dark"] .auth-box,
 html[data-theme="dark"] .receipt-box,
-html[data-theme="dark"] .dashboard-pane,
 html[data-theme="dark"] .cart-drawer,
 html[data-theme="dark"] .quick-view-grid,
 body.dark-mode .main-header,
@@ -160,7 +159,6 @@ body.dark-mode .advantage-card,
 body.dark-mode .review-card,
 body.dark-mode .auth-box,
 body.dark-mode .receipt-box,
-body.dark-mode .dashboard-pane,
 body.dark-mode .cart-drawer,
 body.dark-mode .quick-view-grid {
   background-color: #111a2e !important;
@@ -331,10 +329,30 @@ body.dark-mode .checkbox-label span {
   color: #f8fafc !important;
 }
 
-/* Dark Mode Overrides for PDP View */
+/* 🌟 Global Luxury Eurotex Logo Watermark Visibility (PDP, Cart, Wishlist, Profile) */
+html[data-theme="dark"] .product-detail-page-view,
+body.dark-mode .product-detail-page-view,
+.product-detail-page-view,
+html[data-theme="dark"] .dashboard-page-view,
+body.dark-mode .dashboard-page-view,
+.dashboard-page-view,
+html[data-theme="dark"] .dashboard-pane,
+body.dark-mode .dashboard-pane,
+.dashboard-pane,
+html[data-theme="dark"] .cart-modal-page,
+body.dark-mode .cart-modal-page,
+.cart-modal-page,
+#dPaneCart,
+#dPaneWishlist,
+#dPaneOrders,
+#dPaneProfile,
+#dPaneReturns {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
 html[data-theme="dark"] .product-detail-page-view,
 body.dark-mode .product-detail-page-view {
-  background: #070c18 !important;
   color: #f8fafc !important;
 }
 
@@ -1158,7 +1176,7 @@ body {
   background-repeat: repeat;
   background-size: 80px 80px;
   background-position: center;
-  opacity: 0.055;
+  opacity: 0.065;
   filter: grayscale(100%);
   transform: translateZ(0);
   will-change: transform;
@@ -1166,7 +1184,7 @@ body {
 
 body.dark-mode .site-luxury-watermark,
 html[data-theme="dark"] .site-luxury-watermark {
-  opacity: 0.075;
+  opacity: 0.09;
   filter: grayscale(100%) invert(1);
 }
 
@@ -11889,8 +11907,10 @@ body.dark-mode #sizeGuideModal .size-note,
    ============================================================================= */
 .product-detail-page-view {
   padding: 24px 0 64px 0;
-  background: #ffffff;
+  background: transparent !important;
   min-height: 85vh;
+  position: relative;
+  z-index: 1;
 }
 
 .pdp-breadcrumbs {
@@ -13570,6 +13590,23 @@ body.dark-mode .pwa-ios-instructions {
   color: #0f172a !important;
   border: 1.5px solid #e2e8f0 !important;
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.cart-pop-dialog::before,
+.wishlist-pop-dialog::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  background-image: url('/images/eurotex-logo-transparent.png') !important;
+  background-repeat: repeat !important;
+  background-size: 70px 70px !important;
+  background-position: center !important;
+  opacity: 0.055 !important;
+  filter: grayscale(100%) !important;
+  z-index: 0 !important;
 }
 
 html[data-theme="dark"] .cart-pop-dialog,
@@ -13580,6 +13617,20 @@ body.dark-mode .wishlist-pop-dialog {
   color: #ffffff !important;
   border-color: rgba(0, 242, 254, 0.25) !important;
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6) !important;
+}
+
+body.dark-mode .cart-pop-dialog::before,
+html[data-theme="dark"] .cart-pop-dialog::before,
+body.dark-mode .wishlist-pop-dialog::before,
+html[data-theme="dark"] .wishlist-pop-dialog::before {
+  opacity: 0.08 !important;
+  filter: grayscale(100%) invert(1) !important;
+}
+
+.cart-pop-dialog > *,
+.wishlist-pop-dialog > * {
+  position: relative !important;
+  z-index: 1 !important;
 }
 
 .cart-pop-header,
