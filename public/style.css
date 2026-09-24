@@ -4540,8 +4540,21 @@ html[data-theme="dark"] .modal-close:hover {
 }
 
 .size-table th {
-  background: var(--color-navy);
-  color: #fff;
+  background: #0f172a !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .size-table th,
+html[data-theme="dark"] .size-table th {
+  background: #111a2e !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .size-table td,
+html[data-theme="dark"] .size-table td {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #cbd5e1 !important;
 }
 
 .size-note {
@@ -7542,29 +7555,164 @@ body {
 }
 
 /* ==========================================================================
-   ADMIN TABLES HORIZONTAL TOUCH SCROLL WRAPPER (100% MOBILE GUARANTEE)
+   ⚡ EXECUTIVE ADMIN TABLES DESIGN SYSTEM (HIGH CONTRAST & ZERO WHITE FLASH)
    ========================================================================== */
 .admin-table-wrapper {
   width: 100% !important;
   overflow-x: auto !important;
   -webkit-overflow-scrolling: touch !important;
   scrollbar-width: thin !important;
-  border-radius: 16px !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  margin-bottom: 16px !important;
-  background: rgba(15, 23, 42, 0.4) !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  margin-bottom: 20px !important;
+  background: #0b1329 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
 }
 
-.admin-table-wrapper table {
-  min-width: 680px !important;
+.admin-table-wrapper table,
+.admin-table-wrapper table.size-table {
+  min-width: 780px !important;
   width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  background: transparent !important;
+  margin: 0 !important;
 }
 
-.admin-table-wrapper th,
+/* 🏷️ Professional High-Contrast Table Header (Fixes White Flash & Invisible Text) */
+.admin-table-wrapper thead,
+.admin-table-wrapper thead tr {
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%) !important;
+}
+
+.admin-table-wrapper thead th,
+.admin-table-wrapper th {
+  background: linear-gradient(180deg, #1e293b 0%, #111a2e 100%) !important;
+  color: #f8fafc !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.75px !important;
+  padding: 14px 16px !important;
+  text-align: left !important;
+  border: none !important;
+  border-bottom: 2px solid #d4af37 !important; /* Gold luxury accent line */
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+  white-space: nowrap !important;
+  vertical-align: middle !important;
+  box-shadow: none !important;
+}
+
+.admin-table-wrapper thead th:last-child,
+.admin-table-wrapper th:last-child {
+  border-right: none !important;
+}
+
+.admin-table-wrapper thead th:first-child {
+  border-top-left-radius: 12px !important;
+}
+
+.admin-table-wrapper thead th:last-child {
+  border-top-right-radius: 12px !important;
+}
+
+/* 📋 Sleek Table Rows & Cells */
+.admin-table-wrapper tbody tr {
+  background: rgba(11, 19, 41, 0.7) !important;
+  transition: background 0.2s ease, transform 0.15s ease !important;
+}
+
+.admin-table-wrapper tbody tr:nth-child(even) {
+  background: rgba(17, 26, 46, 0.85) !important;
+}
+
+.admin-table-wrapper tbody tr:hover {
+  background: rgba(30, 41, 59, 0.95) !important;
+}
+
+.admin-table-wrapper tbody td,
 .admin-table-wrapper td {
-  padding: 12px 14px !important;
-  white-space: normal !important;
-  word-break: break-word !important;
+  padding: 13px 15px !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+  color: #e2e8f0 !important;
+  font-size: 13px !important;
+  vertical-align: middle !important;
+  background: transparent !important;
+}
+
+.admin-table-wrapper tbody td:last-child,
+.admin-table-wrapper td:last-child {
+  border-right: none !important;
+}
+
+.admin-table-wrapper tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+.admin-table-wrapper tbody td b,
+.admin-table-wrapper tbody td strong {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+/* 📱 Select & Buttons inside admin tables */
+.admin-table-wrapper select {
+  background: #0f172a !important;
+  color: #f8fafc !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 8px !important;
+  padding: 5px 10px !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  outline: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.admin-table-wrapper select:focus {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25) !important;
+}
+
+/* 🌞 Light Mode Fallback if Admin viewed in Light Theme */
+html[data-theme="light"] .admin-table-wrapper {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+}
+
+html[data-theme="light"] .admin-table-wrapper thead th,
+html[data-theme="light"] .admin-table-wrapper th {
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%) !important;
+  color: #ffffff !important;
+  border-bottom: 2px solid #d4af37 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+html[data-theme="light"] .admin-table-wrapper tbody tr {
+  background: #ffffff !important;
+}
+
+html[data-theme="light"] .admin-table-wrapper tbody tr:nth-child(even) {
+  background: #f8fafc !important;
+}
+
+html[data-theme="light"] .admin-table-wrapper tbody tr:hover {
+  background: #f1f5f9 !important;
+}
+
+html[data-theme="light"] .admin-table-wrapper tbody td,
+html[data-theme="light"] .admin-table-wrapper td {
+  border-bottom: 1px solid #e2e8f0 !important;
+  border-right: 1px solid #f1f5f9 !important;
+  color: #1e293b !important;
+}
+
+html[data-theme="light"] .admin-table-wrapper tbody td b,
+html[data-theme="light"] .admin-table-wrapper tbody td strong {
+  color: #0f172a !important;
 }
 
 /* ==========================================================================
