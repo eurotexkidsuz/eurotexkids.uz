@@ -6520,8 +6520,12 @@ function updateUserAuthUI() {
 }
 
 // Order Submission Handling (Feature 1: Creates real order in state & localStorage)
-function handleOrderSubmit(e) {
-  e.preventDefault();
+async function handleOrderSubmit(e) {
+  if (e && e.preventDefault) e.preventDefault();
+
+  const submitBtn = (e && e.target && e.target.querySelector ? e.target.querySelector('button[type="submit"]') : null) || document.querySelector('#checkoutForm button[type="submit"]');
+  const originalBtnHtml = submitBtn ? submitBtn.innerHTML : "Buyurtmani tasdiqlash ✅";
+
   if (!state.user) {
     showToast(
       "🔒 Buyurtmani rasmiylashtirish uchun avval tizimga kiring! Kirish sahifasi ochildi. 🔑",
@@ -6529,7 +6533,14 @@ function handleOrderSubmit(e) {
     openAuthModal();
     return;
   }
-  const name = document.getElementById("custName")?.value?.trim() || "Xaridor";
+
+  if (!state.cart || state.cart.length === 0) {
+    showToast("⚠️ Savatingizda mahsulot mavjud emas! Avval mahsulot tanlang. 🛍️");
+    openDashboardView("cart");
+    return;
+  }
+
+  const name = document.getElementById("custName")?.value?.trim() || (state.user?.name || "Xaridor");
   const phone = document.getElementById("custPhone")?.value?.trim() || "";
 
   // 📞 Telefon raqamini tekshirish (Fix 8)
@@ -6547,122 +6558,150 @@ function handleOrderSubmit(e) {
     ? addrInput.value.trim()
     : (addrInput && addrInput.options ? addrInput.options[addrInput.selectedIndex]?.text : "Toshkent sh., Markaz");
 
-  const rawSubtotalUsd = state.cart.reduce(
-    (sum, i) => sum + (i.priceUsd || i.price || 120) * (i.quantity || 1),
-    0,
-  );
-  const rateApplied = state.usdRate || 12650;
-  let discountUsd = 0;
-  if (state.discountRate && state.discountRate > 0) {
-    discountUsd = Math.round(rawSubtotalUsd * state.discountRate);
-  } else if (state.appliedDiscountUsd && state.appliedDiscountUsd > 0) {
-    discountUsd = Math.min(state.appliedDiscountUsd, rawSubtotalUsd);
-  } else if (state.appliedDiscountAmount && state.appliedDiscountAmount > 0) {
-    discountUsd = Math.min(rawSubtotalUsd, Math.round(state.appliedDiscountAmount / rateApplied));
-  }
-  discountUsd = Math.min(discountUsd, rawSubtotalUsd);
-  const finalTotalUsd = Math.max(0, rawSubtotalUsd - discountUsd);
-  const totalPriceUsd = finalTotalUsd;
-  const totalPriceUzs = Math.round(finalTotalUsd * rateApplied);
-  const finalTotal = finalTotalUsd;
-  const orderId = `EUR-${Math.floor(100000 + Math.random() * 900000)}`;
-
-  const payMethodInput = document.querySelector('input[name="payMethod"]:checked');
-  const paymentMethod = payMethodInput ? payMethodInput.value : "cash";
-
-  const delDateInput = document.querySelector('input[name="delDate"]:checked');
-  const deliveryDate = delDateInput ? delDateInput.value : (state.selectedDeliveryDate || "Ertaga");
-
   // Double-submit prevention
-  const submitBtn = e.target.querySelector ? e.target.querySelector('button[type="submit"]') : null;
   if (submitBtn) {
     submitBtn.disabled = true;
-    submitBtn.dataset.origText = submitBtn.textContent;
-    submitBtn.textContent = "Buyurtma rasmiylashtirilmoqda... ⏳";
+    submitBtn.innerHTML = "Buyurtma rasmiylashtirilmoqda... ⏳";
   }
 
-  const currentUserEmail = state.user?.email || "";
-  const newOrder = {
-    id: orderId,
-    userEmail: currentUserEmail,
-    date: new Date().toLocaleDateString(),
-    items: [...state.cart],
-    total: finalTotal > 0 ? finalTotal : 120,
-    totalPriceUsd: totalPriceUsd,
-    totalPriceUzs: totalPriceUzs,
-    usdRateApplied: rateApplied,
-    status: "Qabul qilindi 🟡",
-    statusStep: 1,
-    recipient: `${name} (${phone})`,
-    phone,
-    address: addrText,
-    deliveryDate,
-    paymentMethod,
-    promoCode: state.appliedPromoCode || null,
-  };
-
-  if (!state.orders) state.orders = [];
-  state.orders.unshift(newOrder);
-  localStorage.setItem("eurotex_orders", JSON.stringify(state.orders));
-
-  // Store this order's ID in this device's personal orders list
   try {
-    let myOrderIds = JSON.parse(localStorage.getItem("eurotex_my_order_ids") || "[]");
-    if (!myOrderIds.includes(orderId)) {
-      myOrderIds.unshift(orderId);
-      localStorage.setItem("eurotex_my_order_ids", JSON.stringify(myOrderIds));
+    const rawSubtotalUsd = (state.cart || []).reduce(
+      (sum, i) => sum + (i.priceUsd || i.price || 120) * (i.quantity || 1),
+      0,
+    );
+    const rateApplied = state.usdRate || 12650;
+    let discountUsd = 0;
+    if (state.discountRate && state.discountRate > 0) {
+      discountUsd = Math.round(rawSubtotalUsd * state.discountRate);
+    } else if (state.appliedDiscountUsd && state.appliedDiscountUsd > 0) {
+      discountUsd = Math.min(state.appliedDiscountUsd, rawSubtotalUsd);
+    } else if (state.appliedDiscountAmount && state.appliedDiscountAmount > 0) {
+      discountUsd = Math.min(rawSubtotalUsd, Math.round(state.appliedDiscountAmount / rateApplied));
     }
-  } catch (e) {}
+    discountUsd = Math.min(discountUsd, rawSubtotalUsd);
+    const finalTotalUsd = Math.max(0, rawSubtotalUsd - discountUsd);
+    const totalPriceUsd = finalTotalUsd;
+    const totalPriceUzs = Math.round(finalTotalUsd * rateApplied);
+    const finalTotal = finalTotalUsd;
+    const orderId = `EUR-${Math.floor(100000 + Math.random() * 900000)}`;
 
-  // Save order to MongoDB Atlas live server & notify broadcast channel
-  try {
-    fetch("/orders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        orderId,
-        customerName: name,
-        userEmail: currentUserEmail,
-        recipient: `${name} (${phone})`,
-        phone,
-        address: addrText,
-        deliveryDate,
-        paymentMethod,
-        promoCode: state.appliedPromoCode || null,
-        items: [...state.cart],
-        total: finalTotal > 0 ? finalTotal : 120,
-        totalPriceUsd,
-        totalPriceUzs,
-        usdRateApplied: rateApplied,
-        statusStep: 1,
-        status: "Qabul qilindi 🟡",
-        date: new Date().toLocaleDateString("uz-UZ"),
-      }),
-    })
-      .then(() => {
-        fetchOrdersFromServer();
+    const payMethodInput = document.querySelector('input[name="payMethod"]:checked');
+    const paymentMethod = payMethodInput ? payMethodInput.value : "cash";
+
+    const delDateInput = document.querySelector('input[name="delDate"]:checked');
+    const deliveryDate = delDateInput ? delDateInput.value : (state.selectedDeliveryDate || "Ertaga");
+
+    const currentUserEmail = state.user?.email || "";
+    const newOrder = {
+      id: orderId,
+      orderId: orderId,
+      customerName: name,
+      userEmail: currentUserEmail,
+      date: new Date().toLocaleDateString("uz-UZ"),
+      items: [...state.cart],
+      total: finalTotal > 0 ? finalTotal : 120,
+      totalPriceUsd: totalPriceUsd,
+      totalPriceUzs: totalPriceUzs,
+      usdRateApplied: rateApplied,
+      status: "Qabul qilindi 🟡",
+      statusStep: 1,
+      recipient: `${name} (${phone})`,
+      phone,
+      address: addrText,
+      deliveryDate,
+      paymentMethod,
+      promoCode: state.appliedPromoCode || null,
+    };
+
+    if (!state.orders) state.orders = [];
+    state.orders.unshift(newOrder);
+    safeSetLocalStorage("eurotex_orders", state.orders);
+
+    // Store this order's ID in this device's personal orders list
+    try {
+      let myOrderIds = JSON.parse(localStorage.getItem("eurotex_my_order_ids") || "[]");
+      if (!myOrderIds.includes(orderId)) {
+        myOrderIds.unshift(orderId);
+        safeSetLocalStorage("eurotex_my_order_ids", myOrderIds);
+      }
+    } catch (e) {}
+
+    // Save order to live server & notify broadcast channel (with 4s timeout)
+    try {
+      const res = await fetch("/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId,
+          customerName: name,
+          userEmail: currentUserEmail,
+          recipient: `${name} (${phone})`,
+          phone,
+          address: addrText,
+          deliveryDate,
+          paymentMethod,
+          promoCode: state.appliedPromoCode || null,
+          items: [...state.cart],
+          total: finalTotal > 0 ? finalTotal : 120,
+          totalPriceUsd,
+          totalPriceUzs,
+          usdRateApplied: rateApplied,
+          statusStep: 1,
+          status: "Qabul qilindi 🟡",
+          date: new Date().toLocaleDateString("uz-UZ"),
+        }),
+        signal: AbortSignal.timeout(4000),
+      });
+      if (res && res.ok) {
         if (orderSyncChannel) {
           orderSyncChannel.postMessage({ type: "NEW_ORDER", order: newOrder });
         }
-      })
-      .catch((e) => console.error("POST /orders error:", e));
-  } catch (err) {}
+        setTimeout(() => fetchOrdersFromServer(), 200);
+      }
+    } catch (netErr) {
+      console.warn("POST /orders kechikdi yoki tarmoq xatosi (lokal xotiraga saqlandi):", netErr.message);
+    }
 
-  clearPersistedCart();
+    try {
+      clearPersistedCart();
+    } catch (cErr) {
+      console.warn("clearPersistedCart warning:", cErr);
+    }
 
-  showToast(
-    `Buyurtma #${orderId} muvaffaqiyatli qabul qilindi! Rahmat, ${name}! 🎉`,
-  );
-  // 🧾 #15 Muvaffaqiyatli buyurtmadan so'ng chekni darhol yuklab olish tugmasi
-  showReceiptDownloadNotice(orderId);
+    showToast(
+      `Buyurtma #${orderId} muvaffaqiyatli qabul qilindi! Rahmat, ${name}! 🎉`,
+    );
 
-  // Buyurtmalar bo'limiga o'tish va filtrni 'all' ga o'rnatish
-  state.customerOrderFilter = "all";
-  document.querySelectorAll("#orderStatusTabs .order-tab-btn").forEach((b) => {
-    b.classList.toggle("active", b.getAttribute("data-status") === "all");
-  });
-  openDashboardView("orders");
-  renderOrdersHistory();
+    // 🧾 #15 Muvaffaqiyatli buyurtmadan so'ng chekni darhol yuklab olish tugmasi
+    try {
+      showReceiptDownloadNotice(orderId);
+    } catch (recErr) {
+      console.warn("showReceiptDownloadNotice warning:", recErr);
+    }
+
+    // Buyurtmalar bo'limiga o'tish va filtrni 'all' ga o'rnatish
+    try {
+      state.customerOrderFilter = "all";
+      document.querySelectorAll("#orderStatusTabs .order-tab-btn").forEach((b) => {
+        b.classList.toggle("active", b.getAttribute("data-status") === "all");
+      });
+    } catch (tabErr) {}
+
+    openDashboardView("orders");
+    try {
+      renderOrdersHistory();
+    } catch (ordHistErr) {
+      console.warn("renderOrdersHistory warning:", ordHistErr);
+    }
+  } catch (err) {
+    console.error("handleOrderSubmit xatosi:", err);
+    showToast("Buyurtma rasmiylashtirishda xatolik. Qaytadan urinib ko'ring.");
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnHtml || "Buyurtmani tasdiqlash ✅";
+    }
+  }
 }
 
 function showReceiptDownloadNotice(orderId) {
@@ -6783,6 +6822,7 @@ async function fetchOrdersFromServer() {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(uo),
+              signal: AbortSignal.timeout(5000),
             });
           } catch (e) {}
         });

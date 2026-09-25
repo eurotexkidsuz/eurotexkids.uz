@@ -488,22 +488,27 @@ router.post("/", async (req, res) => {
       console.warn("Stock reservation warning:", stkErr.message);
     }
 
-    // 2. Save to MongoDB Atlas if connected
+    // 2. Save to MongoDB Atlas if connected (timeout protected)
     let finalOrder = orderData;
-    const isConnected = await ensureDbConnected();
-    if (isConnected) {
-      try {
+    try {
+      const isConnected = await ensureDbConnected();
+      if (isConnected) {
         const mongoOrder = new Order(orderData);
-        finalOrder = await mongoOrder.save();
-      } catch (dbErr) {
-        console.warn("MongoDB save warning (saved locally):", dbErr.message);
+        finalOrder = await Promise.race([
+          mongoOrder.save(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error("MongoDB save timeout")), 3000)),
+        ]);
       }
+    } catch (dbErr) {
+      console.warn("MongoDB save warning (saved locally):", dbErr.message);
     }
 
-    // 3. Trigger Telegram Alert
+    // 3. Trigger Telegram Alert in background (non-blocking so customer response is instant)
     try {
       const { sendNewOrderNotification } = require("../utils/telegramBot");
-      await sendNewOrderNotification(finalOrder);
+      sendNewOrderNotification(finalOrder).catch((tgErr) =>
+        console.warn("Telegram alert background notice:", tgErr.message)
+      );
     } catch (tgErr) {
       console.warn("Telegram alert notice:", tgErr.message);
     }

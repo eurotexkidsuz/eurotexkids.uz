@@ -49,6 +49,7 @@ async function sendTelegramMessage(text) {
         text: text,
         parse_mode: "HTML",
       }),
+      signal: AbortSignal.timeout(5000),
     });
     const result = await res.json();
     return result.ok;
