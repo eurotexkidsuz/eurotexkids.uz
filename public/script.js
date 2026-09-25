@@ -8269,9 +8269,20 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// Override window.alert to guarantee native browser popup "eurotexkids.uz says" never appears
+// Override window.alert & window.confirm to guarantee native browser popup "eurotexkids.uz says" never appears
 window.alert = function (msg) {
   window.eurotexAlert(String(msg || ""));
+};
+window.confirm = function (msg) {
+  console.warn("Native confirm blocked, using custom dialog. Please use async showConfirmDialog instead:", msg);
+  showConfirmDialog({
+    title: "Tasdiqlash",
+    message: String(msg || "Haqiqatan ham bu amalni bajarmoqchimisiz?"),
+    confirmText: "Davom etish",
+    cancelText: "Bekor qilish",
+    icon: "⚠️",
+  });
+  return false;
 };
 
 function addAdminSizeRow() {
@@ -8561,9 +8572,14 @@ function updateOrderStatusByAdmin(index, newStepStr) {
 
 async function deleteOrderByAdmin(orderId) {
   if (!orderId) return;
-  const confirmed = confirm(
-    `Haqiqatan ham #${orderId} raqamli buyurtmani tizimdan butunlay olib tashlamoqchimisiz (o'chirmoqchimisiz)?\n\nBu buyurtma bazadan ham, ro'yxatdan ham to'liq o'chiriladi.`
-  );
+  const confirmed = await showConfirmDialog({
+    title: "Buyurtmani olib tashlash",
+    message: `Haqiqatan ham #${orderId} raqamli buyurtmani tizimdan butunlay olib tashlamoqchimisiz? Ushbu buyurtma bazadan ham, ro'yxatdan ham to'liq o'chiriladi va bu amalni ortga qaytarib bo'lmaydi.`,
+    confirmText: "🗑️ Ha, olib tashlansin",
+    cancelText: "Bekor qilish",
+    icon: "🗑️",
+    confirmColor: "danger",
+  });
   if (!confirmed) {
     renderAdminOrders();
     return;
