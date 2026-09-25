@@ -656,10 +656,9 @@ router.delete("/:id", requireAdmin, async (req, res) => {
 
     // Delete from MongoDB
     let deletedCount = localList.length - filtered.length;
-    const isConnected = await ensureDbConnected();
-    if (isConnected) {
+    if (isDbConnected()) {
       try {
-        const queryConditions = [{ orderId: id }];
+        const queryConditions = [{ orderId: id }, { id: id }];
         if (mongoose.isValidObjectId(id)) queryConditions.push({ _id: id });
         const dbRes = await Order.deleteOne({ $or: queryConditions });
         if (dbRes.deletedCount > 0) deletedCount += dbRes.deletedCount;

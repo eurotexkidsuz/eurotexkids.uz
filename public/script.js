@@ -8494,14 +8494,18 @@ function renderAdminOrders() {
                 </div>
 
                 <!-- Status Change Select Box -->
-                <div style="margin-top:6px;">
-                  <select class="admin-card-cat-select admin-select-dark" onchange="updateOrderStatusByAdmin(${idx}, this.value)">
+                <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+                  <select class="admin-card-cat-select admin-select-dark" style="flex:1;" onchange="updateOrderStatusByAdmin(${idx}, this.value)">
                     <option value="1" ${o.statusStep === 1 ? "selected" : ""}>1. Qabul qilindi 🟡</option>
                     <option value="2" ${o.statusStep === 2 ? "selected" : ""}>2. Tayyorlanmoqda 🔵</option>
                     <option value="3" ${o.statusStep === 3 ? "selected" : ""}>3. Kuryerda 🟣</option>
                     <option value="4" ${o.statusStep === 4 ? "selected" : ""}>4. Yetkazib berildi ✅</option>
                     <option value="0" ${o.statusStep === 0 ? "selected" : ""}>0. Bekor qilindi ❌</option>
+                    <option value="delete" style="color: #ef4444; font-weight: 800;">🗑️ Olib tashlash</option>
                   </select>
+                  <button type="button" onclick="deleteOrderByAdmin('${o.id || o.orderId}')" class="btn btn-sm" title="Buyurtmani olib tashlash (o'chirish)" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.4); border-radius: 8px; padding: 7px 11px; cursor: pointer; font-size: 13px; font-weight: 700; transition: all 0.2s;" onmouseover="this.style.background='#ef4444'; this.style.color='#fff';" onmouseout="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.color='#ef4444';">
+                    🗑️
+                  </button>
                 </div>
               </div>
             </div>
@@ -8513,11 +8517,19 @@ function renderAdminOrders() {
 }
 
 function updateOrderStatusByAdmin(index, newStepStr) {
+  if (newStepStr === "delete") {
+    const targetOrder = state.orders && state.orders[index];
+    if (targetOrder) {
+      deleteOrderByAdmin(targetOrder.id || targetOrder.orderId);
+    }
+    return;
+  }
+
   const step = parseInt(newStepStr, 10);
   const labels = {
     1: "Qabul qilindi 🟡",
-    2: "Tayyorlanmoqda 🟠",
-    3: "Kuryerda 🚚",
+    2: "Tayyorlanmoqda 🔵",
+    3: "Kuryerda 🟣",
     4: "Yetkazib berildi ✅",
     0: "Bekor qilindi ❌",
   };
@@ -8526,12 +8538,15 @@ function updateOrderStatusByAdmin(index, newStepStr) {
     const targetOrder = state.orders[index];
     targetOrder.statusStep = step;
     targetOrder.status = labels[step] || "Yangilandi";
-    localStorage.setItem("eurotex_orders", JSON.stringify(state.orders));
+    safeSetLocalStorage("eurotex_orders", state.orders);
 
-    // Update status in MongoDB Atlas
+    // Update status in MongoDB Atlas & live server
     fetch(`/orders/${targetOrder.id || targetOrder.orderId}/status`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-admin-token": "admin_master_token_2026",
+      },
       body: JSON.stringify({ statusStep: step, status: labels[step] }),
     }).catch((e) => console.error("PUT /orders status error:", e));
 
@@ -8539,10 +8554,64 @@ function updateOrderStatusByAdmin(index, newStepStr) {
     renderAdminOrders();
     updateAdminStats();
     showToast(
-      `Buyurtma #${targetOrder.id} statusi yangilandi: ${labels[step]}`,
+      `Buyurtma #${targetOrder.id || targetOrder.orderId} statusi yangilandi: ${labels[step]}`,
     );
   }
 }
+
+async function deleteOrderByAdmin(orderId) {
+  if (!orderId) return;
+  const confirmed = confirm(
+    `Haqiqatan ham #${orderId} raqamli buyurtmani tizimdan butunlay olib tashlamoqchimisiz (o'chirmoqchimisiz)?\n\nBu buyurtma bazadan ham, ro'yxatdan ham to'liq o'chiriladi.`
+  );
+  if (!confirmed) {
+    renderAdminOrders();
+    return;
+  }
+
+  // 1. Remove from local state
+  if (state.orders) {
+    state.orders = state.orders.filter(
+      (o) => String(o.id || o.orderId) !== String(orderId)
+    );
+    safeSetLocalStorage("eurotex_orders", state.orders);
+  }
+
+  // 2. Remove from device's my_order_ids if present
+  try {
+    let myIds = JSON.parse(localStorage.getItem("eurotex_my_order_ids") || "[]");
+    myIds = myIds.filter((id) => String(id) !== String(orderId));
+    safeSetLocalStorage("eurotex_my_order_ids", myIds);
+  } catch (e) {}
+
+  // 3. Broadcast sync if available
+  if (typeof orderSyncChannel !== "undefined" && orderSyncChannel) {
+    orderSyncChannel.postMessage({ type: "DELETE_ORDER", orderId });
+  }
+
+  // 4. Send DELETE request to backend
+  try {
+    const cookies = typeof parseCookies === "function" ? parseCookies() : {};
+    const token = cookies.eurotex_session || localStorage.getItem("eurotex_token") || "";
+    await fetch(`/orders/${encodeURIComponent(orderId)}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : "",
+        "x-admin-token": "admin_master_token_2026",
+      },
+    });
+  } catch (err) {
+    console.warn("DELETE /orders/:id error:", err);
+  }
+
+  // 5. Update UI
+  renderOrdersHistory();
+  renderAdminOrders();
+  updateAdminStats();
+  showToast(`🗑️ Buyurtma #${orderId} muvaffaqiyatli olib tashlandi!`, "success");
+}
+window.deleteOrderByAdmin = deleteOrderByAdmin;
 
 function renderAdminProducts() {
   ensureAdminSizesElements();
