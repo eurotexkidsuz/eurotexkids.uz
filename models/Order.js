@@ -99,4 +99,4 @@ orderSchema.pre("save", function (next) {
 orderSchema.index({ statusStep: 1, createdAt: -1 });
 orderSchema.index({ userEmail: 1, createdAt: -1 });
 
-module.exports = model("Order", orderSchema);
+module.exports = require("mongoose").models.Order || model("Order", orderSchema);

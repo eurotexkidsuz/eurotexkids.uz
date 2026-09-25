@@ -1,5 +1,41 @@
 [
   {
+    "orderId": "EUR-26683503",
+    "id": "EUR-26683503",
+    "userEmail": "",
+    "customerName": "Test Xaridor",
+    "recipient": "Test Xaridor",
+    "phone": "+998901234567",
+    "address": "Toshkent",
+    "region": "",
+    "district": "",
+    "deliveryType": "courier",
+    "paymentMethod": "cash",
+    "items": [
+      {
+        "id": "prod-1785746896249",
+        "quantity": 1,
+        "priceUsd": 45
+      }
+    ],
+    "itemsCount": 1,
+    "total": 45,
+    "totalPriceUsd": 45,
+    "totalPriceUzs": 569250,
+    "usdRateApplied": 12650,
+    "discountAmount": 0,
+    "promoCode": "",
+    "statusStep": 1,
+    "status": "🟡 Qabul qilindi",
+    "nasiyaMonths": 0,
+    "date": "25/09/2026",
+    "deliveryDate": "",
+    "deliveryTime": "",
+    "customerNotes": "",
+    "ipAddress": "::1",
+    "createdAt": "2026-09-25T09:19:10.961Z"
+  },
+  {
     "orderId": "EUR-26928994",
     "id": "EUR-26928994",
     "userEmail": "",
