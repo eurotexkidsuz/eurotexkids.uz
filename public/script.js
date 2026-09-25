@@ -6615,6 +6615,8 @@ async function handleOrderSubmit(e) {
       discountUsd = Math.min(rawSubtotalUsd, Math.round(state.appliedDiscountAmount / rateApplied));
     }
     discountUsd = Math.min(discountUsd, rawSubtotalUsd);
+    const discountUzs = Math.round(discountUsd * rateApplied);
+    const rawSubtotalUzs = Math.round(rawSubtotalUsd * rateApplied);
     const finalTotalUsd = Math.max(0, rawSubtotalUsd - discountUsd);
     const totalPriceUsd = finalTotalUsd;
     const totalPriceUzs = Math.round(finalTotalUsd * rateApplied);
@@ -6628,25 +6630,60 @@ async function handleOrderSubmit(e) {
     const deliveryDate = delDateInput ? delDateInput.value : (state.selectedDeliveryDate || "Ertaga");
 
     const currentUserEmail = state.user?.email || "";
+    const uProfile = state.user || {};
+    const customerProfile = {
+      fullName: uProfile.fullName || uProfile.name || name,
+      phone: phone || uProfile.phone || "",
+      extraPhone: uProfile.extraPhone || "",
+      telegram: uProfile.telegram || "",
+      region: uProfile.city || uProfile.region || "",
+      city: uProfile.city || uProfile.region || "",
+      address: addrText || uProfile.address || "",
+      birthDate: uProfile.birthDate || "",
+      suitSize: uProfile.suitSize || "",
+      style: uProfile.style || "",
+      email: currentUserEmail || uProfile.email || "",
+    };
+
+    const orderItems = (state.cart || []).map((ci) => ({
+      id: ci.id,
+      title: ci.title || "Eurotex Mahsulot",
+      priceUsd: Number(ci.priceUsd || ci.price || 45),
+      quantity: Number(ci.quantity || 1),
+      size: ci.size || "Standart",
+      color: ci.color || ci.selectedColor || "Klassik",
+      image: ci.image || ci.img || "/images/navy_suit.jpg",
+      pachkaItems: Number(ci.pachkaItems || ci.itemsPerPachka || 6),
+      category: ci.category || ci.category_uz || "Kostyum-Shimlar",
+    }));
+
     const newOrder = {
       id: orderId,
       orderId: orderId,
       customerName: name,
       userEmail: currentUserEmail,
       date: new Date().toLocaleDateString("uz-UZ"),
-      items: [...state.cart],
+      items: orderItems,
       total: finalTotal > 0 ? finalTotal : 120,
-      totalPriceUsd: totalPriceUsd,
-      totalPriceUzs: totalPriceUzs,
+      rawSubtotalUsd,
+      rawSubtotalUzs,
+      discountUsd,
+      discountUzs,
+      discountAmount: discountUzs,
+      totalPriceUsd,
+      totalPriceUzs,
       usdRateApplied: rateApplied,
       status: "Qabul qilindi 🟡",
       statusStep: 1,
       recipient: `${name} (${phone})`,
       phone,
+      extraPhone: uProfile.extraPhone || "",
+      telegram: uProfile.telegram || "",
       address: addrText,
       deliveryDate,
       paymentMethod,
       promoCode: state.appliedPromoCode || null,
+      customerProfile,
     };
 
     if (!state.orders) state.orders = [];
@@ -6673,18 +6710,26 @@ async function handleOrderSubmit(e) {
           userEmail: currentUserEmail,
           recipient: `${name} (${phone})`,
           phone,
+          extraPhone: uProfile.extraPhone || "",
+          telegram: uProfile.telegram || "",
           address: addrText,
           deliveryDate,
           paymentMethod,
           promoCode: state.appliedPromoCode || null,
-          items: [...state.cart],
+          items: orderItems,
           total: finalTotal > 0 ? finalTotal : 120,
+          rawSubtotalUsd,
+          rawSubtotalUzs,
+          discountUsd,
+          discountUzs,
+          discountAmount: discountUzs,
           totalPriceUsd,
           totalPriceUzs,
           usdRateApplied: rateApplied,
           statusStep: 1,
           status: "Qabul qilindi 🟡",
           date: new Date().toLocaleDateString("uz-UZ"),
+          customerProfile,
         }),
         signal: AbortSignal.timeout(4000),
       });
@@ -7321,8 +7366,8 @@ function renderOrdersHistory() {
             </div>
 
             <div class="oh-item-specs-row">
-              <span class="oh-spec-chip">📏 ${escapeHtml(sizeRange)}</span>
-              <span class="oh-spec-chip"><span class="oh-color-dot" style="background:${getEurotexColorCode(colorName)};"></span> ${escapeHtml(colorName)}</span>
+              <span class="oh-spec-chip">📏 O'lcham: ${escapeHtml(sizeRange)}</span>
+              <span class="oh-spec-chip" style="font-weight:700;"><span class="oh-color-dot" style="background:${getEurotexColorCode(colorName)}; box-shadow:0 0 5px ${getEurotexColorCode(colorName)};"></span> 🎨 ${escapeHtml(colorName)}</span>
             </div>
 
             <div class="oh-item-price-box">
@@ -7339,10 +7384,29 @@ function renderOrdersHistory() {
         </div>`;
     }).join("");
 
-    // ── Grand totals ─────────────────────────────────────────────────────────
-    const rawTotal    = Number(order.total || 0);
+    // ── Grand totals & Promo Discount calculation ───────────────────────────
+    const rawTotal    = Number(order.total || order.totalPriceUsd || 0);
     const totalUsd    = rawTotal > 5000 ? Math.round(rawTotal / usdRate) : rawTotal;
     const totalSom    = totalUsd * usdRate;
+
+    const discountUsd = Number(order.discountUsd) || (order.discountAmount > 1000 ? Math.round(order.discountAmount / usdRate) : Number(order.discountAmount) || 0);
+    const discountSom = Number(order.discountUzs) || Math.round(discountUsd * usdRate);
+    const rawSubtotalUsd = Number(order.rawSubtotalUsd) || (totalUsd + discountUsd);
+    const rawSubtotalSom = Math.round(rawSubtotalUsd * usdRate);
+
+    const hasPromoOrDiscount = Boolean(order.promoCode) || discountUsd > 0;
+    const promoDiscountHtml = hasPromoOrDiscount ? `
+      <div class="oh-promo-banner" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.14) 0%, rgba(5, 150, 105, 0.08) 100%); border: 1px dashed #10b981; border-radius: 10px; padding: 10px 14px; margin: 14px 0 6px 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 16px;">🏷️</span>
+          <span style="font-size: 12.5px; font-weight: 700; color: #a7f3d0;">Promokod chegirmasi:</span>
+          <span style="background: #10b981; color: #022c22; font-weight: 900; font-size: 11.5px; padding: 2px 8px; border-radius: 5px; text-transform: uppercase; letter-spacing: 0.5px;">${escapeHtml(order.promoCode || 'MAXSUS')}</span>
+        </div>
+        <div style="font-size: 13px; font-weight: 800; color: #34d399; text-align: right;">
+          -${discountUsd > 0 ? `$${discountUsd}` : ''} ${discountSom > 0 ? `(${discountSom.toLocaleString('uz-UZ')} so'm)` : ''} tejaldi! 🎉
+        </div>
+      </div>
+    ` : '';
 
     // ── Delivery address with maps link ─────────────────────────────────────
     const rawAddr = order.address || "";
@@ -7360,6 +7424,8 @@ function renderOrdersHistory() {
     const payLabel = order.paymentMethod === "payme" ? "💳 Payme"
                    : order.paymentMethod === "click"  ? "💳 Click"
                    : "💵 Naqd to'lov";
+
+    const deliveryDateVal = order.deliveryDate || "Ertaga (tezkor)";
 
     return `
       <div class="oh-card">
@@ -7384,13 +7450,20 @@ function renderOrdersHistory() {
           </div>
         </div>
 
+        <!-- Promokod & Skidka banner -->
+        ${promoDiscountHtml}
+
         <!-- Divider -->
         <div class="oh-divider"></div>
 
         <!-- Order Details Row -->
         <div class="oh-details-grid">
           <div class="oh-detail-item">
-            <span class="oh-detail-label">📍 Manzil:</span>
+            <span class="oh-detail-label">📅 Yetkazish kuni:</span>
+            <span class="oh-detail-value" style="color: #facc15; font-weight: 700;">🗓️ ${escapeHtml(deliveryDateVal)}</span>
+          </div>
+          <div class="oh-detail-item">
+            <span class="oh-detail-label">📍 To'liq manzil:</span>
             <span class="oh-detail-value">${addrHtml}</span>
           </div>
           <div class="oh-detail-item">
@@ -7402,17 +7475,30 @@ function renderOrdersHistory() {
             <span class="oh-detail-value">${items.reduce((s, i) => s + (Number(i.quantity) || 1), 0)} pachka</span>
           </div>
           <div class="oh-detail-item">
-            <span class="oh-detail-label">📅 Zakaz sanasi:</span>
+            <span class="oh-detail-label">📅 Buyurtma sanasi:</span>
             <span class="oh-detail-value">${escapeHtml(order.date || "—")}</span>
           </div>
         </div>
 
-        <!-- Grand Total -->
-        <div class="oh-grand-total">
-          <span class="oh-grand-label">💰 Jami summa:</span>
-          <div class="oh-grand-amounts">
-            <span class="oh-grand-usd">$${totalUsd}</span>
-            <span class="oh-grand-som">${Math.round(totalSom).toLocaleString("uz-UZ")} so'm</span>
+        <!-- Grand Total with Discount Breakdown -->
+        <div class="oh-grand-total" style="display: flex; flex-direction: column; gap: 6px;">
+          ${discountUsd > 0 ? `
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #94a3b8;">
+              <span>Asl tovarlar narxi:</span>
+              <span style="text-decoration: line-through;">$${rawSubtotalUsd} (${rawSubtotalSom.toLocaleString('uz-UZ')} so'm)</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; color: #34d399; font-weight: 700;">
+              <span>🏷️ Promokod chegirmasi:</span>
+              <span>-$${discountUsd} (-${discountSom.toLocaleString('uz-UZ')} so'm)</span>
+            </div>
+            <div style="height: 1px; background: rgba(255,255,255,0.08); margin: 2px 0;"></div>
+          ` : ''}
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="oh-grand-label">💰 ${discountUsd > 0 ? "To'lanadigan summa:" : "Jami summa:"}</span>
+            <div class="oh-grand-amounts">
+              <span class="oh-grand-usd">$${totalUsd}</span>
+              <span class="oh-grand-som">${Math.round(totalSom).toLocaleString("uz-UZ")} so'm</span>
+            </div>
           </div>
         </div>
 
@@ -8509,6 +8595,12 @@ function renderAdminOrders() {
             uzsVal = Math.round(usdVal * rate);
           }
 
+          const rawSubtotalUsd = Number(o.rawSubtotalUsd) || items.reduce((sum, it) => sum + (Number(it.pachkaPriceUsd || it.priceUsd || it.price || 0) * (Number(it.quantity) || 1)), 0);
+          const rawSubtotalSom = Math.round(rawSubtotalUsd * rate);
+
+          const discountUsd = Number(o.discountUsd) || (o.discountAmount > 1000 ? Math.round(o.discountAmount / rate) : Number(o.discountAmount) || 0);
+          const discountSom = Number(o.discountUzs) || Math.round(discountUsd * rate);
+
           const totalSomFormatted = uzsVal
             .toString()
             .replace(/\B(?=(\d{3})+(?!\d))/g, " ");
@@ -8522,8 +8614,13 @@ function renderAdminOrders() {
           const currentStep = o.statusStep !== undefined ? Number(o.statusStep) : 1;
           const sc = statusConfig[currentStep] || statusConfig[1];
 
+          const custProfile = (o.customerProfile && typeof o.customerProfile === 'object') ? o.customerProfile : {};
+          const extraPhone = o.extraPhone || custProfile.extraPhone || "";
+          const tgRaw = (o.telegram || custProfile.telegram || "").replace(/^@/, "").trim();
+          const deliveryDate = o.deliveryDate || "Ertaga (tezkor)";
+
           // Address & Google Maps link
-          const rawAddr = o.address || "";
+          const rawAddr = o.address || custProfile.address || "";
           const mapsMatch = rawAddr.match(/https?:\/\/[^\s"')]+/);
           const mapsUrl = mapsMatch ? mapsMatch[0] : "";
           const cleanAddr = mapsUrl
@@ -8535,9 +8632,9 @@ function renderAdminOrders() {
             : escapeHtml(cleanAddr || "Manzil ko'rsatilmagan");
 
           const paymentMethod = o.paymentMethod || "cash";
-          const payLabel = paymentMethod === "card" ? "💳 Karta orqali" : (paymentMethod === "nasiya" || paymentMethod === "eurotex-nasiya") ? "🛍️ Eurotex Nasiya" : "💵 Naqd pul";
+          const payLabel = paymentMethod === "card" ? "💳 Karta orqali" : (paymentMethod === "nasiya" || paymentMethod === "eurotex-nasiya") ? "🛍️ Eurotex Nasiya" : (paymentMethod === "click" ? "💳 Click" : (paymentMethod === "payme" ? "💳 Payme" : "💵 Naqd pul"));
 
-          // Items list rendering
+          // Items list rendering with prominent COLOR & SIZE
           const itemsHtml = items.length > 0 ? items.map((it) => {
             const itQty = Number(it.quantity) || 1;
             const itPachkaItems = Number(it.pachkaItems || it.itemsPerPachka) || 6;
@@ -8547,8 +8644,8 @@ function renderAdminOrders() {
             const itImg = it.image || it.img || "/images/navy_suit.jpg";
             const itTitle = it.title || "Eurotex Mahsulot";
             const itSize = it.size || "Standart";
-            const itColor = it.color || "";
-            const itColorCode = itColor ? getEurotexColorCode(itColor) : "";
+            const itColor = it.color || it.selectedColor || "Klassik";
+            const itColorCode = getEurotexColorCode(itColor);
 
             return `
               <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px;">
@@ -8561,8 +8658,8 @@ function renderAdminOrders() {
                     ${escapeHtml(itTitle)}
                   </div>
                   <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; font-size: 11px;">
-                    <span style="background: rgba(255, 255, 255, 0.08); color: #cbd5e1; padding: 2px 7px; border-radius: 4px; font-weight: 600;">📏 ${escapeHtml(itSize)}</span>
-                    ${itColor ? `<span style="background: rgba(255, 255, 255, 0.08); color: #cbd5e1; padding: 2px 7px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><span style="width: 7px; height: 7px; border-radius: 50%; background: ${itColorCode}; display: inline-block;"></span> ${escapeHtml(itColor)}</span>` : ""}
+                    <span style="background: rgba(255, 255, 255, 0.08); color: #cbd5e1; padding: 2px 7px; border-radius: 4px; font-weight: 600;">📏 O'lcham: ${escapeHtml(itSize)}</span>
+                    <span style="background: rgba(255, 255, 255, 0.08); color: #f1f5f9; padding: 2px 8px; border-radius: 5px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; border: 1px solid rgba(255,255,255,0.12);"><span style="width: 8px; height: 8px; border-radius: 50%; background: ${itColorCode || '#94a3b8'}; display: inline-block; box-shadow: 0 0 5px ${itColorCode || 'transparent'};"></span> 🎨 ${escapeHtml(itColor)}</span>
                     <span style="background: rgba(0, 229, 255, 0.12); color: #00e5ff; padding: 2px 7px; border-radius: 4px; font-weight: 700;">📦 ${itQty} pachka (${itPachkaItems * itQty} dona)</span>
                   </div>
                 </div>
@@ -8577,6 +8674,21 @@ function renderAdminOrders() {
               Mahsulotlar tafsiloti saqlanmagan
             </div>
           `;
+
+          // Promokod & Chegirma bloki
+          const hasPromoOrDiscount = Boolean(o.promoCode) || discountUsd > 0;
+          const promoDiscountHtml = hasPromoOrDiscount ? `
+            <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.14) 0%, rgba(5, 150, 105, 0.08) 100%); border: 1px dashed #10b981; border-radius: 10px; padding: 9px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 2px;">
+              <div style="display: flex; align-items: center; gap: 7px; flex-wrap: wrap;">
+                <span style="font-size: 16px;">🏷️</span>
+                <span style="font-size: 11.5px; color: #a7f3d0; font-weight: 700;">Promokod:</span>
+                <span style="background: #10b981; color: #022c22; font-weight: 900; font-size: 11px; padding: 2px 8px; border-radius: 5px; letter-spacing: 0.5px; text-transform: uppercase;">${escapeHtml(o.promoCode || 'MAXSUS')}</span>
+              </div>
+              <div style="font-size: 12.5px; font-weight: 800; color: #34d399; text-align: right;">
+                -${discountUsd > 0 ? `$${discountUsd}` : ''} ${discountSom > 0 ? `(${discountSom.toLocaleString('uz-UZ')} so'm)` : ''} chegirma
+              </div>
+            </div>
+          ` : '';
 
           return `
             <div class="admin-order-card" style="background: linear-gradient(160deg, #0f172a 0%, #0b1322 100%); border: 1px solid rgba(51, 65, 85, 0.55); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 14px; position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.35);">
@@ -8596,26 +8708,54 @@ function renderAdminOrders() {
                 </span>
               </div>
 
-              <!-- Customer Info Box -->
-              <div style="padding: 10px 14px; background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; display: flex; flex-direction: column; gap: 6px; font-size: 12.5px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <span style="color: #94a3b8;">👤 Mijoz:</span>
-                  <b style="color: #f1f5f9; font-weight: 700;">${escapeHtml(recipientName)}</b>
+              <!-- Customer Info Box with Profil Ko'rish tugmasi -->
+              <div style="padding: 12px 14px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; display: flex; flex-direction: column; gap: 7px; font-size: 12.5px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="color: #94a3b8;">👤 Mijoz:</span>
+                    <b style="color: #f1f5f9; font-weight: 800;">${escapeHtml(recipientName)}</b>
+                  </div>
+                  <button type="button" onclick="openAdminCustomerProfileModal('${orderId}')" class="btn btn-sm" style="background: rgba(112, 0, 255, 0.18); border: 1px solid rgba(168, 85, 247, 0.45); color: #c084fc; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s;" onmouseover="this.style.background='rgba(112,0,255,0.35)'" onmouseout="this.style.background='rgba(112,0,255,0.18)'">
+                    👤 Profilni ko'rish
+                  </button>
                 </div>
+
                 ${o.phone ? `
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <span style="color: #94a3b8;">📞 Telefon:</span>
+                  <span style="color: #94a3b8;">📞 Asosiy tel:</span>
                   <a href="tel:${escapeHtml(o.phone)}" style="color: #00e5ff; font-weight: 700; text-decoration: none;">${escapeHtml(o.phone)}</a>
                 </div>` : ""}
+
+                ${extraPhone ? `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #94a3b8;">📱 Qo'shimcha tel:</span>
+                  <a href="tel:${escapeHtml(extraPhone)}" style="color: #38bdf8; font-weight: 600; text-decoration: none;">${escapeHtml(extraPhone)}</a>
+                </div>` : ""}
+
+                ${tgRaw ? `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #94a3b8;">✈️ Telegram:</span>
+                  <a href="https://t.me/${escapeHtml(tgRaw)}" target="_blank" rel="noopener noreferrer" style="color: #60a5fa; font-weight: 700; text-decoration: underline;">@${escapeHtml(tgRaw)}</a>
+                </div>` : ""}
+
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #94a3b8;">📅 Yetkazish kuni:</span>
+                  <span style="color: #facc15; font-weight: 700; background: rgba(250, 204, 21, 0.12); padding: 2px 8px; border-radius: 5px; border: 1px solid rgba(250, 204, 21, 0.25);">🗓️ ${escapeHtml(deliveryDate)}</span>
+                </div>
+
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
                   <span style="color: #94a3b8; flex-shrink: 0;">📍 Manzil / Lokatsiya:</span>
                   <span style="color: #cbd5e1; text-align: right; word-break: break-word; font-size: 12px;">${addressHtml}</span>
                 </div>
+
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <span style="color: #94a3b8;">💳 To'lov:</span>
+                  <span style="color: #94a3b8;">💳 To'lov usuli:</span>
                   <b style="color: #a78bfa; font-weight: 700;">${escapeHtml(payLabel)}</b>
                 </div>
               </div>
+
+              <!-- Promokod & Skidka Bloki -->
+              ${promoDiscountHtml}
 
               <!-- Ordered Products List: ALL ITEMS in this order -->
               <div style="display: flex; flex-direction: column; gap: 8px;">
@@ -8627,11 +8767,15 @@ function renderAdminOrders() {
                 ${itemsHtml}
               </div>
 
-              <!-- Order Total Row -->
+              <!-- Order Total Row with Discount Breakdown -->
               <div style="padding: 12px 14px; background: linear-gradient(135deg, rgba(0, 242, 254, 0.08) 0%, rgba(112, 0, 255, 0.08) 100%); border: 1px solid rgba(0, 242, 254, 0.25); border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
                 <div>
                   <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Jami Buyurtma Summasi:</div>
                   <div style="font-size: 12px; color: #cbd5e1; margin-top: 2px;">${items.length} xil mahsulot • ${totalPachkas} pachka</div>
+                  ${discountUsd > 0 ? `
+                    <div style="font-size: 11px; color: #94a3b8; text-decoration: line-through; margin-top: 3px;">Asl summa: $${rawSubtotalUsd} (${rawSubtotalSom.toLocaleString('uz-UZ')} so'm)</div>
+                    <div style="font-size: 11px; color: #34d399; font-weight: 700;">Chegirma: -$${discountUsd} (${discountSom.toLocaleString('uz-UZ')} so'm)</div>
+                  ` : ''}
                 </div>
                 <div style="text-align: right;">
                   <div style="font-size: 14px; font-weight: 800; color: #00e5ff;">$${usdVal}</div>
@@ -8762,6 +8906,189 @@ async function deleteOrderByAdmin(orderId) {
   showToast(`🗑️ Buyurtma #${orderId} muvaffaqiyatli olib tashlandi!`, "success");
 }
 window.deleteOrderByAdmin = deleteOrderByAdmin;
+
+// 👤 Admin: Mijoz Profil Ma'lumotlarini to'liq ko'rish modali
+function openAdminCustomerProfileModal(orderId) {
+  const pool = state.orders || [];
+  const order = pool.find((o) => String(o.id || o.orderId) === String(orderId)) || {};
+  const cp = (order.customerProfile && typeof order.customerProfile === "object") ? order.customerProfile : {};
+
+  const uLocal = JSON.parse(localStorage.getItem("eurotex_user") || "null") || {};
+  const fallbackUser = (state.user && (state.user.email === order.userEmail || state.user.phone === order.phone)) ? state.user : uLocal;
+
+  const fullName = cp.fullName || cp.name || order.customerName || order.recipient || fallbackUser.fullName || fallbackUser.name || "Xaridor";
+  const phone = order.phone || cp.phone || fallbackUser.phone || "";
+  const extraPhone = order.extraPhone || cp.extraPhone || fallbackUser.extraPhone || "";
+  const telegramRaw = (order.telegram || cp.telegram || fallbackUser.telegram || "").replace(/^@/, "").trim();
+  const region = cp.region || cp.city || order.region || fallbackUser.city || fallbackUser.region || "Toshkent shahri";
+  const address = order.address || cp.address || fallbackUser.address || "Manzil ko'rsatilmagan";
+  const birthDate = cp.birthDate || fallbackUser.birthDate || "Kiritilmagan";
+  const suitSize = cp.suitSize || fallbackUser.suitSize || "48 (M)";
+  const style = cp.style || fallbackUser.style || "Slim Fit";
+  const email = order.userEmail || cp.email || fallbackUser.email || "Kiritilmagan";
+
+  const rate = state.usdRate || 12650;
+  const clientOrders = (state.orders || []).filter((o) => {
+    if (!o) return false;
+    if (phone && o.phone && (o.phone.includes(phone.slice(-7)) || phone.includes((o.phone || '').slice(-7)))) return true;
+    if (email && o.userEmail && o.userEmail.toLowerCase() === email.toLowerCase()) return true;
+    return false;
+  });
+  const totalOrdersCount = clientOrders.length || 1;
+  const totalSpentUsd = clientOrders.reduce((sum, o) => {
+    const t = Number(o.total || o.totalPriceUsd || 0);
+    return sum + (t > 5000 ? Math.round(t / rate) : t);
+  }, 0);
+  const totalSpentSom = Math.round(totalSpentUsd * rate);
+
+  let modalEl = document.getElementById("adminCustomerProfileModal");
+  if (!modalEl) {
+    modalEl = document.createElement("div");
+    modalEl.id = "adminCustomerProfileModal";
+    modalEl.className = "modal";
+    modalEl.style.cssText = "display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); align-items:center; justify-content:center; padding:16px;";
+    document.body.appendChild(modalEl);
+  }
+
+  modalEl.innerHTML = `
+    <div style="background: linear-gradient(160deg, #0f172a 0%, #1e1b4b 100%); border: 1.5px solid rgba(168, 85, 247, 0.45); border-radius: 20px; max-width: 580px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8), 0 0 30px rgba(112, 0, 255, 0.25); overflow: hidden; position: relative; animation: modalPop 0.25s ease-out;">
+      <!-- Accent Top Border -->
+      <div style="height: 4px; background: linear-gradient(90deg, #7000ff, #00f2fe, #10b981);"></div>
+
+      <!-- Header -->
+      <div style="padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #7000ff 0%, #00f2fe 100%); display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);">
+            👤
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #ffffff;">Mijoz Profil Ma'lumotlari</h3>
+            <span style="font-size: 12px; color: #94a3b8;">Buyurtma #${escapeHtml(orderId)} mijozi</span>
+          </div>
+        </div>
+        <button type="button" onclick="closeAdminCustomerProfileModal()" style="background: rgba(255,255,255,0.08); border: none; color: #ffffff; width: 34px; height: 34px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+          ✕
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div style="padding: 22px 24px; max-height: 72vh; overflow-y: auto; display: flex; flex-direction: column; gap: 14px;">
+        <!-- Full Name Card -->
+        <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 16px;">
+          <div style="font-size: 11px; text-transform: uppercase; color: #94a3b8; font-weight: 700; letter-spacing: 0.5px;">👤 Ism va Familiya:</div>
+          <div style="font-size: 17px; font-weight: 800; color: #f8fafc; margin-top: 4px;">${escapeHtml(fullName)}</div>
+        </div>
+
+        <!-- Contact Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+          <!-- Primary Phone -->
+          <div style="background: rgba(0, 229, 255, 0.06); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 12px; padding: 12px 14px;">
+            <div style="font-size: 11px; text-transform: uppercase; color: #38bdf8; font-weight: 700;">📞 Asosiy telefon:</div>
+            ${phone ? `
+              <a href="tel:${escapeHtml(phone)}" style="font-size: 15px; font-weight: 800; color: #00e5ff; text-decoration: none; display: block; margin-top: 4px;">
+                ${escapeHtml(phone)}
+              </a>
+            ` : '<div style="font-size: 13px; color: #64748b; margin-top: 4px;">Kiritilmagan</div>'}
+          </div>
+
+          <!-- Secondary Phone -->
+          <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 12px 14px;">
+            <div style="font-size: 11px; text-transform: uppercase; color: #94a3b8; font-weight: 700;">📱 Qo'shimcha telefon:</div>
+            ${extraPhone ? `
+              <a href="tel:${escapeHtml(extraPhone)}" style="font-size: 15px; font-weight: 700; color: #cbd5e1; text-decoration: none; display: block; margin-top: 4px;">
+                ${escapeHtml(extraPhone)}
+              </a>
+            ` : '<div style="font-size: 13px; color: #64748b; margin-top: 4px;">Mavjud emas</div>'}
+          </div>
+
+          <!-- Telegram Username -->
+          <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 12px; padding: 12px 14px;">
+            <div style="font-size: 11px; text-transform: uppercase; color: #60a5fa; font-weight: 700;">✈️ Telegram username:</div>
+            ${telegramRaw ? `
+              <a href="https://t.me/${escapeHtml(telegramRaw)}" target="_blank" rel="noopener noreferrer" style="font-size: 15px; font-weight: 800; color: #93c5fd; text-decoration: underline; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px;">
+                @${escapeHtml(telegramRaw)} ↗
+              </a>
+            ` : '<div style="font-size: 13px; color: #64748b; margin-top: 4px;">Kiritilmagan</div>'}
+          </div>
+
+          <!-- Email -->
+          <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 12px 14px;">
+            <div style="font-size: 11px; text-transform: uppercase; color: #94a3b8; font-weight: 700;">✉️ Email pochta:</div>
+            <div style="font-size: 13.5px; font-weight: 700; color: #cbd5e1; margin-top: 4px; word-break: break-all;">
+              ${escapeHtml(email)}
+            </div>
+          </div>
+        </div>
+
+        <!-- Location & Delivery Address -->
+        <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
+          <div>
+            <span style="font-size: 11px; text-transform: uppercase; color: #94a3b8; font-weight: 700;">📍 Viloyat / Shahar:</span>
+            <div style="font-size: 14px; font-weight: 700; color: #f1f5f9; margin-top: 2px;">${escapeHtml(region)}</div>
+          </div>
+          <div>
+            <span style="font-size: 11px; text-transform: uppercase; color: #94a3b8; font-weight: 700;">🏠 Aniq Yetkazish Manzili:</span>
+            <div style="font-size: 14px; color: #cbd5e1; margin-top: 2px; line-height: 1.4;">${escapeHtml(address)}</div>
+          </div>
+        </div>
+
+        <!-- Personal Preferences Grid -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+          <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 12px; text-align: center;">
+            <div style="font-size: 10.5px; color: #94a3b8; font-weight: 700;">🎁 Tug'ilgan sana:</div>
+            <div style="font-size: 13px; font-weight: 800; color: #f43f5e; margin-top: 4px;">${escapeHtml(birthDate)}</div>
+          </div>
+          <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 12px; text-align: center;">
+            <div style="font-size: 10.5px; color: #94a3b8; font-weight: 700;">👔 O'lcham:</div>
+            <div style="font-size: 13px; font-weight: 800; color: #38bdf8; margin-top: 4px;">${escapeHtml(suitSize)}</div>
+          </div>
+          <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 12px; text-align: center;">
+            <div style="font-size: 10.5px; color: #94a3b8; font-weight: 700;">✂️ Fason:</div>
+            <div style="font-size: 13px; font-weight: 800; color: #a78bfa; margin-top: 4px;">${escapeHtml(style)}</div>
+          </div>
+        </div>
+
+        <!-- Customer Stats Banner -->
+        <div style="background: linear-gradient(135deg, rgba(112, 0, 255, 0.15) 0%, rgba(0, 242, 254, 0.1) 100%); border: 1px solid rgba(168, 85, 247, 0.35); border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 11px; color: #cbd5e1; font-weight: 700;">Mijozning umumiy statistikasi:</div>
+            <div style="font-size: 13px; color: #f1f5f9; font-weight: 800; margin-top: 2px;">📦 Jami buyurtmalar: ${totalOrdersCount} ta</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">Umumiy xarid summasi:</div>
+            <div style="font-size: 15px; font-weight: 900; color: #00e5ff;">$${totalSpentUsd} (${totalSpentSom.toLocaleString('uz-UZ')} so'm)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Buttons -->
+      <div style="padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; gap: 10px; justify-content: flex-end; background: rgba(15, 23, 42, 0.8);">
+        ${phone ? `
+          <a href="tel:${escapeHtml(phone)}" class="btn btn-sm" style="background: #10b981; color: #ffffff; text-decoration: none; padding: 8px 16px; border-radius: 8px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;">
+            📞 Qo'ng'iroq qilish
+          </a>
+        ` : ''}
+        ${telegramRaw ? `
+          <a href="https://t.me/${escapeHtml(telegramRaw)}" target="_blank" rel="noopener noreferrer" class="btn btn-sm" style="background: #2563eb; color: #ffffff; text-decoration: none; padding: 8px 16px; border-radius: 8px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;">
+            ✈️ Telegramda yozish
+          </a>
+        ` : ''}
+        <button type="button" onclick="closeAdminCustomerProfileModal()" class="btn btn-sm" style="background: rgba(255,255,255,0.12); color: #ffffff; border: 1px solid rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer;">
+          ✕ Yopish
+        </button>
+      </div>
+    </div>
+  `;
+
+  modalEl.style.display = "flex";
+}
+window.openAdminCustomerProfileModal = openAdminCustomerProfileModal;
+
+function closeAdminCustomerProfileModal() {
+  const modalEl = document.getElementById("adminCustomerProfileModal");
+  if (modalEl) modalEl.style.display = "none";
+}
+window.closeAdminCustomerProfileModal = closeAdminCustomerProfileModal;
 
 function renderAdminProducts() {
   ensureAdminSizesElements();
