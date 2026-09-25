@@ -1347,6 +1347,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   closeAllModals();
   checkGoogleAuthRedirect();
   updateUserAuthUI();
+  persistCart();
+  persistWishlist();
   renderCheckoutDeliveryDates();
   updateCheckoutPromoCard();
   checkMaintenanceStatus();
@@ -1543,7 +1545,7 @@ function syncCartPricesWithCatalog() {
   });
 
   if (changed) {
-    safeSetLocalStorage("eurotex_cart", JSON.stringify(state.cart));
+    persistCart();
   }
 }
 
@@ -2735,7 +2737,7 @@ function toggleWishlist(productId) {
     );
   }
 
-  localStorage.setItem("eurotex_wishlist", JSON.stringify(state.wishlist));
+  persistWishlist();
   updateWishlistUI();
 
   // Instant in-place heart update (NO FULL PAGE RELOAD OR FLICKERING!)
@@ -2923,13 +2925,24 @@ function animateFlyToCart(sourceEl, triggerBtn = null) {
   };
 }
 
+function getUserKey() {
+  try {
+    const u = state.user || JSON.parse(localStorage.getItem("eurotex_user") || "null");
+    if (!u) return null;
+    const key = u.email || u.phone || u.id || u.sub;
+    return key ? String(key).toLowerCase().trim() : null;
+  } catch (e) {
+    return null;
+  }
+}
+
 // 🛒 Cart Persistence Engine (stays in cart until order, then completely clears)
 function persistCart() {
   try {
     const data = JSON.stringify(state.cart || []);
     safeSetLocalStorage("eurotex_cart", data);
-    if (state.user && state.user.email) {
-      const userKey = state.user.email.toLowerCase().trim();
+    const userKey = getUserKey();
+    if (userKey) {
       safeSetLocalStorage(`eurotex_cart_${userKey}`, data);
     }
   } catch (e) {}
@@ -2943,12 +2956,37 @@ function clearPersistedCart() {
   state.discountRate = 0;
   try {
     localStorage.removeItem("eurotex_cart");
-    if (state.user && state.user.email) {
-      const userKey = state.user.email.toLowerCase().trim();
+    const userKey = getUserKey();
+    if (userKey) {
       localStorage.removeItem(`eurotex_cart_${userKey}`);
     }
   } catch (e) {}
   updateCartUI();
+  updateDashboardCounts();
+}
+
+// ❤️ Wishlist Persistence Engine (stays in wishlist until user removes)
+function persistWishlist() {
+  try {
+    const data = JSON.stringify(state.wishlist || []);
+    safeSetLocalStorage("eurotex_wishlist", data);
+    const userKey = getUserKey();
+    if (userKey) {
+      safeSetLocalStorage(`eurotex_wishlist_${userKey}`, data);
+    }
+  } catch (e) {}
+}
+
+function clearPersistedWishlist() {
+  state.wishlist = [];
+  try {
+    localStorage.removeItem("eurotex_wishlist");
+    const userKey = getUserKey();
+    if (userKey) {
+      localStorage.removeItem(`eurotex_wishlist_${userKey}`);
+    }
+  } catch (e) {}
+  updateWishlistUI();
   updateDashboardCounts();
 }
 
@@ -3089,8 +3127,9 @@ function updateCartQty(productId, size, color, change) {
     );
   }
 
-  localStorage.setItem("eurotex_cart", JSON.stringify(state.cart));
+  persistCart();
   updateCartUI();
+  updateDashboardCounts();
 }
 
 function updateCartTotalsOnly() {
@@ -6402,12 +6441,12 @@ function skipProfileOnboarding() {
 }
 
 function syncUserCartAndWishlist() {
-  if (!state.user || !state.user.email) return;
-  const userKey = state.user.email.toLowerCase().trim();
+  const userKey = getUserKey();
+  if (!userKey) return;
   const savedCartKey = `eurotex_cart_${userKey}`;
   const savedWishlistKey = `eurotex_wishlist_${userKey}`;
 
-  // 1. Merge Cart
+  // 1. Merge Cart on explicit user login
   try {
     const userSavedCart = JSON.parse(localStorage.getItem(savedCartKey) || "[]");
     const currentCart = state.cart || [];
@@ -6428,12 +6467,11 @@ function syncUserCartAndWishlist() {
     });
 
     state.cart = mergedCart;
-    safeSetLocalStorage("eurotex_cart", JSON.stringify(state.cart));
-    safeSetLocalStorage(savedCartKey, JSON.stringify(state.cart));
+    persistCart();
     if (typeof updateCartUI === "function") updateCartUI();
   } catch (e) {}
 
-  // 2. Merge Wishlist
+  // 2. Merge Wishlist on explicit user login
   try {
     const userSavedWishlist = JSON.parse(localStorage.getItem(savedWishlistKey) || "[]");
     const currentWishlist = state.wishlist || [];
@@ -6450,8 +6488,7 @@ function syncUserCartAndWishlist() {
     });
 
     state.wishlist = mergedWishlist;
-    safeSetLocalStorage("eurotex_wishlist", JSON.stringify(state.wishlist));
-    safeSetLocalStorage(savedWishlistKey, JSON.stringify(state.wishlist));
+    persistWishlist();
     if (typeof updateWishlistUI === "function") updateWishlistUI();
   } catch (e) {}
 }
@@ -6461,7 +6498,6 @@ function updateUserAuthUI() {
   const mobileAuthLabel = document.getElementById("mobileAuthLabel");
 
   if (state.user && state.user.name) {
-    syncUserCartAndWishlist();
     const displayName = state.user.name.split("@")[0];
     const formatted =
       displayName.charAt(0).toUpperCase() + displayName.slice(1);
