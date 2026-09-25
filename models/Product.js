@@ -54,7 +54,7 @@ const productSchema = new mongoose.Schema(
     isNewArrival: { type: Boolean, default: false, index: true },
     wholesaleOnly: { type: Boolean, default: true },
   },
-  { timestamps: true },
+  { timestamps: true, bufferCommands: false },
 );
 
 productSchema.pre("save", function (next) {

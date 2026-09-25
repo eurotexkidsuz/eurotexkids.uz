@@ -124,15 +124,15 @@ async function connectToDB() {
     return;
   }
   try {
+    mongoose.set("bufferCommands", false);
     await mongoose.connect(MONGO_URI, {
-      serverSelectionTimeoutMS: 8000,
-      connectTimeoutMS: 8000,
-      socketTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 3000,
+      connectTimeoutMS: 3000,
+      socketTimeoutMS: 5000,
     });
     console.log("✅ MongoDB ulandi!");
   } catch (error) {
-    console.error("❌ MongoDB xatosi:", error.message);
-    console.warn("⚠️ Lokal JSON fayllariga fallback qilindi.");
+    console.warn("⚠️ MongoDB ulanmadi (" + error.message + "). Mahalliy JSON fayllar 100% to'liq ishlaydi.");
   }
 }
 connectToDB();

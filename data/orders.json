@@ -1,5 +1,77 @@
 [
   {
+    "orderId": "EUR-26928994",
+    "id": "EUR-26928994",
+    "userEmail": "",
+    "customerName": "Xaridor Test",
+    "recipient": "Xaridor Test",
+    "phone": "+998905557775",
+    "address": "Toshkent sh.",
+    "region": "",
+    "district": "",
+    "deliveryType": "courier",
+    "paymentMethod": "cash",
+    "items": [
+      {
+        "id": "prod-1785746896249",
+        "quantity": 1,
+        "priceUsd": 45
+      }
+    ],
+    "itemsCount": 1,
+    "total": 45,
+    "totalPriceUsd": 45,
+    "totalPriceUzs": 569250,
+    "usdRateApplied": 12650,
+    "discountAmount": 0,
+    "promoCode": "",
+    "statusStep": 1,
+    "status": "🟡 Qabul qilindi",
+    "nasiyaMonths": 0,
+    "date": "25/09/2026",
+    "deliveryDate": "",
+    "deliveryTime": "",
+    "customerNotes": "",
+    "ipAddress": "::1",
+    "createdAt": "2026-09-25T09:16:10.673Z"
+  },
+  {
+    "orderId": "EUR-26845342",
+    "id": "EUR-26845342",
+    "userEmail": "",
+    "customerName": "Xaridor Test",
+    "recipient": "Xaridor Test",
+    "phone": "+998905557775",
+    "address": "Toshkent sh.",
+    "region": "",
+    "district": "",
+    "deliveryType": "courier",
+    "paymentMethod": "cash",
+    "items": [
+      {
+        "id": "prod-1785746896249",
+        "quantity": 1,
+        "priceUsd": 45
+      }
+    ],
+    "itemsCount": 1,
+    "total": 45,
+    "totalPriceUsd": 45,
+    "totalPriceUzs": 569250,
+    "usdRateApplied": 12650,
+    "discountAmount": 0,
+    "promoCode": "",
+    "statusStep": 1,
+    "status": "🟡 Qabul qilindi",
+    "nasiyaMonths": 0,
+    "date": "25/09/2026",
+    "deliveryDate": "",
+    "deliveryTime": "",
+    "customerNotes": "",
+    "ipAddress": "::1",
+    "createdAt": "2026-09-25T09:11:51.429Z"
+  },
+  {
     "orderId": "EUR-852248",
     "userEmail": "abdulaziz10102013abdz@gmail.com",
     "customerName": "Abdulaziz",

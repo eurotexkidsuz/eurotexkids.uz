@@ -48,19 +48,10 @@ const ORDER_STATUS_STEPS = {
 
 const FALLBACK_MONGO_URL = process.env.MONGO_URL;
 
-async function ensureDbConnected() {
-  if (mongoose.connection.readyState === 1) return true;
-  if (!FALLBACK_MONGO_URL) return false;
-  try {
-    await mongoose.connect(FALLBACK_MONGO_URL, {
-      serverSelectionTimeoutMS: 6000,
-    });
-    return true;
-  } catch (e) {
-    console.error("MongoDB Connection Error in orders route:", e.message);
-    return false;
-  }
+function isDbConnected() {
+  return Boolean(mongoose.connection && mongoose.connection.readyState === 1);
 }
+const ensureDbConnected = isDbConnected;
 
 // 🛡️ #4 IP Spoofing Himoyasi: req.ip va tozalangan birinchi ishonchli proksi IP
 function getClientIp(req) {

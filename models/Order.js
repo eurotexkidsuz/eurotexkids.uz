@@ -49,7 +49,7 @@ const orderSchema = new Schema(
     isWholesale: { type: Boolean, default: true },
     ipAddress: { type: String, default: "" },
   },
-  { timestamps: true },
+  { timestamps: true, bufferCommands: false },
 );
 
 orderSchema.pre("save", function (next) {

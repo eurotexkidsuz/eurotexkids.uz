@@ -74,17 +74,10 @@ function extractAndSaveBase64Images(pData) {
 
 const FALLBACK_MONGO_URL = process.env.MONGO_URL;
 
-async function ensureDbConnected() {
-  if (mongoose.connection.readyState === 1) return;
-  if (!FALLBACK_MONGO_URL) return;
-  try {
-    await mongoose.connect(FALLBACK_MONGO_URL, {
-      serverSelectionTimeoutMS: 10000,
-    });
-  } catch (e) {
-    console.error("MongoDB Connection Error in products route:", e.message);
-  }
+function isDbConnected() {
+  return Boolean(mongoose.connection && mongoose.connection.readyState === 1);
 }
+const ensureDbConnected = isDbConnected;
 
 // Get all products (merged from MongoDB and local file)
 router.get("/", async (req, res) => {
