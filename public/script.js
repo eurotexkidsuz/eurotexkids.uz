@@ -8441,83 +8441,181 @@ function renderAdminOrders() {
 
   const rate = state.usdRate || 12650;
 
+  const statusConfig = {
+    0: { label: "Bekor qilindi", emoji: "❌", bg: "rgba(239, 68, 68, 0.15)", border: "rgba(239, 68, 68, 0.35)", color: "#ef4444" },
+    1: { label: "Qabul qilindi", emoji: "🟡", bg: "rgba(245, 158, 11, 0.15)", border: "rgba(245, 158, 11, 0.35)", color: "#f59e0b" },
+    2: { label: "Tayyorlanmoqda", emoji: "🔵", bg: "rgba(59, 130, 246, 0.15)", border: "rgba(59, 130, 246, 0.35)", color: "#3b82f6" },
+    3: { label: "Kuryerda", emoji: "🟣", bg: "rgba(139, 92, 246, 0.15)", border: "rgba(139, 92, 246, 0.35)", color: "#a855f7" },
+    4: { label: "Yetkazib berildi", emoji: "✅", bg: "rgba(16, 185, 129, 0.15)", border: "rgba(16, 185, 129, 0.35)", color: "#10b981" },
+  };
+
   container.innerHTML = `
-    <!-- Admin Orders Cards Grid (Identical Design to Mahsulotlar Narxlari) -->
-    <div class="admin-products-cards-grid">
+    <div class="admin-orders-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 18px;">
       ${state.orders
         .map((o, idx) => {
-          const firstItem = (o.items && o.items[0]) || {};
-          const itemImg =
-            firstItem.image || firstItem.img || "/images/navy_suit.jpg";
-          const itemTitle = firstItem.title || "Eurotex Kostyum";
-          const pachkaQty = firstItem.quantity || 6;
+          const rawItems = Array.isArray(o.items) && o.items.length > 0 ? o.items : [];
+          const items = rawItems.length > 0 ? rawItems : (o.item ? [o.item] : []);
 
-          const totalVal = parseFloat(o.total) || 0;
+          const totalVal = parseFloat(o.total) || parseFloat(o.totalPriceUsd) || 0;
           let usdVal = 0;
           let uzsVal = 0;
           if (totalVal > 5000) {
             uzsVal = Math.round(totalVal);
             usdVal = Math.round(uzsVal / rate);
-          } else {
+          } else if (totalVal > 0) {
             usdVal = Math.round(totalVal);
+            uzsVal = Math.round(usdVal * rate);
+          } else if (o.totalPriceUzs) {
+            uzsVal = Math.round(o.totalPriceUzs);
+            usdVal = Math.round(uzsVal / rate);
+          } else {
+            usdVal = items.reduce((sum, it) => sum + (Number(it.pachkaPriceUsd || it.priceUsd || it.price || 0) * (Number(it.quantity) || 1)), 0);
             uzsVal = Math.round(usdVal * rate);
           }
 
           const totalSomFormatted = uzsVal
             .toString()
             .replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-          const recipientName = o.recipient || "Mijoz";
+
+          const totalPachkas = items.reduce((sum, it) => sum + (Number(it.quantity) || 1), 0);
+          const totalPieces = items.reduce((sum, it) => sum + ((Number(it.pachkaItems || it.itemsPerPachka) || 6) * (Number(it.quantity) || 1)), 0);
+
+          const recipientName = o.recipient || o.customerName || "Mijoz";
+          const orderId = o.id || o.orderId || `EUR-${idx + 1}`;
+          const orderDate = o.date || "Bugun";
+          const currentStep = o.statusStep !== undefined ? Number(o.statusStep) : 1;
+          const sc = statusConfig[currentStep] || statusConfig[1];
+
+          // Address & Google Maps link
+          const rawAddr = o.address || "";
+          const mapsMatch = rawAddr.match(/https?:\/\/[^\s"')]+/);
+          const mapsUrl = mapsMatch ? mapsMatch[0] : "";
+          const cleanAddr = mapsUrl
+            ? rawAddr.replace(mapsUrl, "").replace(/Lokatsiya:\s*/i, "").trim()
+            : rawAddr;
+
+          const addressHtml = mapsUrl
+            ? `${escapeHtml(cleanAddr || "Xarita lokatsiyasi")} <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" style="color:#00e5ff; font-weight:700; text-decoration:underline; margin-left:4px; display:inline-flex; align-items:center; gap:2px;">📍 Xaritada</a>`
+            : escapeHtml(cleanAddr || "Manzil ko'rsatilmagan");
+
+          const paymentMethod = o.paymentMethod || "cash";
+          const payLabel = paymentMethod === "card" ? "💳 Karta orqali" : (paymentMethod === "nasiya" || paymentMethod === "eurotex-nasiya") ? "🛍️ Eurotex Nasiya" : "💵 Naqd pul";
+
+          // Items list rendering
+          const itemsHtml = items.length > 0 ? items.map((it) => {
+            const itQty = Number(it.quantity) || 1;
+            const itPachkaItems = Number(it.pachkaItems || it.itemsPerPachka) || 6;
+            const itPriceUsd = Number(it.pachkaPriceUsd || it.priceUsd || it.price) || (usdVal > 0 && items.length === 1 ? usdVal : 45);
+            const itTotalUsd = itPriceUsd * itQty;
+            const itTotalSom = Math.round(itTotalUsd * rate);
+            const itImg = it.image || it.img || "/images/navy_suit.jpg";
+            const itTitle = it.title || "Eurotex Mahsulot";
+            const itSize = it.size || "Standart";
+            const itColor = it.color || "";
+            const itColorCode = itColor ? getEurotexColorCode(itColor) : "";
+
+            return `
+              <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px;">
+                <div style="position: relative; width: 56px; height: 56px; border-radius: 8px; overflow: hidden; background: #0b1120; border: 1px solid rgba(255, 255, 255, 0.12); flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                  <img src="${itImg}" alt="${escapeHtml(itTitle)}" style="width: 100%; height: 100%; object-fit: contain; padding: 2px;" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/navy_suit.jpg'">
+                  <span style="position: absolute; bottom: 2px; right: 2px; background: rgba(0, 0, 0, 0.85); color: #38bdf8; font-size: 9px; font-weight: 800; padding: 1px 4px; border-radius: 3px;">${itQty}p</span>
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-size: 13.5px; font-weight: 700; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(itTitle)}">
+                    ${escapeHtml(itTitle)}
+                  </div>
+                  <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; font-size: 11px;">
+                    <span style="background: rgba(255, 255, 255, 0.08); color: #cbd5e1; padding: 2px 7px; border-radius: 4px; font-weight: 600;">📏 ${escapeHtml(itSize)}</span>
+                    ${itColor ? `<span style="background: rgba(255, 255, 255, 0.08); color: #cbd5e1; padding: 2px 7px; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><span style="width: 7px; height: 7px; border-radius: 50%; background: ${itColorCode}; display: inline-block;"></span> ${escapeHtml(itColor)}</span>` : ""}
+                    <span style="background: rgba(0, 229, 255, 0.12); color: #00e5ff; padding: 2px 7px; border-radius: 4px; font-weight: 700;">📦 ${itQty} pachka (${itPachkaItems * itQty} dona)</span>
+                  </div>
+                </div>
+                <div style="text-align: right; flex-shrink: 0;">
+                  <div style="font-size: 13.5px; font-weight: 800; color: #38bdf8;">$${itPriceUsd}</div>
+                  <div style="font-size: 10.5px; color: #94a3b8; font-weight: 600;">${itTotalSom.toLocaleString('uz-UZ')} so'm</div>
+                </div>
+              </div>
+            `;
+          }).join("") : `
+            <div style="padding: 12px; font-size: 12px; color: #94a3b8; background: rgba(15, 23, 42, 0.5); border-radius: 8px; text-align: center;">
+              Mahsulotlar tafsiloti saqlanmagan
+            </div>
+          `;
 
           return `
-            <div class="admin-product-card">
-              <!-- Top Image Box (Screenshot 3 Design) -->
-              <div class="admin-card-media">
-                <img src="${itemImg}" alt="${itemTitle}" class="admin-card-img" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/images/navy_suit.jpg'">
-                <span class="admin-card-badge">Pachka: ${pachkaQty} dona</span>
+            <div class="admin-order-card" style="background: linear-gradient(160deg, #0f172a 0%, #0b1322 100%); border: 1px solid rgba(51, 65, 85, 0.55); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 14px; position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.35);">
+              <!-- Top Accent Line -->
+              <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #7000ff, #00f2fe);"></div>
+
+              <!-- Header: Order ID + Date + Status Badge -->
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 800; color: #f1f5f9; background: rgba(255,255,255,0.06); padding: 3px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
+                    #${orderId}
+                  </span>
+                  <span style="font-size: 12px; color: #64748b; font-weight: 600;">📅 ${orderDate}</span>
+                </div>
+                <span style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 700; background: ${sc.bg}; border: 1px solid ${sc.border}; color: ${sc.color};">
+                  ${sc.emoji} ${sc.label}
+                </span>
               </div>
 
-              <!-- Card Content Body -->
-              <div class="admin-card-body">
-                <!-- Title & Order ID Input Row -->
-                <div class="admin-card-header-row">
-                  <input type="text" value="${recipientName.toUpperCase()}" class="admin-card-title-input" readonly title="Mijoz nomi">
+              <!-- Customer Info Box -->
+              <div style="padding: 10px 14px; background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; display: flex; flex-direction: column; gap: 6px; font-size: 12.5px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #94a3b8;">👤 Mijoz:</span>
+                  <b style="color: #f1f5f9; font-weight: 700;">${escapeHtml(recipientName)}</b>
+                </div>
+                ${o.phone ? `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #94a3b8;">📞 Telefon:</span>
+                  <a href="tel:${escapeHtml(o.phone)}" style="color: #00e5ff; font-weight: 700; text-decoration: none;">${escapeHtml(o.phone)}</a>
+                </div>` : ""}
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                  <span style="color: #94a3b8; flex-shrink: 0;">📍 Manzil / Lokatsiya:</span>
+                  <span style="color: #cbd5e1; text-align: right; word-break: break-word; font-size: 12px;">${addressHtml}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #94a3b8;">💳 To'lov:</span>
+                  <b style="color: #a78bfa; font-weight: 700;">${escapeHtml(payLabel)}</b>
+                </div>
+              </div>
+
+              <!-- Ordered Products List: ALL ITEMS in this order -->
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; font-weight: 800; display: flex; justify-content: space-between; align-items: center;">
+                  <span>🛍️ Buyurtma tarkibi (${items.length} ta mahsulot):</span>
+                  <span style="color: #38bdf8;">${totalPachkas} pachka (${totalPieces} dona)</span>
                 </div>
 
-                <!-- Category Subtitle Dropdown / Address -->
-                <div class="admin-card-subtitle" style="font-size:12px; color:#00e5ff; font-weight:600;">
-                  📍 ${o.address || "Manzil ko'rsatilmagan"} (#${o.id})
-                </div>
+                ${itemsHtml}
+              </div>
 
-                <!-- Detail Lines (Screenshot 3 Style) -->
-                <div class="admin-card-details">
-                  <div class="detail-line">
-                    <span class="detail-label">Pachka ($ USD):</span>
-                    <div class="detail-input-wrap">
-                      <input type="number" value="${usdVal}" class="admin-price-input pachka" readonly>
-                      <span class="detail-unit">$</span>
-                    </div>
-                  </div>
-
-                  <div class="detail-line total">
-                    <span class="detail-label">Jami so'mda:</span>
-                    <span class="detail-value cyan admin-order-total-amount" id="orderTotalSom_${idx}">${totalSomFormatted} so'm</span>
-                  </div>
+              <!-- Order Total Row -->
+              <div style="padding: 12px 14px; background: linear-gradient(135deg, rgba(0, 242, 254, 0.08) 0%, rgba(112, 0, 255, 0.08) 100%); border: 1px solid rgba(0, 242, 254, 0.25); border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Jami Buyurtma Summasi:</div>
+                  <div style="font-size: 12px; color: #cbd5e1; margin-top: 2px;">${items.length} xil mahsulot • ${totalPachkas} pachka</div>
                 </div>
-
-                <!-- Status Change Select Box -->
-                <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
-                  <select class="admin-card-cat-select admin-select-dark" style="flex:1;" onchange="updateOrderStatusByAdmin(${idx}, this.value)">
-                    <option value="1" ${o.statusStep === 1 ? "selected" : ""}>1. Qabul qilindi 🟡</option>
-                    <option value="2" ${o.statusStep === 2 ? "selected" : ""}>2. Tayyorlanmoqda 🔵</option>
-                    <option value="3" ${o.statusStep === 3 ? "selected" : ""}>3. Kuryerda 🟣</option>
-                    <option value="4" ${o.statusStep === 4 ? "selected" : ""}>4. Yetkazib berildi ✅</option>
-                    <option value="0" ${o.statusStep === 0 ? "selected" : ""}>0. Bekor qilindi ❌</option>
-                    <option value="delete" style="color: #ef4444; font-weight: 800;">🗑️ Olib tashlash</option>
-                  </select>
-                  <button type="button" onclick="deleteOrderByAdmin('${o.id || o.orderId}')" class="btn btn-sm" title="Buyurtmani olib tashlash (o'chirish)" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.4); border-radius: 8px; padding: 7px 11px; cursor: pointer; font-size: 13px; font-weight: 700; transition: all 0.2s;" onmouseover="this.style.background='#ef4444'; this.style.color='#fff';" onmouseout="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.color='#ef4444';">
-                    🗑️
-                  </button>
+                <div style="text-align: right;">
+                  <div style="font-size: 14px; font-weight: 800; color: #00e5ff;">$${usdVal}</div>
+                  <div class="cyan admin-order-total-amount" id="orderTotalSom_${idx}" style="font-size: 18px; font-weight: 900; line-height: 1.2;">${totalSomFormatted} so'm</div>
                 </div>
+              </div>
+
+              <!-- Actions Row: Status Select + Delete Button -->
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <select class="admin-card-cat-select admin-select-dark" style="flex: 1;" onchange="updateOrderStatusByAdmin(${idx}, this.value)">
+                  <option value="1" ${currentStep === 1 ? "selected" : ""}>1. Qabul qilindi 🟡</option>
+                  <option value="2" ${currentStep === 2 ? "selected" : ""}>2. Tayyorlanmoqda 🔵</option>
+                  <option value="3" ${currentStep === 3 ? "selected" : ""}>3. Kuryerda 🟣</option>
+                  <option value="4" ${currentStep === 4 ? "selected" : ""}>4. Yetkazib berildi ✅</option>
+                  <option value="0" ${currentStep === 0 ? "selected" : ""}>0. Bekor qilindi ❌</option>
+                  <option value="delete" style="color: #ef4444; font-weight: 800;">🗑️ Olib tashlash</option>
+                </select>
+                <button type="button" onclick="deleteOrderByAdmin('${o.id || o.orderId}')" class="btn btn-sm" title="Buyurtmani olib tashlash (o'chirish)" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.4); border-radius: 8px; padding: 7px 11px; cursor: pointer; font-size: 13px; font-weight: 700; transition: all 0.2s;" onmouseover="this.style.background='#ef4444'; this.style.color='#fff';" onmouseout="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.color='#ef4444';">
+                  🗑️
+                </button>
               </div>
             </div>
           `;
