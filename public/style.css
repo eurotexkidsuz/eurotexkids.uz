@@ -4578,11 +4578,12 @@ body.dark-mode .form-group label {
 .dashboard-nav-tabs {
   display: flex;
   align-items: center;
-  gap: 12px;
-  row-gap: 12px;
+  gap: 14px;
+  row-gap: 14px;
   flex-wrap: wrap;
   width: 100%;
-  margin-top: 12px !important;
+  margin-top: 16px !important;
+  margin-bottom: 28px !important;
 }
 
 .dashboard-tab-btn {
@@ -4737,6 +4738,7 @@ html[data-theme="dark"] .size-table td {
     overflow-x: auto;
     white-space: nowrap;
     scrollbar-width: none;
+    margin-bottom: 22px !important;
   }
 
   .dashboard-tab-btn {
@@ -5952,9 +5954,10 @@ html[data-theme="dark"] .size-table td {
     display: flex !important;
     overflow-x: auto !important;
     flex-wrap: nowrap !important;
-    gap: 8px !important;
-    padding: 4px 2px 10px 2px !important;
-    margin-top: 0 !important;
+    gap: 10px !important;
+    padding: 6px 2px 14px 2px !important;
+    margin-top: 6px !important;
+    margin-bottom: 20px !important;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     width: 100% !important;
